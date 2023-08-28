@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+{% include 'head.html' %}
+{% block head %}{% endblock %}
+<body class="config-closed">
+    {% include 'header.html' %}
+    {% block content %}
+    {% endblock %}
+    {% include 'footer.html' %}
+    {% block script %}{% endblock %}
+</body>
+
+</html>

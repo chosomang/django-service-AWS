@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+{% endblock %}
+{% block content %}
+<div style="width: 100vw; word-break: break-all;">
+    {{ test }}
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    {% comment %} $(function () {
+        $.ajax({
+            url: '/ajax_src/',
+            type: 'post',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).done(function (data) {
+            console.log('ajax_sent_from_python')
+        })
+        var data = $('#threat_form').serialize()
+        $.ajax({
+            url: '/ajax_dst/',
+            type: 'post',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            data: data
+        }).done(function (data) {
+            console.log('ajax_sent_from_html')
+            console.log(JSON.parse(data.graph))
+        })
+    }) {% endcomment %}
+</script>
+{% endblock %}
+{% comment %} <!-- <div class="col-8 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header">
+                <div class="h6 m-0 font-weight-bold text-teiren">위협 로그 종류</div>
+            </div>
+            <div class="row align-items-center h-100">
+                {% if NCP %}
+                <div class="col-3 threat-body card-body">
+                    <div class="h7 m-0 font-weight-bold text-success">NAVER CLOUD<span class="float-right">{{NCP.total}}개</span></div>
+                    <hr class='rounded'>
+                    {% for key, value in NCP.items %}
+                    {% if key != 'total'%}
+                    <div class='threat'>
+                        <span class=" font-weight-bold">
+                            {{key |truncatechars:21}} 로그 <span class="float-right">
+                                {{ value }}개
+                            </span>
+                        </span>
+                        <div class="progress mb-4">
+                            <div class="progress-bar bg-success" role="progressbar" style="width:{{value |div:NCP.total |mul:100}}%" aria-valuenow="0"
+                                aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    <div class='text-center'>
+                        <button onclick="show(this)" class='show btn btn-outline-none btn-sm p-0 font-weight-bold text-teiren'>더
+                            보기 <i class="fas fa-caret-down"></i></button>
+                        <button onclick="hide(this)" hidden
+                            class='hide btn btn-outline-none btn-sm p-0 font-weight-bold text-teiren'>숨기기 <i
+                                class="fas fa-caret-up"></i></button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div> --> {% endcomment %}
