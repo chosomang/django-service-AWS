@@ -259,7 +259,7 @@ def get_senario_threat():
         data[level-1] = result['count']
     degree = [3.20, 3.73, 4.25, 4.85]
     color = ['#1cc88a', '#f6c23e', '#fd7e14', '#e74a3b']
-    average = {'degree': degree[average-1], 'color': color[average-1]}
+    average = {'degree': degree[2-1], 'color': color[2-1]}
     response = {'senario': {'average': json.dumps(average), 'count': (data)}}
     return response
 
