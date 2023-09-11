@@ -24,7 +24,7 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 def get_log_color(collection_name):
     response = ''
     color = {
-        "AWS" : "#FF9900",
+        "Aws" : "#FF9900",
         "NCP" : "#1EC800",
         "NHN" : "#4E73DF",
         "OFFICEKEEPER" : "#0059A9",
@@ -40,7 +40,7 @@ def get_log_color(collection_name):
 def get_log_total():
     global graph
     cypher = """
-    MATCH (n:LOG)
+    MATCH (n:Log)
     RETURN COUNT(n) AS total
     """
     log_total = graph.evaluate(cypher)
@@ -59,7 +59,7 @@ def get_integration_total():
 def get_threat_total():
     global graph
     cypher ='''
-    MATCH (threat:LOG)-[:DETECTED]->(r:RULE)
+    MATCH (threat:Log)-[:DETECTED]->(r:Rule)
     RETURN count(threat)
     '''
     total = graph.evaluate(cypher)
@@ -69,7 +69,7 @@ def get_threat_total():
 def get_threat_type_count(collection, key, property):
     global graph
     cypher = f'''
-    MATCH (threat:LOG:{collection})-[:DETECTED|FLOW_DETECTED]->(r:Rule)
+    MATCH (threat:Log)-[:DETECTED|FLOW_DETECTED]->(r:Rule)
     WHERE threat.{property} = '{key}'
         AND r.is_allow = 1
     RETURN count(threat)
@@ -113,7 +113,7 @@ def get_threat_count(year, month):
         end = datetime.datetime(year,month+1,1,0,0,1).strftime('%Y-%m-%dT%H:%M:%SZ')
     global graph
     cypher = f"""
-        MATCH (n:LOG)-[:DETECTED|FLOW_DETECTED]->(r)
+        MATCH (n:Log)-[:DETECTED|FLOW_DETECTED]->(r)
         WHERE '{start}'<=n.eventTime<='{end}'
         RETURN count(n)
     """
@@ -129,7 +129,7 @@ def get_collected_count(year, month):
         end = datetime.datetime(year,month+1,1,0,0,1).strftime('%Y-%m-%dT%H:%M:%SZ')
     global graph
     cypher = f"""
-        MATCH (n:LOG)
+        MATCH (n:Log)
         WHERE '{start}'<=n.eventTime<='{end}'
         RETURN count(n)
     """
@@ -140,7 +140,7 @@ def get_collected_count(year, month):
 def get_user_threat():
     global graph
     cypher = f"""
-    MATCH (r:RULE)<-[:DETECTED]-(l:LOG)
+    MATCH (r:Rule)<-[:DETECTED]-(l:Log)
     WITH
         CASE
             WHEN l.userIdentity_type = 'Root' THEN l.userIdentity_type
@@ -175,9 +175,9 @@ def get_user_threat():
 def get_equip_threat():
     global graph
     cypher = f"""
-    MATCH (r:RULE)<-[:DETECTED|FLOW_DETECTED]-(:LOG)
+    MATCH (r:Rule)<-[:DETECTED|FLOW_DETECTED]-(:Log)
     WITH 
-        HEAD([label IN labels(r) WHERE label <> 'RULE']) AS equip
+        HEAD([label IN labels(r) WHERE label <> 'Rule']) AS equip
     RETURN
         equip,
         count(equip) as count
@@ -199,9 +199,9 @@ def get_equip_threat():
 def get_rule_detected_count():
     global graph
     cypher = f"""
-    MATCH (r:RULE)<-[:DETECTED|FLOW_DETECTED]-(:LOG)
+    MATCH (r:Rule)<-[:DETECTED|FLOW_DETECTED]-(:Log)
     WITH r,
-        HEAD([label IN labels(r) WHERE label <> 'RULE' ]) AS equip
+        HEAD([label IN labels(r) WHERE label <> 'Rule' ]) AS equip
     RETURN
         equip,
         equip+'_'+r.ruleName as name,
@@ -226,7 +226,7 @@ def get_rule_detected_count():
 def get_senario_threat():
     global graph
     cypher = f"""
-    MATCH (r:RULE)<-[n:DETECTED]-(:LOG)
+    MATCH (r:Rule)<-[n:DETECTED]-(:Log)
     WITH n, r
     WITH count(n) AS rule_count, r.ruleName as name, r.level as level
     WITH level, rule_count,
@@ -268,11 +268,11 @@ def get_senario_threat():
 def get_recent_threat():
     global graph
     cypher = '''
-    MATCH (r:RULE)<-[d:DETECTED]-(l:LOG)
+    MATCH (r:Rule)<-[d:DETECTED]-(l:Log)
     RETURN
         id(d) AS No,
-        head([label IN labels(l) WHERE label <> 'LOG' AND label <> 'Role']) AS cloud,
-        head([label IN labels(l) WHERE label <> 'LOG' AND label <> 'Role'])+'/'+l.sourceIPAddress AS system,
+        head([label IN labels(l) WHERE label <> 'Log' AND label <> 'Role']) AS cloud,
+        head([label IN labels(l) WHERE label <> 'Log' AND label <> 'Role'])+'/'+l.sourceIPAddress AS system,
         r.ruleName AS detected_rule,
         r.ruleName+'#'+id(d) AS rule_name,
         l.eventName AS action,
