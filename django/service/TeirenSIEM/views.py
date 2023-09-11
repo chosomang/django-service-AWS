@@ -28,7 +28,7 @@ def dashboard(request):
     }
     context.update(dash.dashboard_chart())
     context.update(aws.alert.check_topbar_alert())
-    return render(request, "dashboard.html", context)
+    return render(request, "dashboard/dashboard.html", context)
 
 # Log Management
 @login_required

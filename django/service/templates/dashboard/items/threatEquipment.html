@@ -1,0 +1,19 @@
+{% load static %}
+<div id="threatEquipment" class="mb-1 px-1 h-100">
+    <div class="card shadow h-100">
+        <!-- Card Header - Dropdown -->
+        <div class="card-header d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-teiren">위협 발생 장비 추이</h6>
+        </div>
+        <!-- Card Body -->
+        <div class="card-body py-2 pl-1 pr-3">
+            <div class="chart-area" style="height:100%;">
+                <canvas id='equipThreat'></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static '/js/dashboard/threatEquipment.js' %}"></script>
+<script>
+    {"equip_threat": {{ equip_threat|safe }}}
+</script>

@@ -11,7 +11,7 @@ function number_format(number, decimals, dec_point, thousands_sep) {
     sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep,
     dec = (typeof dec_point === 'undefined') ? '.' : dec_point,
     s = '',
-    toFixedFix = function(n, prec) {
+    toFixedFix = function (n, prec) {
       var k = Math.pow(10, prec);
       return '' + Math.round(n * k) / k;
     };
@@ -27,24 +27,37 @@ function number_format(number, decimals, dec_point, thousands_sep) {
   return s.join(dec);
 }
 
-// Bar Chart Example
-var ctx = document.getElementById("equipThreat");
-var myBarChart = new Chart(ctx, {
-  type: 'horizontalBar',
+
+
+
+// Area Chart Example
+
+var ctxrecentCollectedOverview = document.getElementById("recentOverview");
+var recentOverview = new Chart(ctxrecentCollectedOverview, {
+  type: 'line',
   data: {
-    labels: equip_threat['name'],
+    labels: Month,
     datasets: [{
-      label: "위협 개수",
-      backgroundColor: equip_threat['color'],
-      borderColor: "#4e73df",
-      data: equip_threat['count']
+      label: "수집된 로그 개수",
+      lineTension: 0.3,
+      backgroundColor: "rgba(78, 115, 223, 0.05)",
+      borderColor: "rgba(78, 115, 223, 1)",
+      pointRadius: 3,
+      pointBackgroundColor: "rgba(78, 115, 223, 1)",
+      pointBorderColor: "rgba(78, 115, 223, 1)",
+      pointHoverRadius: 3,
+      pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+      pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+      pointHitRadius: 10,
+      pointBorderWidth: 2,
+      data: collected_month,
     }],
   },
   options: {
     maintainAspectRatio: false,
     plugins: {
       datalabels: {
-          display: false, // This will disable the plugin for this chart
+        display: false, // This will disable the plugin for this chart
       }
     },
     layout: {
@@ -57,25 +70,33 @@ var myBarChart = new Chart(ctx, {
     },
     scales: {
       xAxes: [{
+        scaleLabel: {
+          display: true,
+          labelString: 'MONTH'
+        },
         time: {
-          unit: 'month'
+          unit: 'date'
         },
         gridLines: {
           display: false,
           drawBorder: false
         },
         ticks: {
-          min:0,
-          maxTicksLimit:7,
-          callback: function(value, index, values) {
-            return value+'개';
-          }
+          maxTicksLimit: 7
         }
       }],
       yAxes: [{
+        scaleLabel: {
+          display: true,
+          labelString: ''
+        },
         ticks: {
-          min: 0,
-          max: 5000
+          maxTicksLimit: 5,
+          padding: 10,
+          // Include a dollar sign in the ticks
+          callback: function (value, index, values) {
+            return number_format(value) + '개';
+          }
         },
         gridLines: {
           color: "rgb(234, 236, 244)",
@@ -85,29 +106,30 @@ var myBarChart = new Chart(ctx, {
           zeroLineBorderDash: [2]
         }
       }],
-      maxBarLength: 13000
     },
     legend: {
       display: false
     },
     tooltips: {
-      titleMarginBottom: 10,
-      titleFontColor: '#6e707e',
-      titleFontSize: 14,
       backgroundColor: "rgb(255,255,255)",
       bodyFontColor: "#858796",
+      titleMarginBottom: 10,
+      titleFontColor: '#6e707e',
+      titleFontSize: 10,
       borderColor: '#dddfeb',
       borderWidth: 1,
       xPadding: 15,
       yPadding: 15,
       displayColors: false,
+      intersect: false,
+      mode: 'index',
       caretPadding: 10,
       callbacks: {
-        label: function(tooltipItem, chart) {
+        label: function (tooltipItem, chart) {
           var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-          return datasetLabel + ': ' + number_format(tooltipItem.xLabel)+'개';
+          return datasetLabel + ':' + number_format(tooltipItem.yLabel);
         }
       }
-    },
+    }
   }
 });

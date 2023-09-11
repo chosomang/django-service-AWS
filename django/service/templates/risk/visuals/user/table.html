@@ -38,7 +38,6 @@
 <script>
     function rule_detail(e) {
         var arr = JSON.parse(e)
-        console.log(arr)
         var rule_name = arr['account'] + '의 ' + arr['detected_rule'] + arr['id']
         arr['rule_name'] = rule_name
         $.ajax({

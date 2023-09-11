@@ -1,0 +1,19 @@
+{% load static %}
+<div id="threatSenario" class="mb-1 px-1 h-100">
+    <div class="card shadow h-100">
+        <!-- Card Header - Dropdown -->
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-teiren">시나리오 분석 위협도</h6>
+        </div>
+        <!-- Card Body -->
+        <div class="card-body p-2">
+            <div class="chart-area" style="height:100%;">
+                <canvas id='senarioThreat'></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static '/js/dashboard/threatSenario.js' %}"></script>
+<script>
+    {"senario_threat": {{ senario.average|safe }}}
+</script>

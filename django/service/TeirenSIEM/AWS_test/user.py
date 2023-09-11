@@ -24,29 +24,19 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 # 사용자별 위협 분석
 def get_user_visuals():
     cypher = f"""
-    MATCH (a:Account)
-    WITH a.name as account
-    OPTIONAL MATCH p=(r:RULE)<-[d:DETECTED]-(l:LOG)
-    WHERE l.userIdentity_type = account 
-    WITH account, p
-    CALL apoc.do.when(
-        p IS NULL,
-        "MATCH (r:RULE)<-[d:DETECTED]-(l:LOG) WHERE l.userIdentity_userName = account RETURN account, count(d) as count, COLLECT(r)[-1] as rule, COLLECT(l)[-1] as log",
-        "MATCH (r:RULE)<-[d:DETECTED]-(l:LOG) WHERE l.userIdentity_type = account  RETURN account, count(d) as count, COLLECT(r)[-1] as rule, COLLECT(l)[-1] as log",
-        {{account:account}}
-    ) YIELD value
-    WITH DISTINCT(value)
+    MATCH p = (r:RULE)<-[d:DETECTED]-(l:LOG)<-[:ACTED|DATE*]-(a:Account)
+    WITH DISTINCT(a.name) as account, count(d) as count, COLLECT(r)[-1] as rule, COLLECT(l)[-1] as log
     RETURN
-        HEAD([label IN labels(value.log) WHERE label <> 'LOG']) AS cloud,
+        HEAD([label IN LABELS(log) WHERE label <> 'LOG' AND label <> 'IAM' AND label <> 'Role']) AS cloud,
         CASE
-            WHEN value.account CONTAINS 'vulnerable' THEN split(value.account,'_')[0]
-            ELSE value.account
-        END as account,
-        value.account as account_real,
-        value.count as total,
-        value.rule.ruleName as recent_detection,
-        value.log.eventName as recent_action,
-        apoc.date.format(apoc.date.parse(value.log.eventTime, "ms", "yyyy-MM-dd'T'HH:mm:ssX"), "ms", "yyyy-MM-dd HH:mm:ss") AS recent_time
+            WHEN account CONTAINS 'cgid' THEN SPLIT(account, '_')[-1]
+            ELSE account
+        END AS account,
+        account AS account_real,
+        count AS total,
+        rule.ruleName AS recent_detection,
+        log.eventName AS recent_action,
+        apoc.date.format(apoc.date.parse(log.eventTime, "ms", "yyyy-MM-dd'T'HH:mm:ssX"), "ms", "yyyy-MM-dd HH:mm:ss") AS recent_time
     ORDER BY total DESC
     """
     results = graph.run(cypher)
@@ -69,19 +59,14 @@ def get_user_node(request):
     account = request['account']
     cloud = request['cloud']
     cypher = f"""
-    OPTIONAL MATCH p=(r:RULE:{cloud})<-[d:DETECTED]-(l:LOG)<-[:ACTED*4]-(f)
-    WHERE l.userIdentity_type = '{account}'
-    WITH p, '{account}' as account
-    CALL apoc.do.when(
-        p IS NULL,
-        "MATCH p=(r:RULE)<-[d:DETECTED]-(l:LOG)<-[:ACTED*4]-(f) WHERE l.userIdentity_userName = account  RETURN p, f",
-        "MATCH p=(r:RULE)<-[d:DETECTED]-(l:LOG)<-[:ACTED*4]-(f) WHERE l.userIdentity_type = account RETURN p, f",
-        {{account:account}}
-    ) YIELD value
-    WITH DISTINCT(value), account
-    MATCH (a:Account {{name:account}})
-    UNWIND NODES(value.p) as nodes
-    RETURN DISTINCT(nodes), a
+    MATCH (a:Account {{name:'{account}'}})
+    CALL apoc.path.expandConfig(a, {{
+        relationshipFilter: "DETECTED|ACTED|DATE",
+        labelFilter: "/RULE",
+        minLevel: 1,
+        maxLevel: 10000}}) YIELD path
+    UNWIND NODES(path) as nodes
+    RETURN DISTINCT(nodes)
     """
     results = graph.run(cypher)
     response = []
@@ -93,38 +78,25 @@ def get_user_node(request):
 
 def get_user_relation(request):
     account = request['account']
-    cloud = request['cloud']
     global graph
     cypher = f"""
-    OPTIONAL MATCH p=(r:RULE:{cloud})<-[d:DETECTED]-(l:LOG)<-[:ACTED|CONNECTED*3]-(f)
-    WHERE l.userIdentity_type = '{account}' 
-    WITH p, '{account}' as account
-    CALL apoc.do.when(
-        p IS NULL,
-        "MATCH p=(r:RULE)<-[d:DETECTED]-(l:LOG)<-[:ACTED|CONNECTED*3]-(f) WHERE l.userIdentity_userName = account  RETURN p, f",
-        "MATCH p=(r:RULE)<-[d:DETECTED]-(l:LOG)<-[:ACTED|CONNECTED*3]-(f) WHERE l.userIdentity_type = account  RETURN p, f",
-        {{account:account}}
-    ) YIELD value
-    WITH DISTINCT(value), account
-    MATCH (a:Account {{name:account}})
-    CALL apoc.create.vRelationship(a, 'ACTED', {{}}, value.f) YIELD rel AS temp_rel
-    UNWIND RELATIONSHIPS(value.p) as rels
-    WITH DISTINCT(rels) as rel, temp_rel
+    MATCH (a:Account {{name:'{account}'}})
+    CALL apoc.path.expandConfig(a, {{
+        relationshipFilter: "DETECTED|ACTED|DATE",
+        labelFilter: "/RULE",
+        minLevel: 1,
+        maxLevel: 10000}}) YIELD path
+    UNWIND RELATIONSHIPS(path) as rels
+    WITH DISTINCT(rels) as rel
+    WITH DISTINCT(rel)
     WITH [
             PROPERTIES(rel),
             ID(rel),
             ID(STARTNODE(rel)),
             id(ENDNODE(rel)),
             TYPE(rel)
-        ] as relation,
-        [
-            PROPERTIES(temp_rel),
-            ID(temp_rel), 
-            ID(STARTNODE(temp_rel)), 
-            ID(ENDNODE(temp_rel)), 
-            TYPE(temp_rel)
-        ] as temp_rel
-    RETURN COLLECT(relation) as relations, temp_rel
+        ] as relation
+    RETURN COLLECT(relation) as relations
     """
     results = graph.run(cypher)
     response = []
@@ -132,33 +104,23 @@ def get_user_relation(request):
         data = dict(result)
         for relation in data['relations']:
             response.append(get_relation_json(relation))
-        response.append(get_relation_json(data['temp_rel']))
     return response
 
 def get_user_table(request):
     account = request['account']
     global graph
     cypher = f"""
-    OPTIONAL MATCH p=(r:RULE:AWS)-[d:DETECTED]->(l:LOG)<-[:ACTED|CONNECTED]-()
-    WHERE l.userIdentity_type = '{account}' 
-    WITH p, '{account}' as account
-    CALL apoc.do.when(
-        p IS NULL,
-        "MATCH p=(r:RULE)-[d:DETECTED]->(l:LOG)<-[:ACTED|CONNECTED]-() WHERE l.userIdentity_userName = account  RETURN d, l, r",
-        "MATCH p=(r:RULE)-[d:DETECTED]->(l:LOG)<-[:ACTED|CONNECTED]-() WHERE l.userIdentity_type = account  RETURN d, l, r",
-        {{account:account}}
-    ) YIELD value
-    WITH DISTINCT(value) AS value
+    MATCH p=(r:RULE)<-[d:DETECTED]-(l:LOG)<-[:ACTED|DATE*]-(a:Account {{name:'{account}'}})
     RETURN
-        DISTINCT(ID(value.d)) AS id,
-        value.r.ruleName AS detected_rule,
-        value.l.eventTime AS eventTime,
-        apoc.date.format(apoc.date.parse(value.l.eventTime, "ms", "yyyy-MM-dd'T'HH:mm:ssX"), "ms", "yyyy-MM-dd HH:mm:ss") AS detected_time,
+        DISTINCT(ID(d)) AS id,
+        r.ruleName AS detected_rule,
+        l.eventTime AS eventTime,
+        apoc.date.format(apoc.date.parse(l.eventTime, "ms", "yyyy-MM-dd'T'HH:mm:ssX"), "ms", "yyyy-MM-dd HH:mm:ss") AS detected_time,
         CASE
-            WHEN size(split(value.r.eventSource, ',')) > 1 THEN 'FLOW'
-            ELSE split(value.r.eventSource, '.')[0]
+            WHEN size(split(r.eventSource, ',')) > 1 THEN 'FLOW'
+            ELSE split(r.eventSource, '.')[0]
         END AS rule_type,
-        [label IN LABELS(value.l) WHERE label <> 'LOG'][0] AS cloud
+        [label IN LABELS(l) WHERE label <> 'LOG'][0] AS cloud
     ORDER BY detected_time DESC
     """
     results = graph.run(cypher).data()

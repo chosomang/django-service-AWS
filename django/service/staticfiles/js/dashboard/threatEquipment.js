@@ -1,6 +1,6 @@
-// // Set new default font family and font color to mimic Bootstrap's default styling
-// Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
-// Chart.defaults.global.defaultFontColor = '#858796';
+// Set new default font family and font color to mimic Bootstrap's default styling
+Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+Chart.defaults.global.defaultFontColor = '#858796';
 
 function number_format(number, decimals, dec_point, thousands_sep) {
   // *     example: number_format(1234.56, 2, ',', ' ');
@@ -28,16 +28,16 @@ function number_format(number, decimals, dec_point, thousands_sep) {
 }
 
 // Bar Chart Example
-var ctx = document.getElementById("ruleDetectedCount");
-var myBarChart = new Chart(ctx, {
+var ctxthreatEquipment = document.getElementById("equipThreat");
+var myBarChart = new Chart(ctxthreatEquipment, {
   type: 'horizontalBar',
   data: {
-    labels: rule_detected_count['name'],
+    labels: equip_threat['name'],
     datasets: [{
       label: "위협 개수",
-      backgroundColor: rule_detected_count['color'],
+      backgroundColor: equip_threat['color'],
       borderColor: "#4e73df",
-      data: rule_detected_count['count']
+      data: equip_threat['count']
     }],
   },
   options: {

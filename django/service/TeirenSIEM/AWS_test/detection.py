@@ -1,20 +1,8 @@
-from django.shortcuts import render, HttpResponse
 from django.conf import settings
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
+from django.shortcuts import render, HttpResponse
 from py2neo import Graph
 from TeirenSIEM.graphdb import neo4j_graph as ncp
 import json
-from datetime import date
-
-## LOCAL
-# graph = Graph("bolt://127.0.0.1:7687", auth=('neo4j', 'teiren001'))
-
-## NCP
-# host = settings.NEO4J_HOST
-# port = settings.NEO4J_PORT
-# password = settings.NEO4J_PASSWORD
-# username = settings.NEO4J_USERNAME
 
 ## AWS
 host = settings.NEO4J['HOST']
@@ -23,172 +11,6 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
-def get_alert_logs():
-    global graph
-    cypher = '''
-    MATCH (l:LOG)-[d:DETECTED|FLOW_DETECTED]->(r:RULE)
-    WHERE
-        n.alert = 1 AND n.alert IS NOT NULL
-    RETURN
-        HEAD([label IN labels(l) WHERE label <> 'LOG' AND label <> 'Role']) AS cloud,
-        l.eventTime AS detected_time,
-        r.ruleComment as detectedAction,
-        l.eventName as actionDisplayName,
-        l.eventType as actionResultType,
-        l.eventTime as eventTime,
-        l.eventTime AS eventTime_format,
-        l.sourceIPAddress as sourceIp,
-        r.ruleName as detected_rule,
-        r.ruleType as rule_type,
-        r.ruleName+'#'+id(d) AS rule_name,
-        ID(d) as id
-    ORDER BY eventTime DESC
-    '''
-    results = graph.run(cypher)
-    data = check_alert_logs()
-    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'id']
-    for result in results:
-        detail = dict(result.items())
-        form = {}
-        for key in filter:
-            if key != 'cloud' and key != 'rule_name':
-                value = detail.pop(key)
-            else:
-                value = detail[key]
-            form[key] = value
-        detail['form'] = form
-        data.append(detail)
-    context = {'data': data}
-    return context
-
-def check_alert_logs():
-    global graph
-    cypher = """
-    MATCH (l:LOG)-[n:DETECTED]->(r:RULE)
-    WHERE
-        n.alert <> 1
-    RETURN
-        HEAD([label IN labels(l) WHERE label <> 'LOG' AND label <> 'Role']) AS cloud,
-        l.eventTime AS detected_time,
-        r.ruleComment AS detectedAction,
-        l.eventName AS actionDisplayName,
-        l.eventType AS actionResultType,
-        l.eventTime AS eventTime,
-        l.eventTime AS eventTime_format,
-        l.sourceIPAddress AS sourceIp,
-        r.ruleName AS detected_rule,
-        r.ruleName+'#'+id(n) AS rule_name,
-        ID(n) AS id,
-        n.alert AS alert
-    ORDER BY alert, eventTime DESC
-    """
-    results = graph.run(cypher)
-    data = []
-    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'alert', 'id']
-    for result in results:
-        detail = dict(result.items())
-        form = {}
-        for key in filter:
-            if key != 'cloud' and key != 'rule_name' and key != 'alert':
-                value = detail.pop(key)
-            else:
-                value = detail[key]
-            form[key] = value
-        detail['form'] = form
-        data.append(detail)
-    return data
-
-# Top Bar 알림
-def check_topbar_alert():
-    global graph
-    cypher = """
-    MATCH (r:RULE)<-[n:DETECTED]-()
-    WHERE n.alert = 0 OR n.alert IS NULL
-    SET n.alert = CASE
-            WHEN n.alert IS NULL THEN 0
-            ELSE n.alert
-        END
-    RETURN COUNT(n) as count
-    """
-    count = graph.evaluate(cypher)
-    if count > 0:
-        response = {'top_alert':{'count': count}}
-        cypher = """
-        MATCH (r:RULE)<-[n:DETECTED]-(l:LOG)
-        WHERE n.sent = 0 OR n.sent IS NULL
-        WITH DISTINCT(n) as n, r, l
-        SET n.sent = CASE
-                WHEN n.sent IS NULL THEN 0
-                ELSE n.sent
-            END
-        RETURN r, l, ID(n) as id_n
-        """
-        if graph.evaluate(cypher) is not None:
-            results = graph.run(cypher)
-            for result in results:
-                cypher = f"""
-                MATCH (r:RULE)<-[n:DETECTED]-(l:LOG)
-                WHERE ID(r) = {result['r'].identity} AND
-                    ID(l) = {result['l'].identity} AND
-                    ID(n) = {result['id_n']} AND
-                    (n.sent = 0 OR n.sent IS NULL)
-                SET n.sent = 1
-                RETURN count(n)
-                """
-                graph.evaluate(cypher)
-                send_alert_mail(dict(result['r']), dict(result['l']), result['id_n'])
-    else:
-        response = {'no_top_alert': 1}
-    return response
-
-# 알림 메일
-def send_alert_mail(rule, log, rel_id):
-    return 1
-    # subject = f"Teiren SIEM Rule Detection Alert Mail [{rule['ruleName']}#{rel_id}]"
-    # message = ''
-    # from_email = settings.EMAIL_HOST_USER
-    # recipient_list = ['chosomang12@gmail.com']
-    # context = {
-    #     'r': rule,
-    #     'rel_id': rel_id,
-    #     'l': log,
-    # }
-    # html_message = render_to_string('risk/alert/mail.html', context)
-    # send_mail(subject, message, from_email, recipient_list, html_message=html_message)
-
-# 위협 알림 확인 후 Alert Off
-def alert_off(request):
-    if 'alert' in request:
-        detected_rule = request['detected_rule']
-        cloud = request['cloud']
-        eventTime = request['eventTime']
-        id = request['id']
-        if cloud == 'NCP':
-            global graph
-            cypher = f"""
-            MATCH (r:RULE:{cloud} {{name:'{detected_rule}'}})<-[n:DETECTED|FLOW_DETECTED]-(l:LOG:{cloud} {{eventTime:'{eventTime}'}})
-            WHERE 
-                r.is_allow = 1 AND
-                n.alert IS NOT NULL AND
-                n.alert = 0
-            SET n.alert = 1
-            RETURN count(n.alert)
-            """
-        elif cloud == 'AWS':
-            global graph
-            cypher = f"""
-            MATCH (r:RULE:{cloud} {{ruleName:'{detected_rule}'}})<-[n:DETECTED]-(l:LOG:{cloud} {{eventTime:'{eventTime}'}})
-            WHERE
-                n.alert IS NOT NULL AND
-                n.alert = 0 AND
-                ID(n) = {id}
-            SET n.alert = 1
-            RETURN count(n.alert)
-            """
-        graph.evaluate(cypher)
-    return request
-
-####################################################################### Graph Visual
 def neo4j_graph(request):
     if isinstance(request, dict) :
         if request['cloud'] == 'NCP':
@@ -204,8 +26,7 @@ def neo4j_graph(request):
         if context['cloud'] == 'NCP':
             context = ncp(request)
             return context
-        data = get_node(context)
-        data += get_relation(context)
+        data = get_data(context)
         details = get_log_details(context)
         context.update({'graph': json.dumps(data), 'details': details})
         return render(request, 'graphdb/graph.html', context)
@@ -270,6 +91,108 @@ def get_node_json(node, cloud):
         "group" : "nodes"
     }
     return response
+
+
+def get_data(request):
+    rule_type = request['rule_type']
+    if rule_type == 'default':
+        data = get_default(request)
+    else:
+        data = get_flow(request)
+    return data
+
+# Default Rule
+def get_default(request):
+    detected_rule = request['detected_rule']
+    eventTime = request['eventTime']
+    cloud = request['cloud']
+    id = request['id']
+    cypher = f"""
+    MATCH (rule:RULE:{cloud} {{ruleName: '{detected_rule}'}})<-[detect:DETECTED]-(log:LOG:{cloud} {{eventTime:'{eventTime}'}})
+    WHERE ID(detect) = {id}
+    WITH rule, detect, log
+    OPTIONAL MATCH p=(log)<-[:ACTED*..5]-(view:LOG)
+    WITH p, rule, detect, log
+    CALL apoc.do.when(
+        p IS NULL,
+        "MATCH p=(rule)<-[detect]-(log)<-[:ACTED]-(:Date)<-[:DATE]-(:Account)
+            RETURN NODES(p) as nodes, RELATIONSHIPS(p) AS relations",
+        "MATCH p=(rule)<-[detect]-(log)<-[:ACTED*..5]-(view:LOG)
+            WITH rule, log, COLLECT(view) as view, RELATIONSHIPS(COLLECT(p)[-1]) as relations
+            RETURN [rule,log]+view AS nodes, relations",
+        {{rule:rule, log:log, detect:detect}}
+    ) YIELD value
+    WITH COLLECT(value)[-1] as value
+    WITH value.nodes as nodes, value.relations as relations, value.nodes[-1] as last
+    OPTIONAL MATCH (last)<-[acted:ACTED*]-(date:Date)<-[date_rel:DATE]-(account:Account)
+    WITH last, date, date_rel, acted, size(acted) as acted_cnt,
+        CASE 
+            WHEN date IS NULL THEN nodes
+            ELSE nodes+[date, account]
+        END AS nodes,
+        CASE
+            WHEN date_rel IS NULL THEN relations
+            ELSE relations+[date_rel]
+        END AS relations
+    CALL apoc.do.when(
+        acted_cnt > 1,
+        "   MATCH p=(last)<-[:ACTED*]-(mid)
+            WITH date, last, mid.eventName AS eventName, COUNT(mid) AS cnt, p
+            WITH apoc.map.fromPairs(COLLECT([eventName,cnt])) as prop, p, last, date
+            CALL apoc.create.vNode(['Analysis'], apoc.map.merge(prop,{{name:'Analysis'}})) YIELD node AS analysis
+            CALL apoc.create.vRelationship(date,'ANALYZE',{{}}, analysis) YIELD rel AS analyze1
+            CALL apoc.create.vRelationship(analysis,'ANALYZE',{{}}, last) YIELD rel AS analyze2
+            RETURN analysis, [analyze1, analyze2] as analyze",
+        "   WITH CASE
+                WHEN acted IS NULL THEN []
+                ELSE acted
+            END AS acted
+            return [] as analysis, acted as analyze",
+        {{date:date, last:last, acted:acted}}
+    ) YIELD value
+    WITH COLLECT(value)[-1].analysis AS analysis, COLLECT(value)[-1].analyze AS analyze, nodes, relations
+    UNWIND relations+analyze AS relation
+    WITH DISTINCT(relation) AS relation, nodes + analysis AS nodes
+    WITH nodes,
+        [
+            PROPERTIES(relation),
+            ID(relation),
+            ID(STARTNODE(relation)),
+            ID(ENDNODE(relation)),
+            TYPE(relation)
+        ] AS relation
+    RETURN nodes,COLLECT(relation) AS relations
+    """
+    results = graph.run(cypher)
+    response = []
+    for result in results:
+        data = dict(result)
+        for node in data['nodes']:
+            response.append(get_node_json(node, cloud))
+        for relation in data['relations']:
+            response.append(get_relation_json(relation))
+    return response
+
+# Flow Rule
+def get_flow(request):
+    detected_rule = request['detected_rule']
+    eventTime = request['eventTime']
+    cloud = request['cloud']
+    id = request['id']
+    cypher = f"""
+    
+    """
+    results = graph.run(cypher)
+    response = []
+    for result in results:
+        data = dict(result)
+        for node in data['nodes']:
+            response.append(get_node_json(node, cloud))
+        for relation in data['relations']:
+            response.append(get_relation_json(relation))
+    return response
+    return 0
+
 
 # Node 내용
 def get_node(request):

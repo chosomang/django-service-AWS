@@ -69,7 +69,7 @@ def get_threat_total():
 def get_threat_type_count(collection, key, property):
     global graph
     cypher = f'''
-    MATCH (threat:LOG:{collection})-[:DETECTED|FLOW_DETECTED]->(r)
+    MATCH (threat:LOG:{collection})-[:DETECTED|FLOW_DETECTED]->(r:Rule)
     WHERE threat.{property} = '{key}'
         AND r.is_allow = 1
     RETURN count(threat)
@@ -143,7 +143,8 @@ def get_user_threat():
     MATCH (r:RULE)<-[:DETECTED]-(l:LOG)
     WITH
         CASE
-            WHEN l.userIdentity_type <> 'IAMUser' THEN l.userIdentity_type
+            WHEN l.userIdentity_type = 'Root' THEN l.userIdentity_type
+            WHEN l.userIdentity_type = 'AssumedRole' THEN SPLIT(l.userIdentity_arn, '/')[-1]
             ELSE l.userIdentity_userName
         END as name,
         count(r) as count
@@ -152,7 +153,7 @@ def get_user_threat():
     WHERE name is not null
     WITH 
         CASE
-            WHEN name CONTAINS 'vulnerable' THEN split(name, '_')[0]
+            WHEN name CONTAINS 'cgid' THEN 'cloudgoat'
             ELSE name
         END as name, count
     WITH COLLECT(DISTINCT(name)) as name, COLLECT(count) as count
@@ -259,7 +260,7 @@ def get_senario_threat():
         data[level-1] = result['count']
     degree = [3.20, 3.73, 4.25, 4.85]
     color = ['#1cc88a', '#f6c23e', '#fd7e14', '#e74a3b']
-    average = {'degree': degree[2-1], 'color': color[2-1]}
+    average = {'degree': degree[average-1], 'color': color[average-1]}
     response = {'senario': {'average': json.dumps(average), 'count': (data)}}
     return response
 
@@ -270,8 +271,8 @@ def get_recent_threat():
     MATCH (r:RULE)<-[d:DETECTED]-(l:LOG)
     RETURN
         id(d) AS No,
-        head([label IN labels(l) WHERE label <> 'LOG']) AS cloud,
-        head([label IN labels(l) WHERE label <> 'LOG'])+'/'+l.sourceIPAddress AS system,
+        head([label IN labels(l) WHERE label <> 'LOG' AND label <> 'Role']) AS cloud,
+        head([label IN labels(l) WHERE label <> 'LOG' AND label <> 'Role'])+'/'+l.sourceIPAddress AS system,
         r.ruleName AS detected_rule,
         r.ruleName+'#'+id(d) AS rule_name,
         l.eventName AS action,

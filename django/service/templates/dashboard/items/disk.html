@@ -1,0 +1,14 @@
+{% load static %}
+<div id="disk">
+    <div class="card border-left-info shadow">
+        <div class="card-header">
+            <div class="h6 m-0 font-weight-bold text-info">DISK 사용량</div>
+        </div>
+        <div class="card-body pb-0">
+            <div class="chart-area" style="height:100%">
+                <canvas id="myDISK"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/dashboard/disk_perform.js' %}"></script>

@@ -1,6 +1,6 @@
 
 from django.urls import path
-from TeirenSIEM import views, login, tests, ajax, integrations, dashboard
+from TeirenSIEM import views, login, tests, ajax, integrations, dashboard, gridstack
 import TeirenSIEM.AWS_test as aws
 
 
@@ -38,6 +38,16 @@ urlpatterns = [
 urlpatterns += [
     path('login/', login.login_view),
     path('logout/', login.logout_view),
+]
+
+# Dashboard Customize
+urlpatterns +=[
+    path('dashboard/grid/save/', gridstack.save_layout),
+    path('dashboard/grid/load/', gridstack.load_layout),
+    path('dashboard/grid/delete/', gridstack.delete_layout),
+    path('dashboard/grid/layouts/', gridstack.list_layouts),
+    path('dashboard/grid/items/<type>/', gridstack.add_item),
+    path('dashboard/grid/items/', gridstack.list_items),
 ]
 
 # Rule AJAX

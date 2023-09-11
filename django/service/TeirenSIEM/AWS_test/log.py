@@ -158,5 +158,7 @@ def get_log_detail_modal(request):
     response = {}
     for result in results:
         for key, value in dict(result).items():
+            if key == 'details':
+                value = {keys:value[keys] for keys in sorted(value.keys())}
             response[key] = value
     return response

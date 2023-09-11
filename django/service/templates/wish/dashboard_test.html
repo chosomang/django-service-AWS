@@ -2,30 +2,40 @@
 {% load static %}
 {% load custom_filter %}
 {% block head %}
-<head>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script>
-</head>
+
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<!-- Include lodash -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+
+<!-- Include gridstack -->
+<link rel="stylesheet" href="{% static '/js/gridstack/gridstack.css' %}">
+<script src="{% static '/js/gridstack/gridstack-all.js' %}"></script>
 {% endblock %}
 {% block content %}
 <!-- Begin Page Content -->
-<div class="row h-100">
-    <div class="col-8 px-0">
-        <div class="row">
-            <div class="col-3 pb-2 pr-1">
+<div class="grid-stack">
+    <div class="grid-stack-item fit-to-content" gs-w="2">
+        <div class="grid-stack-item-content">
+            <div class="pb-2 pr-1">
                 <div class="card border-left-teiren shadow">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
                                 <div class="h7 font-weight-bold text-teiren text-uppercase mb-1">
                                     총 로그 개수</div>
-                                <div class="p-0 h6 mb-0 font-weight-bold text-gray-800">{{total}}개
+                                <div class="p-0 h6 mb-0 font-weight-bold text-gray-800">1개
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-3 pb-2 px-1">
+        </div>
+    </div>
+    <div class="grid-stack-item fit-to-content" gs-w="2">
+        <div class="grid-stack-item-content">
+            <div class="pb-2 px-1">
                 <div class="card border-left-primary shadow">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
@@ -40,8 +50,11 @@
                     </div>
                 </div>
             </div>
-
-            <div class="col-3 pb-2 px-1">
+        </div>
+    </div>
+    <div class="grid-stack-item fit-to-content" gs-w="2">
+        <div class="grid-stack-item-content">
+            <div class="pb-2 px-1">
                 <div class="card border-left-warning shadow ">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
@@ -49,15 +62,18 @@
                                 <div class="h7 font-weight-bold text-warning text-uppercase mb-1">
                                     위협 로그 개수</div>
                                 <div class="p-0 h6 mb-0 font-weight-bold text-gray-800">
-                                    {{threat}}개
+                                    10개
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="col-3 pb-2 px-1">
+        </div>
+    </div>
+    <div class="grid-stack-item fit-to-content" gs-w="2">
+        <div class="grid-stack-item-content">
+            <div class="pb-2 px-1">
                 <div class="card border-left-danger shadow">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
@@ -82,126 +98,10 @@
                 </div>
             </div>
         </div>
-        <!-- Chart -->
-        <div class="col-12 px-0">
-            <div class="row">
-                <div class="col-4-5 mb-1 pr-1">
-                    <div class="card shadow h-100">
-                        <!-- Card Header - Dropdown -->
-                        <div class="card-header d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-teiren">위협 발생 장비 추이</h6>
-                        </div>
-                        <!-- Card Body -->
-                        <div class="card-body py-2 pl-1 pr-3">
-                            <div class="chart-area" style="height:100%;">
-                                <canvas id='equipThreat'></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-4-5 mb-1 px-1">
-                    <div class="card shadow h-100">
-                        <!-- Card Header - Dropdown -->
-                        <div class="card-header">
-                            <h6 class="m-0 font-weight-bold text-teiren">해외 IP 접근 추이</h6>
-                        </div>
-                        <!-- Card Body -->
-                        <div class="card-body py-2 pl-1 pr-3">
-                            <div class="chart-area" style="height:100%;">
-                                <canvas id='ipCountry'></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-3 mb-1 px-1">
-                    <div class="card shadow d-flex h-100">
-                        <!-- Card Header - Dropdown -->
-                        <div class="card-header">
-                            <h6 class="m-0 font-weight-bold text-teiren">중요도 별 위협 개수</h6>
-                        </div>
-                        <!-- Card Body -->
-                        <div class="card-body p-2 d-flex" style="height:auto">
-                            <div class="table-responsive d-flex" style="overflow:hidden;">
-                                <table class="table m-0" id="dataTable" style="text-align:center;font-size:0.6rem">
-                                    <!-- <thead>
-                                        <tr>
-                                            <th style="border-top: 0">등급</th>
-                                            <th style="border-top: 0">건수</th>
-                                        </tr>
-                                    </thead> -->
-                                    <tbody>
-                                        <tr>
-                                            <th class="text-danger" style="border-top: 0"><i class='text-xs fas fa-fw fa-exclamation-triangle'></i>DANGER</th>
-                                            <td style="border-top: 0">{{senario.count.3}}건</td>
-                                        </tr>
-                                        <tr>
-                                            <th style="color:#fd7e14"><i class='text-xs fas fa-fw fa-exclamation-triangle'></i>HIGH</th>
-                                            <td>{{senario.count.2}}건</td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-warning"><i class='text-xs fas fa-fw fa-exclamation-triangle'></i>MID</th>
-                                            <td>{{senario.count.1}}건</td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-success"><i class="text-xs fas fa-fw fa-solid fa-circle-check"></i>LOW</th>
-                                            <td>{{senario.count.0}}건</td>
-                                        </tr>  
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row h-100">
-                <div class="col-4-5 mb-1 pr-1">
-                    <div class="card shadow h-100">
-                        <!-- Card Header - Dropdown -->
-                        <div class="card-header">
-                            <h6 class="m-0 font-weight-bold text-teiren">정책 별 탐지 위협 개수</h6>
-                        </div>
-                        <!-- Card Body -->
-                        <div class="card-body py-2 pl-1 pr-3">
-                            <div class="chart-area" style="height:auto;">
-                                <canvas id='ruleDetectedCount'></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-4-5 mb-1 px-1">
-                    <div class="card shadow h-100">
-                        <!-- Card Header - Dropdown -->
-                        <div class="card-header">
-                            <h6 class="m-0 font-weight-bold text-teiren">사용자 별 위협 비율</h6>
-                        </div>
-                        <!-- Card Body -->
-                        <div class="card-body py-2 pl-1 pr-3">
-                            <div class="chart-area" style="height:auto;">
-                                <canvas id='userThreat'></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-3 mb-1 px-1">
-                    <div class="card shadow h-100">
-                        <!-- Card Header - Dropdown -->
-                        <div class="card-header">
-                            <h6 class="m-0 font-weight-bold text-teiren">시나리오 분석 위협도</h6>
-                        </div>
-                        <!-- Card Body -->
-                        <div class="card-body p-2">
-                            <div class="chart-area" style="height:auto;">
-                                <canvas id='senarioThreat'></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-    <div class="col-4 px-0">
-        <div class="row h-100">
-            <div class="col-md-12 mb-1 pl-1">
+    <div class="grid-stack-item" gs-w="4" gs-x="8">
+        <div class="grid-stack-item-content">
+            <div class="mb-1 pl-1">
                 <div class="card shadow h-100 w-100">
                     <!-- Card Header - Dropdown -->
                     <div class="card-header">
@@ -215,7 +115,90 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 mb-1 pl-1">
+        </div>
+    </div>
+    <div class="grid-stack-item fit-to-content" gs-w="3">
+        <div class="grid-stack-item-content">
+            <div class="mb-1 pr-1">
+                <div class="card shadow h-100">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-teiren">위협 발생 장비 추이</h6>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body py-2 pl-1 pr-3">
+                        <div class="chart-area" style="height:100%;">
+                            <canvas id='equipThreat'></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="grid-stack-item fit-to-content" gs-w="3">
+        <div class="grid-stack-item-content">
+            <div class="mb-1 px-1">
+                <div class="card shadow h-100">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-teiren">해외 IP 접근 추이</h6>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body py-2 pl-1 pr-3">
+                        <div class="chart-area" style="height:100%;">
+                            <canvas id='ipCountry'></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="grid-stack-item fit-to-content" gs-w="2">
+        <div class="grid-stack-item-content">
+            <div class="mb-1 px-1">
+                <div class="card shadow d-flex h-100">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-teiren">중요도 별 위협 개수</h6>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body p-2 d-flex" style="height:auto">
+                        <div class="table-responsive d-flex" style="overflow:hidden;">
+                            <table class="table m-0" id="dataTable" style="text-align:center;font-size:0.6rem">
+                                <!-- <thead>
+                                    <tr>
+                                        <th style="border-top: 0">등급</th>
+                                        <th style="border-top: 0">건수</th>
+                                    </tr>
+                                </thead> -->
+                                <tbody>
+                                    <tr>
+                                        <th class="text-danger" style="border-top: 0"><i class='text-xs fas fa-fw fa-exclamation-triangle'></i>DANGER</th>
+                                        <td style="border-top: 0">{{senario.count.3}}건</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="color:#fd7e14"><i class='text-xs fas fa-fw fa-exclamation-triangle'></i>HIGH</th>
+                                        <td>{{senario.count.2}}건</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-warning"><i class='text-xs fas fa-fw fa-exclamation-triangle'></i>MID</th>
+                                        <td>{{senario.count.1}}건</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-success"><i class="text-xs fas fa-fw fa-solid fa-circle-check"></i>LOW</th>
+                                        <td>{{senario.count.0}}건</td>
+                                    </tr>  
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="grid-stack-item fit-to-content" gs-w="4" gs-x="8">
+        <div class="grid-stack-item-content">
+            <div class="mb-1 pl-1">
                 <div class="card shadow h-100 w-100">
                     <!-- Card Header - Dropdown -->
                     <div class="card-header">
@@ -231,7 +214,66 @@
             </div>
         </div>
     </div>
+    <div class="grid-stack-item fit-to-content" gs-w="3">
+        <div class="grid-stack-item-content">
+            <div class="mb-1 pr-1">
+                <div class="card shadow h-100">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-teiren">정책 별 탐지 위협 개수</h6>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body py-2 pl-1 pr-3">
+                        <div class="chart-area" style="height:auto;">
+                            <canvas id='ruleDetectedCount'></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="grid-stack-item fit-to-content" gs-w="3">
+        <div class="grid-stack-item-content">
+            <div class="mb-1 px-1">
+                <div class="card shadow h-100">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-teiren">사용자 별 위협 비율</h6>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body py-2 pl-1 pr-3">
+                        <div class="chart-area" style="height:auto;">
+                            <canvas id='userThreat'></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="grid-stack-item fit-to-content" gs-w="2">
+        <div class="grid-stack-item-content">
+            <div class="mb-1 px-1">
+                <div class="card shadow h-100">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-teiren">시나리오 분석 위협도</h6>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body p-2">
+                        <div class="chart-area" style="height:auto;">
+                            <canvas id='senarioThreat'></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+<!-- <div class="grid-stack-item fit-to-content" gs-w="2">
+        <div class="grid-stack-item-content">
+        </div>
+    </div> -->
+
 <div class="row">
     <!-- Graph Visual -->
     <div class="col-md-4 pr-0">
@@ -366,6 +408,15 @@
 {% block script %}
 <script src="{% static 'js/dashboard/perform.js' %}"></script>
 <script>
+    var grid = GridStack.init({
+        float: false,
+        resizable: {handles: 'all'},
+        cellHeight: 10,
+        margin:1,
+        fitToContent: true,
+        staticGrid: true,
+    });
+    grid.setStatic(true)
     function threat(e) {
         var data = $(e).serialize()
         $.ajax({

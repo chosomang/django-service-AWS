@@ -28,8 +28,8 @@ function number_format(number, decimals, dec_point, thousands_sep) {
 }
 
 // Bar Chart Example
-var ctx = document.getElementById("userThreat");
-var myBarChart = new Chart(ctx, {
+var ctxthreatUser = document.getElementById("userThreat");
+var myBarChart = new Chart(ctxthreatUser, {
   type: 'horizontalBar',
   data: {
     labels: user_threat['name'],

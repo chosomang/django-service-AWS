@@ -9,18 +9,20 @@ from django.utils import timezone
 import TeirenSIEM.AWS_test as aws
 import TeirenSIEM.graphdb as graphdb
 import json
+from TeirenSIEM.AWS_test.alert import get_node_json, get_relation_json
+from TeirenSIEM.models import GridLayout
+from django.template.loader import render_to_string
 
-
-## LOCAL
+# LOCAL
 # graph = Graph("bolt://127.0.0.1:7687", auth=('neo4j', 'teiren001'))
 
-## NCP
+# NCP
 # host = settings.NEO4J_HOST
 # port = settings.NEO4J_PORT
 # password = settings.NEO4J_PASSWORD
 # username = settings.NEO4J_USERNAME
 
-## AWS
+# AWS
 host = settings.NEO4J['HOST']
 port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
@@ -31,23 +33,57 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / 'staticfiles'
 
 # Create your tests here.
+
+
 def test(request):
     # epoch = 1676374614161
     # data = datetime.fromtimestamp(epoch/1000 + 9*3600, timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
     # context = {'object': data}
-    global graph
-    cypher = f"""
-    MATCH (n:LOG:AWS)
-    WHERE n.eventSource IS NOT NULL
-    WITH DISTINCT(split(n.eventSource, '.')[0]) as eventSource
-    RETURN COLLECT(eventSource)
-    """
+    # global graph
+    # cypher = f"""
+    # MATCH (a:Account {{name:'f-hk'}})
+    # CALL apoc.path.expandConfig(a, {{
+    #     relationshipFilter: "DETECTED|ACTED|DATE",
+    #     labelFilter: "/RULE",
+    #     minLevel: 1,
+    #     maxLevel: 10000}}) YIELD path
+    # UNWIND NODES(path) as nodes
+    # RETURN DISTINCT(nodes)
+    # """
     # results = graph.run(cypher)
-    response = graph.evaluate(cypher)
+    # results = graph.run(cypher)
+    # response = []
     # for result in results:
-    #     response.append(dict(result))
-    context = {'test': response}
+    #     nodes = dict(result.items())
+    #     for node in nodes.values():
+    #         response.append(get_node_json(node, 'AWS'))
+
+        
+
+    # cypher2 = f"""
+    # MATCH p=(r:RULE:AWS {{ruleName:'delete_role_by_iam'}})<-[d:DETECTED]-(l:LOG:AWS {{eventTime:"2023-07-25T04:30:42Z"}})-[:ACTED|DATE*]-(a:Account)
+    # where id(d) = 270874
+    # UNWIND RELATIONSHIPS(p) as rel
+    # WITH DISTINCT(rel) as rel
+    # WITH
+    #     [
+    #         PROPERTIES(rel),
+    #         ID(rel),
+    #         ID(STARTNODE(rel)),
+    #         ID(ENDNODE(rel)),
+    #         TYPE(rel)
+    #     ] as relation
+    # RETURN COLLECT(relation) as relations
+    # """
+    # results = graph.run(cypher2)
+    # response2 = []
+    # for result in results:
+    #     data = dict(result)
+    #     for relation in data['relations']:
+    #         response2.append(get_relation_json(relation))
+    context = {'test': 'test'}
     return render(request, 'wish/test.html', context)
+
 
 def cyto(request):
     global graph
@@ -72,7 +108,7 @@ def cyto(request):
     rule_number = {}
     for result in results:
         detail = dict(result.items())
-        form= {}
+        form = {}
         for key in filter:
             if key != 'cloud':
                 value = detail.pop(key)
@@ -90,23 +126,43 @@ def cyto(request):
         data.append(detail)
     context = {'data': data}
     return render(request, 'wish/neo4j.html', context)
- 
+
 
 def ajax_src(request):
     if request.method == 'POST':
-        data = {'message': str(STATIC_DIR)}
-    else:
-        data = {'message': 'fail'}
-    return JsonResponse(data)
+        response = json.dumps({"w": '', "h": '', "content":"""
+        <div id="recentCollectedOverview" class="mb-1 pl-1 h-100">
+    <div class="card shadow h-100 w-100">
+        <!-- Card Header - Dropdown -->
+        <div class="card-header">
+            <div class="h6 m-0 font-weight-bold text-primary">최근 수집 로그 Overview</div>
+        </div>
+        <!-- Card Body -->
+        <div class="card-body pl-0 pb-0">
+            <div class="chart-area" style="height:100%;">
+                <canvas id="recentOverview"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/staticfiles/js/dashboard/recentOverview.js"></script>
+<script>
+    {"Month": ["2022/12", "2023/1", "2023/2", "2023/3", "2023/4", "2023/5", "2023/6", "2023/7", "2023/8", "2023/9"], "collected_month": [0, 0, 0, 0, 0, 11179, 116862, 3952, 137, 0]}
+</script>
+"""})
+        return HttpResponse(response)
+
 
 def ajax_dst(request):
     if request.method == 'POST':
-        data = dict(request.POST.items())
-        test = graphdb.neo4j_graph(data)
-        data.update(test)
-    else:
-        data = 'fail'
-    return JsonResponse(data)
+        layouts = GridLayout.objects.filter(name=request.POST['name'])
+        for layout in layouts:
+            items = json.loads(layout.data)
+        for item in items:
+            item['content'] = render_to_string(f"dashboard/items/{item['id']}.html")
+        response = json.dumps(items)
+        return HttpResponse(response)
+
 
 def ajax_js(request):
     if request.method == 'POST':
@@ -114,7 +170,8 @@ def ajax_js(request):
     else:
         data = 'js fail'
     return HttpResponse(data)
-    
+
+
 def backup(request):
     context = aws.log.backup()
     return render(request, 'wish/test.html', context)

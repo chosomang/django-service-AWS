@@ -24,9 +24,9 @@ def login_view(request):
             next_url = request.GET.get('next')
             # Redirect to a success page
             return redirect(next_url)
-        else:
+        # else:
             # Invalid credentials, show an error message
-            return HttpResponse(username)
+            # return HttpResponse(username)
     return render(request, 'login/login.html')
 
 
