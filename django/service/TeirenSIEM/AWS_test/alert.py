@@ -18,7 +18,8 @@ from datetime import date
 
 ## AWS
 host = settings.NEO4J['HOST']
-port = settings.NEO4J["PORT"]
+# port = settings.NEO4J["PORT"]
+port = 7688
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
@@ -26,11 +27,11 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 def get_alert_logs():
     global graph
     cypher = '''
-    MATCH (l:LOG)-[d:DETECTED|FLOW_DETECTED]->(r:RULE)
+    MATCH (l:Log)-[d:DETECTED|FLOW_DETECTED]->(r:Rule)
     WHERE
-        n.alert = 1 AND n.alert IS NOT NULL
+        d.alert = 1 AND d.alert IS NOT NULL
     RETURN
-        HEAD([label IN labels(l) WHERE label <> 'LOG' AND label <> 'Role']) AS cloud,
+        HEAD([label IN labels(r) WHERE label <> 'Rule']) AS cloud,
         l.eventTime AS detected_time,
         r.ruleComment as detectedAction,
         l.eventName as actionDisplayName,
@@ -46,7 +47,7 @@ def get_alert_logs():
     '''
     results = graph.run(cypher)
     data = check_alert_logs()
-    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'id']
+    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'id', 'rule_type']
     for result in results:
         detail = dict(result.items())
         form = {}
@@ -64,11 +65,11 @@ def get_alert_logs():
 def check_alert_logs():
     global graph
     cypher = """
-    MATCH (l:LOG)-[n:DETECTED]->(r:RULE)
+    MATCH (l:Log)-[d:DETECTED|FLOW_DETECTED]->(r:Rule)
     WHERE
-        n.alert <> 1
+        d.alert <> 1
     RETURN
-        HEAD([label IN labels(l) WHERE label <> 'LOG' AND label <> 'Role']) AS cloud,
+        HEAD([label IN labels(r) WHERE label <> 'Rule']) AS cloud,
         l.eventTime AS detected_time,
         r.ruleComment AS detectedAction,
         l.eventName AS actionDisplayName,
@@ -77,14 +78,15 @@ def check_alert_logs():
         l.eventTime AS eventTime_format,
         l.sourceIPAddress AS sourceIp,
         r.ruleName AS detected_rule,
-        r.ruleName+'#'+id(n) AS rule_name,
-        ID(n) AS id,
-        n.alert AS alert
+        r.ruleName+'#'+id(d) AS rule_name,
+        r.ruleType as rule_type,
+        ID(d) AS id,
+        d.alert AS alert
     ORDER BY alert, eventTime DESC
     """
     results = graph.run(cypher)
     data = []
-    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'alert', 'id']
+    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'alert', 'id', 'rule_type']
     for result in results:
         detail = dict(result.items())
         form = {}
@@ -102,41 +104,41 @@ def check_alert_logs():
 def check_topbar_alert():
     global graph
     cypher = """
-    MATCH (r:RULE)<-[n:DETECTED]-()
-    WHERE n.alert = 0 OR n.alert IS NULL
-    SET n.alert = CASE
-            WHEN n.alert IS NULL THEN 0
-            ELSE n.alert
+    MATCH (r:Rule)<-[d:DETECTED|FLOW_DETECTED]-()
+    WHERE d.alert = 0 OR d.alert IS NULL
+    SET d.alert = CASE
+            WHEN d.alert IS NULL THEN 0
+            ELSE d.alert
         END
-    RETURN COUNT(n) as count
+    RETURN COUNT(d) as count
     """
     count = graph.evaluate(cypher)
     if count > 0:
         response = {'top_alert':{'count': count}}
         cypher = """
-        MATCH (r:RULE)<-[n:DETECTED]-(l:LOG)
-        WHERE n.sent = 0 OR n.sent IS NULL
-        WITH DISTINCT(n) as n, r, l
-        SET n.sent = CASE
-                WHEN n.sent IS NULL THEN 0
-                ELSE n.sent
+        MATCH (r:Rule)<-[d:DETECTED|FLOW_DETECTED]-(l:Log)
+        WHERE d.sent = 0 OR d.sent IS NULL
+        WITH DISTINCT(d) as d, r, l
+        SET d.sent = CASE
+                WHEN d.sent IS NULL THEN 0
+                ELSE d.sent
             END
-        RETURN r, l, ID(n) as id_n
+        RETURN r, l, ID(d) as id_d
         """
         if graph.evaluate(cypher) is not None:
             results = graph.run(cypher)
             for result in results:
                 cypher = f"""
-                MATCH (r:RULE)<-[n:DETECTED]-(l:LOG)
+                MATCH (r:Rule)<-[d:DETECTED|FLOW_DETECTED]-(l:Log)
                 WHERE ID(r) = {result['r'].identity} AND
                     ID(l) = {result['l'].identity} AND
-                    ID(n) = {result['id_n']} AND
-                    (n.sent = 0 OR n.sent IS NULL)
-                SET n.sent = 1
-                RETURN count(n)
+                    ID(d) = {result['id_d']} AND
+                    (d.sent = 0 OR d.sent IS NULL)
+                SET d.sent = 1
+                RETURN count(d)
                 """
                 graph.evaluate(cypher)
-                send_alert_mail(dict(result['r']), dict(result['l']), result['id_n'])
+                send_alert_mail(dict(result['r']), dict(result['l']), result['id_d'])
     else:
         response = {'no_top_alert': 1}
     return response
@@ -174,16 +176,16 @@ def alert_off(request):
             SET n.alert = 1
             RETURN count(n.alert)
             """
-        elif cloud == 'AWS':
+        elif cloud == 'Aws':
             global graph
             cypher = f"""
-            MATCH (r:RULE:{cloud} {{ruleName:'{detected_rule}'}})<-[n:DETECTED]-(l:LOG:{cloud} {{eventTime:'{eventTime}'}})
+            MATCH (r:Rule:{cloud} {{ruleName:'{detected_rule}'}})<-[d:DETECTED|FLOW_DETECTED]-(l:Log:{cloud} {{eventTime:'{eventTime}'}})
             WHERE
-                n.alert IS NOT NULL AND
-                n.alert = 0 AND
-                ID(n) = {id}
-            SET n.alert = 1
-            RETURN count(n.alert)
+                d.alert IS NOT NULL AND
+                d.alert = 0 AND
+                ID(d) = {id}
+            SET d.alert = 1
+            RETURN count(d.alert)
             """
         graph.evaluate(cypher)
     return request

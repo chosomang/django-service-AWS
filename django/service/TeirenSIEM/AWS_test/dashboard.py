@@ -14,7 +14,8 @@ import json
 
 ## AWS
 host = settings.NEO4J['HOST']
-port = settings.NEO4J["PORT"]
+# port = settings.NEO4J["PORT"]
+port = 7688
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
@@ -59,7 +60,7 @@ def get_integration_total():
 def get_threat_total():
     global graph
     cypher ='''
-    MATCH (threat:Log)-[:DETECTED]->(r:Rule)
+    MATCH (threat:Log)-[:DETECTED|FLOW_DETECTED]->(r:Rule)
     RETURN count(threat)
     '''
     total = graph.evaluate(cypher)
@@ -140,22 +141,22 @@ def get_collected_count(year, month):
 def get_user_threat():
     global graph
     cypher = f"""
-    MATCH (r:Rule)<-[:DETECTED]-(l:Log)
+    MATCH (r:Rule)<-[:DETECTED|FLOW_DETECTED]-(l:Log)
     WITH
         CASE
             WHEN l.userIdentity_type = 'Root' THEN l.userIdentity_type
-            WHEN l.userIdentity_type = 'AssumedRole' THEN SPLIT(l.userIdentity_arn, '/')[-1]
-            ELSE l.userIdentity_userName
+            WHEN l.userIdentity_userName IS NOT NULL THEN l.userIdentity_userName
+            ELSE SPLIT(l.userIdentity_arn, '/')[-1]
         END as name,
         count(r) as count
         ORDER BY count DESC
         LIMIT 5
     WHERE name is not null
-    WITH 
+    WITH count,
         CASE
             WHEN name CONTAINS 'cgid' THEN 'cloudgoat'
             ELSE name
-        END as name, count
+        END as name
     WITH COLLECT(DISTINCT(name)) as name, COLLECT(count) as count
     RETURN name, count
     """
@@ -226,7 +227,7 @@ def get_rule_detected_count():
 def get_senario_threat():
     global graph
     cypher = f"""
-    MATCH (r:Rule)<-[n:DETECTED]-(:Log)
+    MATCH (r:Rule)<-[n:DETECTED|FLOW_DETECTED]-(:Log)
     WITH n, r
     WITH count(n) AS rule_count, r.ruleName as name, r.level as level
     WITH level, rule_count,
@@ -268,23 +269,24 @@ def get_senario_threat():
 def get_recent_threat():
     global graph
     cypher = '''
-    MATCH (r:Rule)<-[d:DETECTED]-(l:Log)
+    MATCH (r:Rule)<-[d:DETECTED|FLOW_DETECTED]-(l:Log)
     RETURN
         id(d) AS No,
-        head([label IN labels(l) WHERE label <> 'Log' AND label <> 'Role']) AS cloud,
-        head([label IN labels(l) WHERE label <> 'Log' AND label <> 'Role'])+'/'+l.sourceIPAddress AS system,
+        head([label IN labels(r) WHERE label <> 'Rule']) AS cloud,
+        head([label IN labels(r) WHERE label <> 'Rule'])+'/'+l.sourceIPAddress AS system,
         r.ruleName AS detected_rule,
         r.ruleName+'#'+id(d) AS rule_name,
         l.eventName AS action,
         l.eventTime AS eventTime,
         l.eventTime AS etime,
+        r.ruleType AS rule_type,
         ID(d) as id
     ORDER BY eventTime DESC
     LIMIT 10
     '''
     results = graph.run(cypher)
     data_list = []
-    filter = ['cloud', 'detected_rule', 'rule_name', 'eventTime', 'id']
+    filter = ['cloud', 'detected_rule', 'rule_name', 'eventTime', 'id', 'rule_type']
     for result in results:
         # Change to type dictionary
         data = dict(result.items())

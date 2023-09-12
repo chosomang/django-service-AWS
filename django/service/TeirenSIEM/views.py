@@ -47,9 +47,9 @@ def log_view(request, type):
 @login_required
 def alert(request, type):
     if request.method == 'POST':
-        if request.POST['cloud'] == 'AWS':
+        if request.POST['cloud'] == 'Aws':
             context = aws.alert.alert_off(dict(request.POST.items()))
-            context.update(aws.alert.neo4j_graph(context))
+            context.update(aws.detection.neo4j_graph(context))
             context.update(aws.alert.check_topbar_alert())
         else:
             context = aws.alert.alert_off(dict(request.POST.items()))

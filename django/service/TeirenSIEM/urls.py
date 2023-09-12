@@ -82,7 +82,7 @@ urlpatterns += [
     path("modal/log/<type>/", ajax.log_modal),
     
     # Neo4j Graph Visualization
-    path("neo4j/", aws.alert.neo4j_graph),
+    path("neo4j/", aws.detection.neo4j_graph),
     
     # Dashboard Status AJAX ajax
     path("dashboard/status/", dashboard.get_server_status),

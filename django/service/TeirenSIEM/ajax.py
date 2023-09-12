@@ -27,7 +27,7 @@ def log_modal(request, type):
         if type == 'help':
             return render(request, "log/help.html")
         elif type == 'details':
-            if request.POST['cloud'] == 'AWS':
+            if request.POST['cloud'] == 'Aws':
                 context = aws.log.get_log_detail_modal(dict(request.POST.items()))
             else:
                 context = mongo.get_log_detail(dict(request.POST.items()))

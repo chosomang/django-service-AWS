@@ -16,7 +16,8 @@ from django.utils import timezone
 
 ## AWS
 host = settings.NEO4J['HOST']
-port = settings.NEO4J["PORT"]
+# port = settings.NEO4J["PORT"]
+port = 7688
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
@@ -36,7 +37,7 @@ def get_log_page(request, type):
     #페이지당 보여줄 로그 개수
     limit = 10
     cypher = f"""
-    MATCH (n:LOG:{type.upper()})
+    MATCH (n:Log:{type.capitalize()})
     WITH n
     ORDER BY n.eventTime DESC
     SKIP {(now_page-1)*limit}
@@ -55,7 +56,7 @@ def get_log_page(request, type):
         n.awsRegion AS awsRegion,
         split(n.responseElements_assumedRoleUser_arn, '/')[1] AS role,
         n.sourceIPAddress AS sourceIP,
-        [label IN LABELS(n) WHERE label <> 'LOG'][0] AS cloud
+        [label IN LABELS(n) WHERE NOT label IN ['Log', 'Iam', 'Ec2'] AND size(label) = 3][0] AS cloud
     """
     log_list = []
     results = graph.run(cypher)
@@ -66,7 +67,7 @@ def get_log_page(request, type):
 
     #총 로그 개수
     total_log = graph.evaluate(f"""
-        MATCH (n:LOG:{type.upper()})
+        MATCH (n:Log:{type.capitalize()})
         RETURN COUNT(n)
     """)
     total_page = math.ceil(total_log / limit)
@@ -86,7 +87,7 @@ def get_log_page(request, type):
     
     #상품 검색
     resource_list= graph.evaluate(f"""
-    MATCH (n:LOG:{type.upper()})
+    MATCH (n:Log:{type.capitalize()})
     WHERE n.eventSource IS NOT NULL
     WITH DISTINCT(split(n.eventSource, '.')[0]) AS eventSource
     ORDER BY eventSource
@@ -95,7 +96,7 @@ def get_log_page(request, type):
     
     #유저 검색
     user_list=graph.evaluate(f"""
-    MATCH (n:LOG:{type.upper()})
+    MATCH (n:Log:{type.capitalize()})
     WHERE n.userIdentity_type IS NOT NULL
     WITH
         CASE
@@ -109,7 +110,7 @@ def get_log_page(request, type):
 
     #sourceIP 검색
     sourceip_list = graph.evaluate(f"""
-    MATCH (n:LOG:{type.upper()})
+    MATCH (n:Log:{type.capitalize()})
     WHERE n.sourceIPAddress IS NOT NULL
     WITH DISTINCT(n.sourceIPAddress) AS sourceIP
     ORDER BY sourceIP
@@ -118,7 +119,7 @@ def get_log_page(request, type):
 
     # awsregion 검색
     region_list = graph.evaluate(f"""
-    MATCH (n:LOG:{type.upper()})
+    MATCH (n:Log:{type.capitalize()})
     WHERE n.awsRegion IS NOT NULL
     WITH DISTINCT(n.awsRegion) AS awsRegion
     ORDER BY awsRegion
@@ -149,9 +150,9 @@ def get_log_detail_modal(request):
     cloud = request['cloud']
     global graph
     cypher = f"""
-    MATCH (n:LOG:{cloud.upper()})
-    WHERE ID(n) = {id}
-    WITH ID(n) as id, PROPERTIES(n) as details
+    MATCH (l:Log:{cloud})
+    WHERE ID(l) = {id}
+    WITH ID(l) as id, PROPERTIES(l) as details
     RETURN id, details
     """
     results = graph.run(cypher)

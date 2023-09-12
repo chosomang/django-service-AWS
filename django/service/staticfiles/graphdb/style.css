@@ -17,7 +17,11 @@ body {
   bottom: 0;
   right: 17em;
 }
-
+.tippy-tooltip{
+  overflow-y:scroll !important;
+  max-height: 30vh !important;
+  line-height: 1.8 !important;
+}
 .config {
   position: absolute;
   right: 0;
