@@ -28,7 +28,7 @@ client = MongoClient(
 def get_log_color(collection_name):
     response = ''
     color = {
-        "AWS" : "#FF9900",
+        "Aws" : "#FF9900",
         "NCP" : "#1EC800",
         "NHN" : "#4E73DF",
         "OFFICEKEEPER" : "#0059A9",
@@ -43,8 +43,8 @@ def get_log_color(collection_name):
 # 로그 총 개수
 def logTotal(request):
     cypher = """
-    MATCH (n:LOG)
-    RETURN COUNT(n)
+    MATCH (n:Log)
+    RETURN COUNT(n) AS total
     """
     log_total = graph.evaluate(cypher)
     context = {"total": format(log_total, ",")}
@@ -64,7 +64,7 @@ def integrationTotal(request):
 # 위협 로그 개수
 def threatlogTotal(request):
     cypher = '''
-    MATCH (threat:LOG)-[:DETECTED]->(r:RULE)
+    MATCH (threat:Log)-[:DETECTED|FLOW_DETECTED]->(r:Rule)
     RETURN count(threat)
     '''
     total = graph.evaluate(cypher)
@@ -75,16 +75,20 @@ def threatlogTotal(request):
 # 위협 비율
 def threatRatio(request):
     cypher = """
-        MATCH (n:LOG)
+        MATCH (n:Log)
         RETURN COUNT(n)
         """
     log_total = graph.evaluate(cypher)
     cypher = '''
-    MATCH (threat:LOG)-[:DETECTED]->(r:RULE)
+    MATCH (threat:Log)-[:DETECTED|FLOW_DETECTED]->(r:Rule)
     RETURN count(threat)
     '''
     threat_total = graph.evaluate(cypher)
-    context = {"threat_ratio": math.ceil(threat_total/log_total*10)/10}
+    if log_total == 0:
+        threat_ratio = 0
+    else:
+        threat_ratio = threat_total/log_total
+    context = {"threat_ratio": math.ceil(threat_ratio*10)/10}
     response = {'w':2, 'content': render_to_string('dashboard/items/threatRatio.html',context, request)}
     return JsonResponse(response)
 
@@ -93,22 +97,22 @@ def threatRatio(request):
 def threatUser(request):
     global graph
     cypher = f"""
-    MATCH (r:RULE)<-[:DETECTED]-(l:LOG)
+    MATCH (r:Rule)<-[:DETECTED|FLOW_DETECTED]-(l:Log)
     WITH
         CASE
             WHEN l.userIdentity_type = 'Root' THEN l.userIdentity_type
-            WHEN l.userIdentity_type = 'AssumedRole' THEN SPLIT(l.userIdentity_arn, '/')[-1]
-            ELSE l.userIdentity_userName
+            WHEN l.userIdentity_userName IS NOT NULL THEN l.userIdentity_userName
+            ELSE SPLIT(l.userIdentity_arn, '/')[-1]
         END as name,
         count(r) as count
         ORDER BY count DESC
         LIMIT 5
     WHERE name is not null
-    WITH 
+    WITH count,
         CASE
             WHEN name CONTAINS 'cgid' THEN 'cloudgoat'
             ELSE name
-        END as name, count
+        END as name
     WITH COLLECT(DISTINCT(name)) as name, COLLECT(count) as count
     RETURN name, count
     """
@@ -129,9 +133,9 @@ def threatUser(request):
 def threatEquipment(request):
     global graph
     cypher = f"""
-    MATCH (r:RULE)<-[:DETECTED|FLOW_DETECTED]-(:LOG)
+    MATCH (r:Rule)<-[:DETECTED|FLOW_DETECTED]-(:Log)
     WITH 
-        HEAD([label IN labels(r) WHERE label <> 'RULE']) AS equip
+        HEAD([label IN labels(r) WHERE label <> 'Rule']) AS equip
     RETURN
         equip,
         count(equip) as count
@@ -154,9 +158,9 @@ def threatEquipment(request):
 def threatRule(request):
     global graph
     cypher = f"""
-    MATCH (r:RULE)<-[:DETECTED|FLOW_DETECTED]-(:LOG)
+    MATCH (r:Rule)<-[:DETECTED|FLOW_DETECTED]-(:Log)
     WITH r,
-        HEAD([label IN labels(r) WHERE label <> 'RULE' ]) AS equip
+        HEAD([label IN labels(r) WHERE label <> 'Rule' ]) AS equip
     RETURN
         equip,
         equip+'_'+r.ruleName as name,
@@ -182,7 +186,7 @@ def threatRule(request):
 def threatSenario(request):
     global graph
     cypher = f"""
-    MATCH (r:RULE)<-[n:DETECTED]-(:LOG)
+    MATCH (r:Rule)<-[n:DETECTED|FLOW_DETECTED]-(:Log)
     WITH n, r
     WITH count(n) AS rule_count, r.ruleName as name, r.level as level
     WITH level, rule_count,
@@ -279,7 +283,7 @@ def get_threat_count(year, month):
         end = datetime.datetime(year,month+1,1,0,0,1).strftime('%Y-%m-%dT%H:%M:%SZ')
     global graph
     cypher = f"""
-        MATCH (n:LOG)-[:DETECTED|FLOW_DETECTED]->(r)
+        MATCH (n:Log)-[:DETECTED|FLOW_DETECTED]->(r)
         WHERE '{start}'<=n.eventTime<='{end}'
         RETURN count(n)
     """
@@ -295,7 +299,7 @@ def get_collected_count(year, month):
         end = datetime.datetime(year,month+1,1,0,0,1).strftime('%Y-%m-%dT%H:%M:%SZ')
     global graph
     cypher = f"""
-        MATCH (n:LOG)
+        MATCH (n:Log)
         WHERE '{start}'<=n.eventTime<='{end}'
         RETURN count(n)
     """
@@ -306,11 +310,11 @@ def get_collected_count(year, month):
 # 최근 탐지 위협 (neo4j graph 연동)
 def recentDetection(request):
     cypher = '''
-    MATCH (r:RULE)<-[d:DETECTED]-(l:LOG)
+    MATCH (r:RULE)<-[d:DETECTED]-(l:Log)
     RETURN
         id(d) AS No,
-        head([label IN labels(l) WHERE label <> 'LOG' AND label <> 'Role']) AS cloud,
-        head([label IN labels(l) WHERE label <> 'LOG' AND label <> 'Role'])+'/'+l.sourceIPAddress AS system,
+        head([label IN labels(l) WHERE label <> 'Log' AND label <> 'Role']) AS cloud,
+        head([label IN labels(l) WHERE label <> 'Log' AND label <> 'Role'])+'/'+l.sourceIPAddress AS system,
         r.ruleName AS detected_rule,
         r.ruleName+'#'+id(d) AS rule_name,
         l.eventName AS action,

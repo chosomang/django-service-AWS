@@ -16,8 +16,7 @@ from django.utils import timezone
 
 ## AWS
 host = settings.NEO4J['HOST']
-# port = settings.NEO4J["PORT"]
-port = 7688
+port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
