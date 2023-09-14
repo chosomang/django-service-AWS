@@ -1,53 +1,53 @@
 
 from django.urls import path
-from TeirenSIEM import views, login, tests, ajax, integrations, dashboard, gridstack
-import TeirenSIEM.AWS_test as aws
+from TeirenSIEM import views
+from TeirenSIEM import setting, test, ajax, integration, dashboard, risk
 
 
 # Views
 urlpatterns = [
     # Dashboard
-    path('', views.dashboard),
-    path('dashboard/', views.dashboard),
+    path('', views.dashboard_view),
+    path('dashboard/', views.dashboard_view),
 
     # Log Management
     path('log/<type>/', views.log_view),
 
     # Integration
-    path('integration/', views.integration),
+    path('integration/', views.integration_view),
     path('integration/<type>/', views.integration_type),
 
     # Risk Management
     ## alert
-    path('alert/<type>/', views.alert),
+    path('alert/<type>/', views.alert_view),
     ## rules
-    path('rules/<type>/', views.rules),
+    path('rules/<type>/', views.rules_view),
     ## visuals
-    path('visuals/<type>/', views.visuals),
+    path('visuals/<type>/', views.visuals_view),
 
     # Settings
-    path('settings/<type>/', views.settings),
+    path('settings/<type>/', views.settings_view),
 
     # Compliance
-    path('compliance/compliance/', views.compliance),
-    path('compliance/report/', views.report),
-    path('compliance/report_month/', views.report_month, name='[Teiren] 월간 위협 보고서'),
+    path('compliance/compliance/', views.compliance_view),
+    path('compliance/report/', views.report_view),
+    path('compliance/report_month/', views.report_month_view, name='[Teiren] 월간 위협 보고서'),
 ]
 
 # Login
 urlpatterns += [
-    path('login/', login.login_view),
-    path('logout/', login.logout_view),
+    path('login/', setting.login.login.login_view),
+    path('logout/', setting.login.login.logout_view),
 ]
 
 # Dashboard Customize
 urlpatterns +=[
-    path('dashboard/grid/save/', gridstack.save_layout),
-    path('dashboard/grid/load/', gridstack.load_layout),
-    path('dashboard/grid/delete/', gridstack.delete_layout),
-    path('dashboard/grid/layouts/', gridstack.list_layouts),
-    path('dashboard/grid/items/<type>/', gridstack.add_item),
-    path('dashboard/grid/items/', gridstack.list_items),
+    path('dashboard/grid/save/', dashboard.gridstack.save_layout),
+    path('dashboard/grid/load/', dashboard.gridstack.load_layout),
+    path('dashboard/grid/delete/', dashboard.gridstack.delete_layout),
+    path('dashboard/grid/layouts/', dashboard.gridstack.list_layouts),
+    path('dashboard/grid/items/<type>/', dashboard.gridstack.add_item),
+    path('dashboard/grid/items/', dashboard.gridstack.list_items),
 ]
 
 # Rule AJAX
@@ -73,6 +73,12 @@ urlpatterns += [
     path('rules/<type>/on_off/', ajax.on_off),
 ]
 
+# Alert AJAX
+urlpatterns += [
+    # Neo4j Graph Visualization
+    path("neo4j/", risk.alert.detection.neo4j_graph),
+
+]
 # AJAX
 urlpatterns += [
     # Topbar alert
@@ -81,11 +87,8 @@ urlpatterns += [
     # Log Management
     path("modal/log/<type>/", ajax.log_modal),
     
-    # Neo4j Graph Visualization
-    path("neo4j/", aws.detection.neo4j_graph),
-    
     # Dashboard Status AJAX ajax
-    path("dashboard/status/", dashboard.get_server_status),
+    path("dashboard/status/", dashboard.dashboard.get_server_status),
     
     # User Threat AJAX ajax
     path('visuals/user/details/', ajax.user_details),
@@ -94,22 +97,22 @@ urlpatterns += [
 # Integrations
 urlpatterns += [
     # NCP
-    path("integration/ncp/check/", integrations.integration_NCP),
-    path("integration/ncp/insert/", integrations.insert_NCP),
+    path("integration/ncp/check/", integration.integrations.integration_NCP),
+    path("integration/ncp/insert/", integration.integrations.insert_NCP),
     # AWS
-    path("integration/aws/check/", integrations.integration_AWS),
-    path("integration/aws/insert/", integrations.insert_AWS),
+    path("integration/aws/check/", integration.integrations.integration_AWS),
+    path("integration/aws/insert/", integration.integrations.insert_AWS),
     # AZURE
-    path("integration/azure/check/", integrations.integration_Azure),
-    path("integration/azure/insert/", integrations.insert_Azure),
+    path("integration/azure/check/", integration.integrations.integration_Azure),
+    path("integration/azure/insert/", integration.integrations.insert_Azure),
 ]
 
 # Test
 urlpatterns += [
-    path('test/', tests.test),
-    path('backup/', tests.backup),
-    path('test/cyto', tests.cyto),
-    path('ajax_src/', tests.ajax_src),
-    path('ajax_dst/', tests.ajax_dst),
-    path('ajax_js/', tests.ajax_js)
+    path('test/', test.tests.test),
+    path('backup/', test.tests.backup),
+    path('test/cyto', test.tests.cyto),
+    path('ajax_src/', test.tests.ajax_src),
+    path('ajax_dst/', test.tests.ajax_dst),
+    path('ajax_js/', test.tests.ajax_js)
 ]
