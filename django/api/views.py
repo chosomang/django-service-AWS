@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import CypherSerializer
 
 API_VERSION = 'v1'
 # api index
@@ -22,6 +21,9 @@ from rest_framework import generics
 from rest_framework import viewsets
 from .models import Cypher
 from .serializers import CypherSerializer
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter
 
 class CypherListCreateView(generics.ListCreateAPIView):
     queryset = Cypher.objects.all()
@@ -31,6 +33,25 @@ class CypherListCreateView(generics.ListCreateAPIView):
 class CypherViewSet(viewsets.ModelViewSet):
     queryset = Cypher.objects.all()
     serializer_class = CypherSerializer
+    pagination_class = PageNumberPagination
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['cypher_type']
+    ordering_fields = ['index']
+    
+    def get_queryset(self):
+        queryset = Cypher.objects.all()
+        cypher_type = self.request.query_params.get('cypher_type', None)
+        
+        # filtering
+        if cypher_type:
+            queryset = queryset.filter(title__icontains=cypher_type)
+        
+        # ordering
+        ordering = self.request.query_params.get('ordering', None)
+        if ordering in self.ordering_fields:
+            queryset = queryset.order_by(ordering)
+        
+        return queryset
 
 
 @api_view(['POST'])

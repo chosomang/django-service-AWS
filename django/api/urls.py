@@ -9,12 +9,10 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register(r'cypher', CypherViewSet)
 
-
 urlpatterns = [
     # Dashboard
     path('', views.index),
-    path('cypher/', views.cypher, name='cypher_field'),
     path('create/', create_cypher, name='create_cypher'),
-    path('', include(router.urls))
+    path('', include(router.urls)) # /cypher/{}
     # path('create/', CypherListCreateView.as_view(), name='cypher_create')
 ]
