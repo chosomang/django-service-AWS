@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
+from django.contrib.auth.decorators import login_required
 from rest_framework.response import Response
 
 API_VERSION = 'v1'
 # api index
+@login_required
 def index(request):
     return render(request, "api/index.html")
 

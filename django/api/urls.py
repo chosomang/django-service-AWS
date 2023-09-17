@@ -8,6 +8,8 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'cypher', CypherViewSet)
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     # Dashboard
@@ -16,3 +18,5 @@ urlpatterns = [
     path('', include(router.urls)) # /cypher/{}
     # path('create/', CypherListCreateView.as_view(), name='cypher_create')
 ]
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

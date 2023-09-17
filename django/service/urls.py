@@ -20,12 +20,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 API_VERSION = 'v1'
+COMPLIANCE_VERSION = 'v1'
 
 urlpatterns = [
+    path('', include('index.urls')),
     path('admin/', admin.site.urls),
-    path('', include('TeirenSIEM.urls')),
-    path('api/{}/'.format(API_VERSION), include('api.urls')),
-    # path('api/', include('rest_framework.urls'))
+    path('dashboard/', include('dashboard.urls')),
+    path('integration/', include('M_equipments.urls')),
+    path('logs/', include('M_logs.urls')),
+    path('management/', include('M_threatD.urls')),
+    path('configurations/', include('configurations.urls')),
+    path(f'compliance/{COMPLIANCE_VERSION}/', include(f'compliance.{COMPLIANCE_VERSION}.urls')),
+    path(f'api/{API_VERSION}/', include('api.urls')),
+    # path('', include('TeirenSIEM.urls')),
 ]
-
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -34,19 +34,19 @@
                         <h6 class="dropdown-header">
                             클라우드 로그
                         </h6>
-                        <a id='ncpcloudlog' class="dropdown-item d-flex align-items-center" href="/log/ncp">
+                        <a id='ncpcloudlog' class="dropdown-item d-flex align-items-center" href="/logs/ncp">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Naver</div>
                                 <div class="text-truncate">NCP 로그</div>
                             </div>
                         </a>
-                        <a id='nhncloudlog' class="dropdown-item d-flex align-items-center" href="/log/nhn">
+                        <a id='nhncloudlog' class="dropdown-item d-flex align-items-center" href="/logs/nhn">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">NHN</div>
                                 <div class="text-truncate">NHN 로그</div>
                             </div>
                         </a>
-                        <a id='awscloudlog' class="dropdown-item d-flex align-items-center" href="/log/aws">
+                        <a id='awscloudlog' class="dropdown-item d-flex align-items-center" href="/logs/aws">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Amazon</div>
                                 <div class="text-truncate">AWS 로그</div>
@@ -55,7 +55,7 @@
                         <h6 class="dropdown-header">
                             솔루션 로그
                         </h6>
-                        <a id='officekeeperlog' class="dropdown-item d-flex align-items-center" href="/log/officekeeper">
+                        <a id='officekeeperlog' class="dropdown-item d-flex align-items-center" href="/logs/officekeeper">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">지란지교</div>
                                 <div class="text-truncate">Office Keeper 로그</div>
@@ -118,7 +118,7 @@
                         <h6 class="dropdown-header">
                             위협알림
                         </h6>
-                        <a class="dropdown-item d-flex align-items-center" href="/alert/logs">
+                        <a class="dropdown-item d-flex align-items-center" href="/management/alert/logs">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Theat Alert</div>
                                 <div class="text-truncate">위협 알림
@@ -133,31 +133,31 @@
                         <h6 class="dropdown-header">
                             룰 설정
                         </h6>
-                        <a id='rule_all' class="dropdown-item align-items-center" href="/rules/all">
+                        <a id='rule_all' class="dropdown-item align-items-center" href="/management/rules/all">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">All</div>
                                 <div class="text-truncate">전체 룰 설정</div>
                             </div>
                         </a>
-                        <a id='rule_ncp' class="dropdown-item d-flex align-items-center" href="/rules/ncp">
+                        <a id='rule_ncp' class="dropdown-item d-flex align-items-center" href="/management/rules/ncp">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Naver</div>
                                 <div class="text-truncate">NCP 룰 설정</div>
                             </div>
                         </a>
-                        <a id='rule_nhn' class="dropdown-item d-flex align-items-center" href="/rules/nhn">
+                        <a id='rule_nhn' class="dropdown-item d-flex align-items-center" href="/management/rules/nhn">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">NHN</div>
                                 <div class="text-truncate">NHN 룰 설정</div>
                             </div>
                         </a>
-                        <a id='rule_aws' class="dropdown-item d-flex align-items-center" href="/rules/aws">
+                        <a id='rule_aws' class="dropdown-item d-flex align-items-center" href="/management/rules/aws">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Amazon</div>
                                 <div class="text-truncate">AWS 룰 설정</div>
                             </div>
                         </a>
-                        <a id='rule_ofk' class="dropdown-item d-flex align-items-center" href="/rules/officekeeper">
+                        <a id='rule_ofk' class="dropdown-item d-flex align-items-center" href="/management/rules/officekeeper">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">지란지교</div>
                                 <div class="text-truncate">Office Keeper 룰 설정</div>
@@ -166,13 +166,13 @@
                         <h6 class="dropdown-header">
                             Graph 시각화
                         </h6>
-                        <a id='visuals_user' class="dropdown-item d-flex align-items-center" href="/visuals/user">
+                        <a id='visuals_user' class="dropdown-item d-flex align-items-center" href="/management/visuals/user">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">USER</div>
                                 <div class="text-truncate">사용자 중심 분석</div>
                             </div>
                         </a>
-                        <a id='visuals_ip' class="dropdown-item d-flex align-items-center" href="/visuals/ip">
+                        <a id='visuals_ip' class="dropdown-item d-flex align-items-center" href="/management/visuals/ip">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Ip</div>
                                 <div class="text-truncate">Ip 중심 분석</div>
@@ -189,19 +189,19 @@
 
                     </a>
                     <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                        aria-labelledby="settings">
+                        aria-labelledby="configurations">
                         <h6 class="dropdown-header">
                             SIEM 설정
                         </h6>
                         <a id='default_setting' class="dropdown-item d-flex align-items-center"
-                            href="/settings/default">
+                            href="/configurations/default">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Default</div>
                                 <div class="text-truncate">기본 설정</div>
                             </div>
                         </a>
                         <a id='default_setting' class="dropdown-item d-flex align-items-center"
-                            href="/settings/dashboard">
+                            href="/configurations/dashboard">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Dashboard</div>
                                 <div class="text-truncate">대시보드 설정</div>
@@ -289,10 +289,10 @@
                             <span aria-hidden="true">×</span>
                         </button>
                     </div>
-                    <div class="modal-body">로그아웃 시, 초기 로그인 창으로 돌아가게 됩니다.</div>
+                    <div class="modal-body">메인화면으로 돌아갑니다</div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" type="button" data-dismiss="modal">취소</button>
-                        <a class="btn btn-teiren" href="/logout/">로그아웃</a>
+                        <a class="btn btn-teiren" href="{% url 'logout' %}">로그아웃</a>
                     </div>
                 </div>
             </div>
