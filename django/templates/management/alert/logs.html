@@ -63,7 +63,7 @@
                             {% endif %}
                             {% endfor %}
                             <td width="300">
-                                <form method="POST" action="/alert/details/">
+                                <form method="POST" action="/management/alert/details/">
                                     {% csrf_token %}
                                     {% for key, value in result.form.items %}
                                     <input type="hidden" name="{{key}}" value="{{value}}">
