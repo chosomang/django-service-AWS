@@ -21,9 +21,11 @@ from django.conf.urls.static import static
 
 API_VERSION = 'v1'
 COMPLIANCE_VERSION = 'v1'
+AJAX_VERSION = 'v1'
 
 urlpatterns = [
     path('', include('index.urls')),
+    path('', include(f'ajax_handler.{AJAX_VERSION}.urls')),
     path('admin/', admin.site.urls),
     path('dashboard/', include('dashboard.urls')),
     path('integration/', include('M_equipments.urls')),
