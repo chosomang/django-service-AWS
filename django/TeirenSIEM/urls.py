@@ -53,45 +53,45 @@ urlpatterns = [
 # ]
 
 # Rule AJAX
-urlpatterns += [
-    # Detail Modal
-    path('rules/<type>/details/', ajax.rule_details),
+# urlpatterns += [
+#     # Detail Modal
+#     path('rules/<type>/details/', ajax.rule_details),
 
-    # Edit Modal
-    path('rules/<type>/edit/', ajax.rule_edit_modal),
-    path('custom/edit/', ajax.edit_rule),
-    path('custom/edit/add_rule/', ajax.edit_rule_add_action),
-    path('custom/edit/property/', ajax.edit_add_log_property),
+#     # Edit Modal
+#     path('rules/<type>/edit/', ajax.rule_edit_modal),
+#     path('custom/edit/', ajax.edit_rule),
+#     path('custom/edit/add_rule/', ajax.edit_rule_add_action),
+#     path('custom/edit/property/', ajax.edit_add_log_property),
 
-    # Delete Modal
-    path('custom/delete/', ajax.delete_rule),
+#     # Delete Modal
+#     path('custom/delete/', ajax.delete_rule),
 
-    # Add Modal
-    path('rules/<type>/add/', ajax.rule_add_modal),
-    path('custom/add/<type>/', ajax.add_rule_section),
-    path('custom/add/', ajax.add_rule),
+#     # Add Modal
+#     path('rules/<type>/add/', ajax.rule_add_modal),
+#     path('custom/add/<type>/', ajax.add_rule_section),
+#     path('custom/add/', ajax.add_rule),
 
-    # On/Off Action
-    path('rules/<type>/on_off/', ajax.on_off),
-]
+#     # On/Off Action
+#     path('rules/<type>/on_off/', ajax.on_off),
+# ]
 
 # AJAX
-urlpatterns += [
-    # Topbar alert
-    path("topbar/alert/", ajax.topbar_alert),
+# urlpatterns += [
+#     # Topbar alert
+#     path("topbar/alert/", ajax.topbar_alert),
 
-    # Log Management
-    path("modal/log/<type>/", ajax.log_modal),
+#     # Log Management
+#     path("modal/log/<type>/", ajax.log_modal),
     
-    # Neo4j Graph Visualization
-    path("neo4j/", aws.detection.neo4j_graph),
+#     # Neo4j Graph Visualization
+#     path("neo4j/", aws.detection.neo4j_graph),
     
-    # Dashboard Status AJAX ajax
-    # path("dashboard/status/", dashboard_v0.get_server_status),
+#     # Dashboard Status AJAX ajax
+#     # path("dashboard/status/", dashboard_v0.get_server_status),
     
-    # User Threat AJAX ajax
-    path('visuals/user/details/', ajax.user_details),
-]
+#     # User Threat AJAX ajax
+#     path('visuals/user/details/', ajax.user_details),
+# ]
 
 # Integrations
 # urlpatterns += [
