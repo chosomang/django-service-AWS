@@ -27,6 +27,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter
 from rest_framework.filters import OrderingFilter
 
+
 class CypherListCreateView(generics.ListCreateAPIView):
     queryset = Cypher.objects.all()
     serializer_class = CypherSerializer
