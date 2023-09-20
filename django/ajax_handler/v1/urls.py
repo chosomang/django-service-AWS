@@ -32,7 +32,7 @@ urlpatterns += [
     path("topbar/alert/", ajax_endpoint.topbar_alert),
 
     # Log Management
-    path("modal/log/<modal_type>/", ajax_endpoint.log_modal),
+    path("modal/log/<modal_type>/", modals_endpoint.log_modal),
     
     # Neo4j Graph Visualization
     path("neo4j/", neo4j_graph),
