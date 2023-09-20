@@ -1,231 +1,92 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block head %}
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<!-- Include lodash -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-<!-- Include gridstack -->
-<link rel="stylesheet" href="{% static '/js/gridstack/gridstack.css' %}">
-<script src="{% static '/js/gridstack/gridstack-all.js' %}"></script>
+<!-- CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 {% endblock %}
 {% block content %}
 <style>
-    #delete-box {
-        position: fixed;
-        bottom: 10px;
-        right: 50vw;
-        width: 50px;
-        height: 50px;
-        border-radius: 50px;
-        background-color: red;
-        color: white;
-    }
-    #delete-box:hover{
-        background-color: black;
-        z-index: 999999;
-    }
+.btn-checkbox {
+    background-color: #ddd;
+    color: black;
+    border: none;
+    padding: 10px 24px;
+}
+
+.btn-checkbox.active {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+#myInput {
+    width: -webkit-fill-available;
+    padding:12px;
+    border-radius:4px;
+    border:1px solid #ccc;
+}
+#mySelect {
+    width: -webkit-fill-available;
+    padding:12px;
+    border-radius:4px;
+    border:1px solid #ccc;
+}
 </style>
-<pre>
-</pre>
-<select id='layoutList' class="btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5; width:500px; margin:auto">
-    <option>레이아웃 선택</option>
+
+    {{test}}
+
+<button class="btn-checkbox" id="myCheckbox">Check me</button>
+
+<select id="mySelect">
+  <option value='1'>Test 1</option>
+  <option value='2'>Test 2</option>
+  <option value='3'>Another Test</option>
+  <option value='4'>Yet Another Test</option>
+  <option value='5'>Final Test</option>
 </select>
-<button type="button" onclick="load()">load</button>
-<br>
-<input id='saveName' placeholder='test' type='text' style="font-size:20px; height:20px">
-<button type="button" onclick="save()">save</button>
-<br>
-<input id='delName' placeholder='test' type='text' style="font-size:20px; height:20px">
-<button type="button" onclick="griddelete()">delete</button>
-<div id="result" style="font-size:20px">
-</div>
-<div id='itemList'></div>
-<div class="grid-stack"></div>
-<div id="delete-box" style="display: none;">Drop here to delete</div>
+
+
 {% endblock %}
 {% block script %}
-
-<script type="text/javascript">
-    var grid = GridStack.init({
-        float: false,
-        resizable: {handles: 'all'},
-        fitToContent: true,
-        cellHeight: 10,
-        margin:1,
-        removable: '#delete-box',
+<script>
+    $('#myCheckbox').on('click', function() {
+        this.classList.toggle('active');
+        console.log(this)
     });
-    grid.on('removed', function(event, items) {
-        for(i in items){
-            var item = $(items[i].content)[0].id
-            $(`#${item}btn`).show()
-        }
+    $(document).ready(function() {
+        // Initialize Select2 on your select element
+        $('#mySelect').select2({
+            placeholder: 'Select an option'
+        });
+    
+        // Listen for keyup events on your input field
+        $('#myInput').on('keyup', function() {
+            var inputValue = $(this).val().toLowerCase();
+    
+            // For each option in the select element,
+            $("#mySelect option").each(function() {
+                var title = $(this).text().toLowerCase();
+    
+                // If the input value is included in the option text,
+                if (title.indexOf(inputValue) !== -1) {
+                    // Show the option
+                    $(this).show();
+                } else {
+                    // Otherwise hide it
+                    $(this).hide();
+                }
+                
+                if(inputValue === ''){
+                     $(this).show();
+                 }
+            });
+    
+            // Open dropdown after filtering options.
+            $('#mySelect').select2('open');
+        });
     });
-    $.ajax({
-        url:"/dashboard/grid/items/",
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        type:'post'
-    }).done(function(data){
-        result = data.items
-        for(i in result){
-            var itemName = result[i]
-            var item = $('<button>',{onclick: `add('${itemName}')`, id:`${itemName}btn`}).text(`${itemName}추가`)
-            $('#itemList').append(item)
-        }
-    })
-    $.ajax({
-        url:"/dashboard/grid/layouts/",
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        type:'post'
-    }).done(function(data){
-        for (i in data){
-            layout = $('<option>').text(data[i])
-            $('#layoutList').append(layout)
-        }
-    })
-    function save(){
-        var name = $('#saveName').val()
-        if (name){
-            var serializedData = grid.save()
-            for(i in serializedData){
-                let el = serializedData[i]
-                el.id = $(el.content)[0].id
-            }
-            $.ajax({
-                url: '/dashboard/grid/save/',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                data:{
-                    name: name,
-                    data: JSON.stringify(serializedData)
-                },
-                type: 'post'
-            }).done(function(data){
-                alert(data)
-            })
-        }
-        else{
-            alert('레이아웃 이름을 지정해주세요.')
-        }
-    }
-    function load(){
-        var name = $('#layoutList').val()
-        $.ajax({
-            url: '/dashboard/grid/load/',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            data:{
-                name: name
-            },
-            type:'post'
-        }).done(function(data){
-            var data = JSON.parse(data)
-            grid.removeAll()
-            grid.load(data)
-            for(i in data){
-                var scriptSrc = $(data[i].content).filter('script').attr('src')
-                $.getScript(scriptSrc)
-                var scripts = $(data[i].content).filter('script:not([src])');
-                $.each(scripts,function(idx, script){
-                    var jsvar = JSON.parse(script.text)
-                    for (var key in jsvar){
-                        window[key] = jsvar[key]
-                    }
-                })
-            }
-        }).fail(function(data){
-            grid.removeAll()
-        })
-    }
-    function griddelete(){
-        $.ajax({
-            url: '/dashboard/grid/delete/',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            data:{
-                name: $('#delName').val()
-            },
-            type: 'post'
-        }).done(function(data){
-            alert(data)
-        })
-    }
-    function add(type){
-        $.ajax({
-            url: `/dashboard/grid/items/${type}/`,
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            type: 'post'
-        }).done(function(data){
-            grid.addWidget(data)
-            var scripts = $(data.content).filter('script:not([src])');
-            $.each(scripts,function(idx, script){
-                var jsvar = JSON.parse(script.text)
-                for (var key in jsvar){
-                    window[key] = jsvar[key]
-                }
-            })
-            var scriptSrc = $(data.content).filter('script').attr('src');
-            $.getScript(scriptSrc)
-            $(`#${type}btn`).hide()
-            if(type == 'recentDetection'){
-                $.ajax({
-                    url: `/dashboard/grid/items/graphitem/`,
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    type: 'post'
-                }).done(function(data){
-                    grid.addWidget(data)
-                    var scripts = $(data.content).filter('script:not([src])');
-                    $.each(scripts,function(idx, script){
-                        var jsvar = JSON.parse(script.text)
-                        for (var key in jsvar){
-                            window[key] = jsvar[key]
-                        }
-                    })
-                    var scriptSrc = $(data.content).filter('script').attr('src');
-                    $.getScript(scriptSrc)
-                })
-            }
-        })
-    }
-    var checkExist = setInterval(function() {
-        if ($('.ui-draggable-dragging').length) {
-            $('#delete-box').show()
-        }
-        else{
-            $('#delete-box').hide()
-        }
-    }, 100);
-
-    function test(){
-        $.ajax({
-            url:'/dashboard/grid/items/item_test/',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            type: 'post'
-        }).done(function(data){
-            grid.addWidget(data)
-            var scripts = $(data.content).filter('script:not([src])');
-            $.each(scripts,function(idx, script){
-                var jsvar = JSON.parse(script.text)
-                for (var key in jsvar){
-                    window[key] = jsvar[key]
-                }
-            })
-            var scriptSrc = $(data.content).filter('script').attr('src');
-            $.getScript(scriptSrc)
-        })
-    }
+    
 </script>
 {% endblock %}

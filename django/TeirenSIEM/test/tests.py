@@ -6,12 +6,13 @@ from django.conf import settings
 from py2neo import Graph
 from datetime import datetime
 from django.utils import timezone
-import TeirenSIEM.AWS_test as aws
-import TeirenSIEM.graphdb as graphdb
+# import TeirenSIEM.AWS_test as aws
+# import TeirenSIEM.graphdb as graphdb
 import json
-from TeirenSIEM.AWS_test.alert import get_node_json, get_relation_json
+# from TeirenSIEM.AWS_test.alert import get_node_json, get_relation_json
 from TeirenSIEM.models import GridLayout
 from django.template.loader import render_to_string
+from TeirenSIEM.risk.visual.user.user import get_user_static_data, get_user_dynamic_data
 
 # LOCAL
 # graph = Graph("bolt://127.0.0.1:7687", auth=('neo4j', 'teiren001'))
@@ -39,303 +40,13 @@ def test(request):
     # epoch = 1676374614161
     # data = datetime.fromtimestamp(epoch/1000 + 9*3600, timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
     # context = {'object': data}
-    # global graph
-    # cypher = f"""
-    # MATCH (a:Account {{name:'f-hk'}})
-    # CALL apoc.path.expandConfig(a, {{
-    #     relationshipFilter: "DETECTED|ACTED|DATE",
-    #     labelFilter: "/RULE",
-    #     minLevel: 1,
-    #     maxLevel: 10000}}) YIELD path
-    # UNWIND NODES(path) as nodes
-    # RETURN DISTINCT(nodes)
-    # """
-    # results = graph.run(cypher)
-    # results = graph.run(cypher)
-    # response = []
-    # for result in results:
-    #     nodes = dict(result.items())
-    #     for node in nodes.values():
-    #         response.append(get_node_json(node, 'AWS'))
-
-        
-
-    # cypher2 = f"""
-    # MATCH p=(r:RULE:AWS {{ruleName:'delete_role_by_iam'}})<-[d:DETECTED]-(l:LOG:AWS {{eventTime:"2023-07-25T04:30:42Z"}})-[:ACTED|DATE*]-(a:Account)
-    # where id(d) = 270874
-    # UNWIND RELATIONSHIPS(p) as rel
-    # WITH DISTINCT(rel) as rel
-    # WITH
-    #     [
-    #         PROPERTIES(rel),
-    #         ID(rel),
-    #         ID(STARTNODE(rel)),
-    #         ID(ENDNODE(rel)),
-    #         TYPE(rel)
-    #     ] as relation
-    # RETURN COLLECT(relation) as relations
-    # """
-    # results = graph.run(cypher2)
-    # response2 = []
-    # for result in results:
-    #     data = dict(result)
-    #     for relation in data['relations']:
-    #         response2.append(get_relation_json(relation))
-    test = detected_rule = 'cli_update_user_with_accessToken'
-    eventTime = '2023-09-11T06:57:44Z'
-    cloud = 'Aws'
-    id = 3709
-    test = f"""
-    MATCH (rule:Rule:{cloud}{{ruleName:'{detected_rule}'}})<-[detected:FLOW_DETECTED]-(log:Log:{cloud}{{eventTime:'{eventTime}'}})-[check_rel:CHECK]->(check:Flow)
-    WHERE ID(detected) = {id} AND check_rel.path = detected.path
-    WITH log, detected, rule, check_rel, check
-    MATCH p=(log)<-[flow_rel:FLOW* {{path: detected.path}}]-(flow)-[check_rels:CHECK]->(checks:Flow)
-    WITH COLLECT(flow_rel[-1]) as flow_rel, COLLECT(flow) as flows, log, rule, detected,check, check_rel,detected.path as path,
-        COLLECT(checks) AS checks,
-        COLLECT(check_rels) AS check_rels
-    OPTIONAL MATCH (log)-[assumed:ASSUMED]->(role:Role)
-    WITH flows, path, log,
-        CASE
-            WHEN role IS NULL THEN [rule, check] + checks
-            ELSE [rule, check, role] + checks
-        END AS nodes,
-        CASE
-            WHEN assumed IS NULL THEN [detected, check_rel] + check_rels + flow_rel
-            ELSE [detected, check_rel, assumed] + check_rels + flow_rel
-        END AS relations
-    UNWIND flows as flow
-    OPTIONAL MATCH (flow)<-[:FLOW {{path:path}}]-(flow2)
-    WITH log, nodes, relations, path, flow, flow2,
-        CASE 
-            WHEN flow2 IS NULL THEN 'diff'
-            WHEN flow.userIdentity_arn <> flow2.userIdentity_arn THEN 'diff'
-            WHEN flow.userIdentity_type = flow2.userIdentity_type THEN 'same'
-            WHEN flow.userIdentity_type <> flow.userIdentity_type THEN 'diff'
-            ELSE 'same'
-        END AS flow_check
-    CALL apoc.do.when(
-        flow_check = 'diff',
-        "
-            MATCH (flow)-[:FLOW {{path:path}}]->(flow2)
-            WITH flow, flow2, path,
-                CASE
-                    WHEN flow.userIdentity_arn IS NULL AND flow2.userIdentity_arn IS NULL THEN 'same'
-                    WHEN flow.userIdentity_arn = flow2.userIdentity_arn THEN 'same'
-                    WHEN flow.userIdentity_type = flow2.userIdentity_type THEN 'same'
-                    WHEN flow.userIdentity_type <> flow2.userIdentity_type THEN 'diff'
-                    ELSE 'diff'
-                END AS flow_check
-            CALL apoc.do.when(
-                flow_check = 'same',
-                \\\"
-                    MATCH (flow)<-[:ACTED*]-(date:Date)<-[date_rel:DATE]-(account:Account)
-                    WITH flow, date, date_rel, account, flow2
-                    MATCH (flow)<-[:ACTED*]-(mid:Log)
-                    WITH flow, date, date_rel, account, mid.eventName as eventName, COUNT(mid) as cnt, flow2
-                    WITH flow, date, date_rel, account, SUM(cnt) as total, flow2,
-                        apoc.map.fromPairs(COLLECT([eventName,cnt])) as prop
-                    CALL apoc.create.vNode(['Analysis'], apoc.map.merge(prop,{{name:'Analysis',total:total}})) YIELD node AS analysis
-                    CALL apoc.create.vRelationship(date,'ANALYZE',{{}}, analysis) YIELD rel AS analyze1
-                    CALL apoc.create.vRelationship(analysis,'ANALYZE',{{}}, flow) YIELD rel AS analyze2
-                    WITH flow, flow2, [date, analysis, account] as nodes, [date_rel, analyze1, analyze2] as relations
-                    OPTIONAL MATCH (flow)-[assumed:ASSUMED]->(role:Role)
-                    WITH flow, flow2,
-                        CASE
-                            WHEN role IS NULL THEN nodes
-                            ELSE nodes + [role]
-                        END AS nodes,
-                        CASE
-                            WHEN assumed IS NULL THEN relations
-                            ELSE relations + [assumed]
-                        END AS relations
-                    OPTIONAL MATCH p=(flow)-[:ACTED|NEXT*]->(flow2)
-                    WITH flow, flow2, nodes, relations, NODES(p) as mid
-                    CALL apoc.do.when(
-                        SIZE(mid) <= 0,
-                        \\\\\\"
-                            MATCH (flow)-[acted:ACTED]->(flow2)
-                            RETURN [flow] as nodes, [acted] as relations
-                        \\\\\\",
-                        \\\\\\"
-                            MATCH p=(flow)-[:ACTED|NEXT*]->(flow2)
-                            WITH flow, flow2, NODES(p) as mids
-                            UNWIND mids as mid
-                            WITH flow, flow2, mid
-                            WHERE ID(mid)<>ID(flow) AND ID(mid) <> ID(flow2)
-                            WITH flow, flow2, mid.eventName as eventName, COUNT(mid) as cnt
-                            WITH flow, flow2, SUM(cnt) as total,
-                                apoc.map.fromPairs(COLLECT([eventName,cnt])) as prop
-                            CALL apoc.create.vNode(['Analysis'], apoc.map.merge(prop,{{name:'Analysis', total: total}})) YIELD node AS analysis
-                            CALL apoc.create.vRelationship(flow,'ANALYZE',{{}}, analysis) YIELD rel AS analyze1
-                            CALL apoc.create.vRelationship(analysis,'ANALYZE',{{}}, flow2) YIELD rel AS analyze2
-                            RETURN [flow, analysis] as nodes, [analyze1, analyze2] as relations
-                        \\\\\\",
-                        {{flow:flow, flow2:flow2}}
-                    ) YIELD value
-                    WITH value.nodes + nodes as nodes, value.relations + relations as relations
-                    RETURN nodes, relations
-                \\\",
-                \\\"
-                    MATCH (flow)<-[:ACTED*]-(date:Date)<-[date_rel:DATE]-(account:Account)
-                    WITH flow, date, date_rel, account
-                    OPTIONAL MATCH (flow)<-[:ACTED*]-(mid:Log)
-                    WITH flow, date, date_rel, account, COLLECT(mid) as mid
-                    CALL apoc.do.when(
-                        SIZE(mid) = 0 ,
-                        \\\\\\"
-                            MATCH (flow)<-[acted:ACTED]-(date)
-                            RETURN [flow, date] as nodes, [acted] as relations
-                        \\\\\\",
-                        \\\\\\"
-                            MATCH (flow)<-[:ACTED*]-(mid:Log)
-                            WITH flow, date, mid.eventName as eventName, COUNT(mid) as cnt
-                            WITH flow, date, SUM(cnt) as total,
-                                apoc.map.fromPairs(COLLECT([eventName,cnt])) as prop
-                            CALL apoc.create.vNode(['Analysis'], apoc.map.merge(prop,{{name:'Analysis', total: total}})) YIELD node AS analysis
-                            CALL apoc.create.vRelationship(date,'ANALYZE',{{}}, analysis) YIELD rel AS analyze1
-                            CALL apoc.create.vRelationship(analysis,'ANALYZE',{{}}, flow) YIELD rel AS analyze2
-                            RETURN [flow, date, analysis] as nodes, [analyze1, analyze2] as relations
-                        \\\\\\",
-                        {{flow: flow, date:date}}
-                    )YIELD value
-                    WITH value.nodes + [account] as nodes, value.relations + [date_rel] as relations, flow
-                    OPTIONAL MATCH (flow)-[view_rel:ACTED*..5]->(view:Log)
-                    WITH nodes, relations, COLLECT(view) as view, COLLECT(view_rel[-1]) as view_rel, flow
-                    WITH nodes + view as nodes, relations + view_rel as relations, flow
-                    OPTIONAL MATCH (flow)-[assumed:ASSUMED]->(role:Role)
-                    WITH
-                        CASE
-                            WHEN role IS NULL THEN nodes
-                            ELSE nodes + [role]
-                        END AS nodes,
-                        CASE
-                            WHEN assumed IS NULL THEN relations
-                            ELSE relations + [assumed]
-                        END AS relations
-                    RETURN nodes, relations
-                \\\",
-                {{flow:flow, flow2:flow2}}
-            ) YIELD value
-            RETURN value
-        ",
-        "
-            MATCH (flow)-[:FLOW{{path:path}}]->(flow2)
-            WITH flow, flow2,
-                CASE
-                    WHEN flow.userIdentity_arn IS NULL AND flow2.userIdentity_arn IS NULL THEN 'same'
-                    WHEN flow.userIdentity_arn = flow2.userIdentity_arn THEN 'same'
-                    WHEN flow.userIdentity_type = flow2.userIdentity_type THEN 'same'
-                    WHEN flow.userIdentity_type <> flow2.userIdentity_type THEN 'diff'
-                    ELSE 'diff'
-                END AS flow_check
-            CALL apoc.do.when(
-                flow_check = 'same',
-                \\\"
-                    MATCH p=(flow)-[ACTED|NEXT*]->(flow2)
-                    WITH flow, flow2, NODES(p) as mids
-                    UNWIND mids as mid
-                    WITH flow, flow2, mid
-                    WHERE ID(mid) <> ID(flow) AND ID(mid) <> ID(flow2)
-                    WITH mid.eventName as eventName, COUNT(mid) as cnt, flow, flow2
-                    WITH flow, flow2, SUM(cnt) as total, apoc.map.fromPairs(COLLECT([eventName,cnt])) as prop
-                    CALL apoc.create.vNode(['Analysis'], apoc.map.merge(prop,{{name:'Analysis', total:total}})) YIELD node AS analysis
-                    CALL apoc.create.vRelationship(flow,'ANALYZE',{{}}, analysis) YIELD rel AS analyze1
-                    CALL apoc.create.vRelationship(analysis,'ANALYZE',{{}}, flow2) YIELD rel AS analyze2
-                    WITH flow, analysis, [analyze1, analyze2] AS relations
-                    OPTIONAL MATCH (flow)-[assumed:ASSUMED]->(role:Role)
-                    WITH
-                        CASE
-                            WHEN role IS NULL THEN [flow, analysis]
-                            ELSE [flow, analysis, role]
-                        END AS nodes,
-                        CASE
-                            WHEN assumed IS NULL THEN relations
-                            ELSE relations + [assumed]
-                        END AS relations
-                    RETURN nodes, relations
-                \\\",
-                \\\"
-                    OPTIONAL MATCH (flow)-[view_rels:ACTED*..5]->(view:Log)
-                    WITH flow, COLLECT(view_rels[-1]) as view_rels, COLLECT(view) as view
-                    OPTIONAL MATCH (flow)-[assumed:ASSUMED]->(role:Role)
-                    WITH
-                        CASE
-                            WHEN role IS NULL THEN view + [flow]
-                            ELSE view + [flow, role]
-                        END AS nodes,
-                        CASE
-                            WHEN assumed IS NULL THEN view_rels
-                            ELSE view_rels + [assumed]
-                        END AS relations
-                    RETURN nodes, relations
-                \\\",
-                {{flow:flow, flow2:flow2}}
-            ) YIELD value
-            RETURN value
-        ",
-        {{flow:flow, path:path}}
-    ) YIELD value
-    UNWIND value.value.relations as relation
-    UNWIND value.value.nodes as node
-    WITH relations, nodes, log, path,
-        COLLECT(DISTINCT(node)) as nodes2,
-        COLLECT(DISTINCT(relation)) as relations2
-    WITH nodes + nodes2 as nodes, relations + relations2 as relations, log, path
-    MATCH (log)<-[:FLOW {{path:path}}]-(flow)
-    WITH log, nodes, relations,
-        CASE
-            WHEN log.userIdentity_arn <> flow.userIdentity_arn THEN 'diff'
-            WHEN log.userIdentity_arn = flow.userIdentity_arn THEN 'same'
-            WHEN log.userIdentity_type = flow.userIdentity_type THEN 'same'
-            WHEN log.userIdentity_type <> flow.userIdentity_type THEN 'diff'
-            ELSE 'diff'
-        END AS flow_check
-    CALL apoc.do.when(
-        flow_check = 'diff',
-        "
-            MATCH (log)<-[:ACTED*]-(date:Date)<-[date_rel:DATE]-(account:Account)
-            WITH log, date, account, date_rel
-            OPTIONAL MATCH (log)<-[:ACTED*]-(mid:Log)
-            WITH log, date, account, date_rel, COLLECT(mid) as mid
-            CALL.apoc.do.when(
-                SIZE(mid) = 0,
-                \\\"
-                    MATCH (log)<-[acted:acted]-(date)
-                    RETURN [log, date, account] as nodes, [acted, date_rel] as relations
-                \\\",
-                \\\"
-                    MATCH (log)<-[:ACTED*]-(mid:Log)
-                    WITH log, date, account, date_rel, mid.eventName as eventName, COUNT(mid) as cnt
-                    WITH log, date, account, date_rel, SUM(cnt) as total,
-                        apoc.map.fromPairs(COLLECT([eventName,cnt])) as prop
-                    CALL apoc.create.vNode(['Analysis'], apoc.map.merge(prop,{{name:'Analysis', total: total}})) YIELD node AS analysis
-                    CALL apoc.create.vRelationship(date,'ANALYZE',{{}}, analysis) YIELD rel AS analyze1
-                    CALL apoc.create.vRelationship(analysis,'ANALYZE',{{}}, log) YIELD rel AS analyze2
-                    RETURN [log, date, account, analysis] as nodes, [analyze1, analyze2, date_rel] as relations
-                \\\",
-                {{log:log, date:date, date_rel:date_rel, account:account}}
-            ) YIELD value
-            RETURN value
-        ",
-        "   
-            WITH {{nodes: [log], relations:[]}} as value
-            RETURN value
-        ",
-        {{log:log}}
-    ) YIELD value
-    WITH nodes + value.value.nodes as nodes, relations + value.value.relations as relations
-    UNWIND relations as relation
-    WITH nodes,
-        COLLECT([
-            PROPERTIES(relation),
-            ID(relation),
-            ID(STARTNODE(relation)),
-            ID(ENDNODE(relation)),
-            TYPE(relation)
-        ]) AS relations
-    RETURN nodes, relations
+    cypher = f"""
+    MATCH (i:Integration {{integrationType:'d', accessKey:'f', secretKey:'f'}})
+    DETACH DELETE i
+    RETURN COUNT(i)
     """
-    context = {'test': test}
+    test = graph.evaluate(cypher)
+    context = {'test': str(type(test))}
     return render(request, 'wish/test.html', context)
 
 
@@ -426,6 +137,6 @@ def ajax_js(request):
     return HttpResponse(data)
 
 
-def backup(request):
-    context = aws.log.backup()
-    return render(request, 'wish/test.html', context)
+# def backup(request):
+#     context = aws.log.backup()
+#     return render(request, 'wish/test.html', context)

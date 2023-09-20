@@ -4,22 +4,22 @@
 
 <head>
     <!-- tab.css -->
-    <link rel="stylesheet" href="{% static '/css/tab.css' %}">
+    <link rel="stylesheet" href="{% static '/css/tab_table.css' %}">
 </head>
 {% endblock %}
 {% block content %}
 <div class="container-fluid">
     <div class="tabs">
-        <input type="radio" id="tab1" name="tab-control" checked>
-        <input type="radio" id="tab2" name="tab-control">
-        <ul>
+        <input type="radio" id="modal-tab1" name="tab-control-modal" checked>
+        <input type="radio" id="modal-tab2" name="tab-control-modal">
+        <ul class="ul">
             <li title="Integrations">
-                <label for="tab1" role="button">
+                <label for="modal-tab1" role="button">
                     <span>INTEGRATIONS</span>
                 </label>
             </li>
             <li title="Lists">
-                <label for="tab2" role="button">
+                <label for="modal-tab2" role="button">
                     <span>LISTS</span>
                 </label>
             </li>
@@ -42,7 +42,7 @@
 
                     <!-- Content Row -->
                     <div class="row justify-content-center">
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='/integration/ncp'>
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
                             <div class="card border-left-success shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
@@ -59,7 +59,7 @@
                                 </div>
                             </div>
                         </a>
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='/integration/nhn'>
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
                             <div class="card border-left-secondary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
@@ -93,7 +93,7 @@
                                 </div>
                             </div>
                         </a>
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='/integration/azure'>
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
                             <div class="card border-left-primary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
@@ -109,7 +109,7 @@
                                 </div>
                             </div>
                         </a>
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='/integration/officekeeper'>
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
                             <div class="card border-left-primary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
@@ -127,7 +127,7 @@
                                 </div>
                             </div>
                         </a>
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='/integration/kt'>
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
                             <div class="card border-left-danger shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
@@ -143,7 +143,7 @@
                                 </div>
                             </div>
                         </a>
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='/integration/window_SecLog'>
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
                             <div class="card border-left-primary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">

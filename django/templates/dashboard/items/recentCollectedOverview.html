@@ -1,5 +1,5 @@
 {% load static %}
-<div id="recentCollectedOverview" class="mb-1 pl-1 h-100">
+<div id="recentCollectedOverview" class="h-100">
     <div class="card shadow h-100 w-100">
         <!-- Card Header - Dropdown -->
         <div class="card-header">
@@ -13,7 +13,7 @@
         </div>
     </div>
 </div>
-<script src="{% static '/js/dashboard/recentCollectedOverview.js' %}"></script>
+<script src="{% static '/dashboard/js/recentCollectedOverview.js' %}"></script>
 <script>
     {"Month": {{ month|safe }}, "collected_month": {{ collected_month|safe }}}
 </script>

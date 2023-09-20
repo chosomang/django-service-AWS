@@ -1,1 +1,1 @@
-from . import dashboard, gridstack, gridstack_items
+from . import gridstack, gridstack_items

@@ -23,7 +23,7 @@ def get_custom_log_types(request):
     cloud = request['cloud']
     global graph
     cypher = f"""
-        MATCH (l:LOG:{cloud})
+        MATCH (l:Log:{cloud})
         WITH DISTINCT(split(l.eventSource, '.')[0]) as eventSource
         WHERE NOT eventSource CONTAINS ',' and eventSource <> 'All'
         RETURN eventSource
@@ -39,7 +39,7 @@ def get_log_properties(request):
     cloud = request['cloud']
     global graph
     cypher = f"""
-    MATCH (l:LOG:{cloud})<-[:DETECTED]-()
+    MATCH (l:Log:{cloud})-[:DETECTED]->()
     WITH KEYS(l) AS keys
     RETURN apoc.coll.toSet(REDUCE(res = [], k IN COLLECT(DISTINCT(keys)) | res + k)) AS property
     """
@@ -51,7 +51,7 @@ def get_default_actions(request):
     cloud = request['cloud']
     global graph
     cypher = f"""
-        MATCH (r:RULE:{cloud})
+        MATCH (r:Rule:{cloud})
         WHERE NOT 'FLOW' in LABELS(r)
         RETURN r.ruleName as ruleName
     """

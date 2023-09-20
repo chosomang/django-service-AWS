@@ -91,23 +91,23 @@ def get_node_json(node, cloud):
 
 
 def get_data(request):
-    rule_type = request['rule_type']
-    if rule_type == 'default':
-        data = get_default(request)
+    rule_class = request['rule_class']
+    if rule_class == 'static':
+        data = get_static(request)
     else:
-        data = get_flow(request)
+        data = get_dynamic(request)
     return data
 
 def get_log_details(request):
-    rule_type = request['rule_type']
-    if rule_type == 'default':
-        details = get_default_details(request)
+    rule_class = request['rule_class']
+    if rule_class == 'static':
+        details = get_static_details(request)
     else:
-        details = get_flow_details(request)
+        details = get_dynamic_details(request)
     return details
 
 # Default Rule
-def get_default(request):
+def get_static(request):
     detected_rule = request['detected_rule']
     eventTime = request['eventTime']
     cloud = request['cloud']
@@ -176,7 +176,7 @@ def get_default(request):
     return response
 
 # Flow Rule
-def get_flow(request):
+def get_dynamic(request):
     detected_rule = request['detected_rule']
     eventTime = request['eventTime']
     cloud = request['cloud']
@@ -185,7 +185,7 @@ def get_flow(request):
     MATCH (rule:Rule:{cloud}{{ruleName:'{detected_rule}'}})<-[detected:FLOW_DETECTED]-(log:Log:{cloud}{{eventTime:'{eventTime}'}})-[check_rel:CHECK]->(check:Flow)
     WHERE ID(detected) = {id} AND check_rel.path = detected.path
     WITH log, detected, rule, check_rel, check
-    MATCH p=(log)<-[flow_rel:FLOW* {{path: detected.path}}]-(flow)-[check_rels:CHECK]->(checks:Flow)
+    MATCH p=(log)<-[flow_rel:FLOW* {{path: detected.path}}]-(flow)-[check_rels:CHECK{{path:detected.path}}]->(checks:Flow)
     WITH COLLECT(flow_rel[-1]) as flow_rel, COLLECT(flow) as flows, log, rule, detected,check, check_rel,detected.path as path,
         COLLECT(checks) AS checks,
         COLLECT(check_rels) AS check_rels
@@ -393,7 +393,7 @@ def get_flow(request):
             WITH log, date, account, date_rel
             OPTIONAL MATCH (log)<-[:ACTED*]-(mid:Log)
             WITH log, date, account, date_rel, COLLECT(mid) as mid
-            CALL.apoc.do.when(
+            CALL apoc.do.when(
                 SIZE(mid) = 0,
                 \\\"
                     MATCH (log)<-[acted:acted]-(date)
@@ -404,7 +404,7 @@ def get_flow(request):
                     WITH log, date, account, date_rel, mid.eventName as eventName, COUNT(mid) as cnt
                     WITH log, date, account, date_rel, SUM(cnt) as total,
                         apoc.map.fromPairs(COLLECT([eventName,cnt])) as prop
-                    CALL apoc.create.vNode(['Between'], apoc.map.merge(prop,{{name:'Analysis', total: total}})) YIELD node AS analysis
+                    CALL apoc.create.vNode(['Between'], apoc.map.merge(prop,{{name:total}})) YIELD node AS analysis
                     CALL apoc.create.vRelationship(date,'BETWEEN',{{}}, analysis) YIELD rel AS analyze1
                     CALL apoc.create.vRelationship(analysis,'BETWEEN',{{}}, log) YIELD rel AS analyze2
                     RETURN [log, date, account, analysis] as nodes, [analyze1, analyze2, date_rel] as relations
@@ -423,7 +423,7 @@ def get_flow(request):
     UNWIND relations as relation
     WITH nodes,
         COLLECT([
-            PROPERTIES(relation),
+            '',
             ID(relation),
             ID(STARTNODE(relation)),
             ID(ENDNODE(relation)),
@@ -458,7 +458,7 @@ def get_relation_json(relation):
     return response
 
 # Defalut Rule 로그 디테일
-def get_default_details(request):
+def get_static_details(request):
     detected_rule = request['detected_rule']
     eventTime = request['eventTime']
     cloud = request['cloud']
@@ -493,7 +493,7 @@ def get_default_details(request):
     return response
 
 # Flow Rule 로그 디테일
-def get_flow_details(request):
+def get_dynamic_details(request):
     detected_rule = request['detected_rule']
     eventTime = request['eventTime']
     cloud = request['cloud']

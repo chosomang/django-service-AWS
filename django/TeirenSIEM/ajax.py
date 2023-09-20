@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse
-import TeirenSIEM.risk as risk
+from TeirenSIEM import risk
 import TeirenSIEM.log as log
 import json
 
@@ -93,17 +93,17 @@ def add_rule_section(request, type):
         if type == 'property':
             context = dict(request.POST.items())
             context.update({'log_properties': risk.rule.add.get_log_properties(context)})
-            return render(request, "risk/rules/custom/add/new_property_slot.html", context)
+            return render(request, "risk/rules/custom/add/property_slot.html", context)
         else:
             if context:
                 if context['cloud'] == 'Aws':
                     if type == 'default':
                         context.update({'actions': risk.rule.add.get_default_actions(context)})
                         return render(request, f'risk/rules/custom/add/{type}.html', context)
-                    if type == 'new':
+                    if type == 'static':
                         context.update({'log_types': risk.rule.add.get_custom_log_types(context)})
                         context.update({'log_properties': risk.rule.add.get_log_properties(context)})
-                        return render(request, f'risk/rules/custom/add/{type}_aws.html', context)
+                        return render(request, f'risk/rules/custom/add/static.html', context)
             else:
                 return render(request, f'risk/rules/custom/add/{type}.html')
 
@@ -129,5 +129,5 @@ def user_details(request):
     if request.method == 'POST':
         if request.POST['cloud'] == 'Aws':
             context = dict(request.POST.items())
-            context.update(risk.user.user_graph(context))
-        return render(request, 'risk/visuals/user/details.html', context)
+            context.update(risk.visual.user.user.user_graph(context))
+            return render(request, 'risk/visuals/user/details.html', context)

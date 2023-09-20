@@ -1,56 +1,41 @@
 {% load static %}
-<head>
-    <meta charset="UTF-8">
-    <title>테이렌 SIEM</title>
-    <link rel="icon" type="images/png" href="{% static '/img/teiren-icon.png' %}">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta charset="UTF-8">
+<title>테이렌 SIEM</title>
+<link rel="icon" type="images/png" href="{% static '/img/teiren-icon.png' %}">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Jquery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Jquery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="{% static '/js/jquery-easing/jquery.easing.min.js' %}"></script>
 
-    <!-- Teiren -->
-    <link rel="stylesheet" href="{% static '/css/teiren.css' %}">
+<!-- Teiren -->
+<link rel="stylesheet" href="{% static '/css/teiren.css' %}">
 
-    <!-- <link href="/graphdb/style.css" rel="stylesheet" /> -->
+<!-- Font-Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" type="text/css">
 
-    <!-- Font-Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" type="text/css">
+<!-- NAVER font-->
+<link href="https://hangeul.pstatic.net/hangeul_static/css/nanum-square-neo.css" rel="stylesheet">
 
-    <!-- Font -->
-    <!-- <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet"> -->
-    <!-- NAVER font-->
-    <link href="https://hangeul.pstatic.net/hangeul_static/css/nanum-square-neo.css" rel="stylesheet">
+<!-- polyfills so the demo works on old browsers, like IE -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.2.20171210/classList.min.js"></script>
+<script src="https://unpkg.com/whatwg-fetch@3.0.0/dist/fetch.umd.js"></script>
 
-    <!-- polyfills so the demo works on old browsers, like IE -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.2.20171210/classList.min.js"></script>
-    <script src="https://unpkg.com/bluebird@3.5.2/js/browser/bluebird.js"></script>
-    <script src="https://unpkg.com/whatwg-fetch@3.0.0/dist/fetch.umd.js"></script>
+<!-- Lodash.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min.js"></script>
 
-    <!-- libs used by demo?? -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/webcola@3.4.0/WebCola/cola.min.js"></script>
-    <script src="https://unpkg.com/popper.js@1.14.4/dist/umd/popper.js"></script>
-    <script src="https://unpkg.com/tippy.js@2.6.0/dist/tippy.all.js"></script>
+<!-- Bootstrap js -->
+<script src="{% static '/js/bootstrap.bundle.js' %}"></script>
+<script src="{% static '/js/sb-admin-2.min.js' %}"></script>
 
-    <!-- Cytoscape  -->
-    {% comment %} <script src="{% static '/graphdb/js/cytoscape.min.js' %}"></script> {% endcomment %}
-    <script src="https://unpkg.com/cytoscape@3.18.0/dist/cytoscape.min.js"></script>
-    <script src="https://unpkg.com/cytoscape-cola@2.2.3/cytoscape-cola.js"></script>
-    <script src="https://unpkg.com/cytoscape-popper@1.0.2/cytoscape-popper.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/cytoscape-euler@1.2.2/cytoscape-euler.min.js"></script>
+<!-- DataTables.js -->
+<script src="{% static '/js/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static '/js/datatables/dataTables.bootstrap4.min.js' %}"></script>
 
-    <!-- Bootstrap -->
-    <script src="{% static '/js/bootstrap.bundle.js' %}"></script>
-    <script src="{% static '/js/sb-admin-2.min.js' %}"></script>
-    
-    <!-- Core plugin JavaScript-->
-    <script src="{% static '/js/jquery-easing/jquery.easing.min.js' %}"></script>
+<!-- Moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
-    <!-- Page level plugins -->
-    <script src="{% static '/js/datatables/jquery.dataTables.min.js' %}"></script>
-    <script src="{% static '/js/datatables/dataTables.bootstrap4.min.js' %}"></script>
-    <script src="{% static '/js/chart.js/Chart.bundle.min.js' %}"></script>
-    <!-- <script src="{% static '/js/chart.js/Chart.min.js' %}"></script> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    <script src="{% static '/js/dashboard/topbar-alert.js' %}"></script>
-</head>
+<!-- Alert js -->
+<script src="{% static '/js/topbar-alert.js' %}"></script>
+
+<!-- Page Level -->
