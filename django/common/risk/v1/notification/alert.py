@@ -17,8 +17,7 @@ from datetime import date
 
 ## AWS
 host = settings.NEO4J['HOST']
-# port = settings.NEO4J["PORT"]
-port = 7688
+port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
@@ -39,14 +38,14 @@ def get_alert_logs():
         l.eventTime AS eventTime_format,
         l.sourceIPAddress as sourceIp,
         r.ruleName as detected_rule,
-        r.ruleType as rule_type,
+        r.ruleClass as rule_class,
         r.ruleName+'#'+id(d) AS rule_name,
         ID(d) as id
     ORDER BY eventTime DESC
     '''
     results = graph.run(cypher)
     data = check_alert_logs()
-    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'id', 'rule_type']
+    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'id', 'rule_class']
     for result in results:
         detail = dict(result.items())
         form = {}
@@ -78,14 +77,14 @@ def check_alert_logs():
         l.sourceIPAddress AS sourceIp,
         r.ruleName AS detected_rule,
         r.ruleName+'#'+id(d) AS rule_name,
-        r.ruleType as rule_type,
+        r.ruleClass as rule_class,
         ID(d) AS id,
         d.alert AS alert
     ORDER BY alert, eventTime DESC
     """
     results = graph.run(cypher)
     data = []
-    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'alert', 'id', 'rule_type']
+    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'alert', 'id', 'rule_class']
     for result in results:
         detail = dict(result.items())
         form = {}
@@ -164,19 +163,7 @@ def alert_off(request):
         cloud = request['cloud']
         eventTime = request['eventTime']
         id = request['id']
-        if cloud == 'NCP':
-            global graph
-            cypher = f"""
-            MATCH (r:RULE:{cloud} {{name:'{detected_rule}'}})<-[n:DETECTED|FLOW_DETECTED]-(l:LOG:{cloud} {{eventTime:'{eventTime}'}})
-            WHERE 
-                r.is_allow = 1 AND
-                n.alert IS NOT NULL AND
-                n.alert = 0
-            SET n.alert = 1
-            RETURN count(n.alert)
-            """
-        elif cloud == 'Aws':
-            global graph
+        if cloud == 'Aws':
             cypher = f"""
             MATCH (r:Rule:{cloud} {{ruleName:'{detected_rule}'}})<-[d:DETECTED|FLOW_DETECTED]-(l:Log:{cloud} {{eventTime:'{eventTime}'}})
             WHERE
@@ -188,4 +175,3 @@ def alert_off(request):
             """
         graph.evaluate(cypher)
     return request
-
