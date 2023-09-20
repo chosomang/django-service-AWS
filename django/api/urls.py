@@ -14,9 +14,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     # Dashboard
     path('', views.index),
-    path('create/', create_cypher, name='create_cypher'),
-    path('', include(router.urls)) # /cypher/{}
-    # path('create/', CypherListCreateView.as_view(), name='cypher_create')
+    path('', include(router.urls)), # /cypher/{}
+    path('get/<str:param>', CypherListCreateView.as_view()), # custom view
+    # path('create/', create_cypher, name='create_cypher'),
+    # path('endpoint/', CypherListCreateView.as_view(), name='cypher_create'),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
