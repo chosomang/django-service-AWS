@@ -10,8 +10,10 @@ from django.utils import timezone
 from TeirenSIEM.log import log
 from TeirenSIEM.risk.alert import detection
 import json
+from TeirenSIEM.AWS_test.alert import get_node_json, get_relation_json
 from TeirenSIEM.models import GridLayout
 from django.template.loader import render_to_string
+from TeirenSIEM.risk.visual.user.user import get_user_static_data, get_user_dynamic_data
 
 # LOCAL
 # graph = Graph("bolt://127.0.0.1:7687", auth=('neo4j', 'teiren001'))
@@ -423,6 +425,7 @@ def ajax_js(request):
         data = 'js fail'
     return HttpResponse(data)
 
-def backup(request):
-    context = detection.log.backup()
-    return render(request, 'wish/test.html', context)
+
+# def backup(request):
+#     context = aws.log.backup()
+#     return render(request, 'wish/test.html', context)

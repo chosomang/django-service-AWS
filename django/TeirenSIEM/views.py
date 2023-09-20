@@ -3,28 +3,20 @@ from django.urls import reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
+from TeirenSIEM.integration import integrations
+from TeirenSIEM.log import log
+from TeirenSIEM import risk
 import math
 import xlwt
 
 from TeirenSIEM import risk
-from webAPP.django.M_equipments.src import module
 from TeirenSIEM.log import log
 
 
 # Dashboard
-# @login_required
-# def dashboard_view(request):
-#     log_total = dashboard.get_log_total()
-#     threat_total = dashboard.get_threat_total()
-#     context = {
-#         "total": format(log_total,","),
-#         "integration": dashboard.get_integration_total(),
-#         "threat": format(threat_total,","),
-#         "threat_ratio": math.ceil(threat_total/log_total*10)/10,
-#     }
-#     context.update(dashboard.dashboard_chart())
-#     context.update(risk.alert.alert.check_topbar_alert())
-#     return render(request, "dashboard/dashboard.html", context)
+@login_required
+def dashboard_view(request):
+    return render(request, "dashboard/dashboard.html")
 
 # Log Management
 

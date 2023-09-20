@@ -3006,6 +3006,13 @@
     border-radius: 0.3rem;
   }
   
+  .btn-md, .btn-group-md > .btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    border-radius: 0.3rem;
+  }
+
   .btn-sm, .btn-group-sm > .btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.675rem;
@@ -6400,6 +6407,18 @@
     }
   }
   
+  .spinner-border-lg {
+    display: inline-block;
+    width: 9rem;
+    height: 9rem;
+    vertical-align: text-bottom;
+    border: 0.75em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    -webkit-animation: .75s linear infinite spinner-border;
+    animation: .75s linear infinite spinner-border;
+  }
+
   .spinner-border {
     display: inline-block;
     width: 2rem;

@@ -1,6 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block head %}
+<!-- Cytoscape.js -->
+<script src="{% static '/plugin/cytoscape.js/WebCola/cola.min.js' %}"></script>
+<script src="https://unpkg.com/popper.js@1.14.4/dist/umd/popper.js"></script>
+<script src="https://unpkg.com/tippy.js@2.6.0/dist/tippy.all.js"></script>
+<script src="https://unpkg.com/cytoscape@3.18.0/dist/cytoscape.min.js"></script>
+<script src="https://unpkg.com/cytoscape-cola@2.2.3/cytoscape-cola.js"></script>
+<script src="https://unpkg.com/cytoscape-popper@1.0.2/cytoscape-popper.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-euler@1.2.2/cytoscape-euler.min.js"></script>
+<script src="https://unpkg.com/bluebird@3.5.2/js/browser/bluebird.js"></script>
+<!-- Page Essential -->
 {% endblock %}
 {% block content %}
 <div class="container-fluid">
@@ -115,16 +125,12 @@
             },
             type: 'post',
         }).done(function(data) {
-            var times = 1000
-            if ($(e).data('cloud') == 'AWS'){
-                times = 2000
-            }
             setTimeout(() => {
                 $('#loader').fadeOut()
                 setTimeout(() => {
                     $('#account_body').html(data).hide().fadeIn()
                 }, 1000);
-            }, times);
+            }, 1000);
         })
     }
     function btdetails(e) {

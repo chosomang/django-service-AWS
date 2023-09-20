@@ -1,5 +1,5 @@
 {% load static %}
-<div id="threatUser" class="mb-1 px-1 h-100">
+<div id="threatUser" class="h-100">
     <div class="card shadow h-100">
         <!-- Card Header - Dropdown -->
         <div class="card-header">
@@ -13,7 +13,7 @@
         </div>
     </div>
 </div>
-<script src="{% static '/js/dashboard/threatUser.js' %}"></script>
+<script src="{% static '/dashboard/js/threatUser.js' %}"></script>
 <script>
     {"user_threat": {{ user_threat|safe }}}
 </script>

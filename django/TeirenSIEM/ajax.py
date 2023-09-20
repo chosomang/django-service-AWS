@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse
-import TeirenSIEM.risk as risk
+from TeirenSIEM import risk
 import TeirenSIEM.log as log
 import json
 
@@ -31,42 +31,43 @@ def log_modal(request, type):
 
 ###################################################################
 
-# # Risk Management
-# # Rule Details Modal
-# def rule_details(request, type):
-#     if request.method == 'POST':
-#         if request.POST['cloud'] == 'Aws':
-#             context = {type: risk.rule.default.get_rule_details(dict(request.POST.items()), type)}
-#         return render(request, f"risk/rules/{type}/details.html", context)
+# Risk Management
+## Rule Details Modal
+def rule_details(request, type):
+    if request.method == 'POST':
+        if request.POST['cloud'] == 'Aws':
+            context = {type: risk.rule.default.get_rule_details(dict(request.POST.items()), type)}
+        return render(request, f"risk/rules/{type}/details.html", context)
 
-# #############################################
+#############################################
 
-# ### Rule Edit
-# ## Rule Edit Modal
-# def rule_edit_modal(request, type):
-#     if request.method == 'POST':
-#         if request.POST['cloud'] == 'Aws':
-#             context = risk.rule.edit.get_edit_rule_page(dict(request.POST.items()))
-#             return render(request, "risk/rules/custom/edit_aws.html", context)
-        
-# ## Rule Edit Action
-# def edit_rule(request):
-#     if request.method == 'POST':
-#         if request.POST['cloud'] == 'Aws':
-#             context = risk.rule.edit.edit_rule(dict(request.POST.items()))
-#         return HttpResponse(context)
-# ## Rule Edit Default Rule (Add Action Slot)
-# def edit_rule_add_action(request):
-#     if request.method == 'POST':
-#         if request.POST['cloud'] == 'Aws':
-#             context = risk.rule.edit.edit_rule_add_action(dict(request.POST.items()))
-#         return render(request, "risk/rules/custom/edit/add_action.html", context)
+### Rule Edit
+## Rule Edit Modal
+def rule_edit_modal(request, type):
+    if request.method == 'POST':
+        if request.POST['cloud'] == 'Aws':
+            context = risk.rule.edit.get_edit_rule_page(dict(request.POST.items()))
+            return render(request, "risk/rules/custom/edit_aws.html", context)
+## Rule Edit Action
+def edit_rule(request):
+    if request.method == 'POST':
+        if request.POST['cloud'] == 'Aws':
+            context = risk.rule.edit.edit_rule(dict(request.POST.items()))
+        return HttpResponse(context)
+## Rule Edit Default Rule (Add Action Slot)
+def edit_rule_add_action(request):
+    if request.method == 'POST':
+        if request.POST['cloud'] == 'Aws':
+            context = risk.rule.edit.edit_rule_add_action(dict(request.POST.items()))
+        return render(request, "risk/rules/custom/edit/add_action.html", context)
 
-# def edit_add_log_property(request):
-#     if request.method == 'POST':
-#         context = dict(request.POST.items())
-#         context.update({'log_properties': risk.rule.add.get_log_properties(context)})
-#         return render(request, "risk/rules/custom/edit/property_slot.html", context)
+def edit_add_log_property(request):
+    if request.method == 'POST':
+        context = dict(request.POST.items())
+        context.update({'log_properties': risk.rule.add.get_log_properties(context)})
+        return render(request, "risk/rules/custom/edit/property_slot.html", context)
+
+#############################################
 
 # #############################################
 
@@ -126,9 +127,18 @@ def log_modal(request, type):
 
 #############################################
 ## Visuals User Details Modal
+<<<<<<< HEAD
 # def user_details(request):
 #     if request.method == 'POST':
 #         if request.POST['cloud'] == 'Aws':
 #             context = dict(request.POST.items())
 #             context.update(risk.user.user_graph(context))
 #         return render(request, 'risk/visuals/user/details.html', context)
+=======
+def user_details(request):
+    if request.method == 'POST':
+        if request.POST['cloud'] == 'Aws':
+            context = dict(request.POST.items())
+            context.update(risk.visual.user.user.user_graph(context))
+            return render(request, 'risk/visuals/user/details.html', context)
+>>>>>>> somang/siem-001

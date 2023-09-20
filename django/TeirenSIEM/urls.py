@@ -1,10 +1,11 @@
 
 from django.urls import path
-from TeirenSIEM import views, login, tests, ajax, auth
-from TeirenSIEM.dashboard import gridstack
-import TeirenSIEM.v1 as aws
-# from webAPP.django.TeirenSIEM.v0 import dashboard_v0
-from webAPP.django.TeirenSIEM.v1 import integrations
+from TeirenSIEM import views, ajax
+from TeirenSIEM.dashboard import *
+from TeirenSIEM.setting.login import login
+from TeirenSIEM.test import tests
+from TeirenSIEM.integration import *
+from TeirenSIEM.risk.alert import *
 
 
 # Views
@@ -36,21 +37,22 @@ urlpatterns = [
     # path('compliance/report_month/', views.report_month, name='[Teiren] 월간 위협 보고서'),
 ]
 
-# # Login
-# urlpatterns += [
-#     path('login/', auth.login_view),
-#     path('logout/', auth.logout_view),
-# ]
+# Login
+urlpatterns += [
+    path('login/', login.login_view),
+    path('logout/', login.logout_view),
+]
 
 # Dashboard Customize
-# urlpatterns +=[
-#     path('dashboard/grid/save/', gridstack.save_layout),
-#     path('dashboard/grid/load/', gridstack.load_layout),
-#     path('dashboard/grid/delete/', gridstack.delete_layout),
-#     path('dashboard/grid/layouts/', gridstack.list_layouts),
-#     path('dashboard/grid/items/<type>/', gridstack.add_item),
-#     path('dashboard/grid/items/', gridstack.list_items),
-# ]
+urlpatterns +=[
+    path('dashboard/grid/save/', gridstack.save_layout),
+    path('dashboard/grid/new/', gridstack.new_layout),
+    path('dashboard/grid/load/', gridstack.load_layout),
+    path('dashboard/grid/delete/', gridstack.delete_layout),
+    path('dashboard/grid/layouts/', gridstack.list_layouts),
+    path('dashboard/grid/items/<type>/', gridstack.add_item),
+    path('dashboard/grid/items/', gridstack.list_items),
+]
 
 # Rule AJAX
 # urlpatterns += [
@@ -75,6 +77,13 @@ urlpatterns = [
 #     path('rules/<type>/on_off/', ajax.on_off),
 # ]
 
+# Neo4j Graph
+urlpatterns += [
+    # Neo4j Graph Visualization
+    path("neo4j/", detection.neo4j_graph),
+
+]
+
 # AJAX
 # urlpatterns += [
 #     # Topbar alert
@@ -94,22 +103,22 @@ urlpatterns = [
 # ]
 
 # Integrations
-# urlpatterns += [
-#     # NCP
-#     path("integration/ncp/check/", integrations.integration_NCP),
-#     path("integration/ncp/insert/", integrations.insert_NCP),
-#     # AWS
-#     path("integration/aws/check/", integrations.integration_AWS),
-#     path("integration/aws/insert/", integrations.insert_AWS),
-#     # AZURE
-#     path("integration/azure/check/", integrations.integration_Azure),
-#     path("integration/azure/insert/", integrations.insert_Azure),
-# ]
+urlpatterns += [
+    # # NCP
+    # path("integration/ncp/check/", integrations.integration_NCP),
+    # path("integration/ncp/insert/", integrations.insert_NCP),
+    # AWS
+    path("integration/aws/check/", integrations.integration_AWS),
+    path("integration/aws/insert/", integrations.insert_AWS),
+    # AZURE
+    # path("integration/azure/check/", integrations.integration_Azure),
+    # path("integration/azure/insert/", integrations.insert_Azure),
+]
 
 # Test
 urlpatterns += [
     path('test/', tests.test),
-    path('backup/', tests.backup),
+    # path('backup/', test.tests.backup),
     path('test/cyto', tests.cyto),
     path('ajax_src/', tests.ajax_src),
     path('ajax_dst/', tests.ajax_dst),
