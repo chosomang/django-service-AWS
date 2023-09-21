@@ -31,7 +31,7 @@ $('.grid-stack').append(
     `<div id="temp" style="margin:80vh 46vw"></div>`
 )
 $.ajax({
-    url: '/dashboard/grid/load/',
+    url: '/grid/load/',
     headers: {
         'X-CSRFToken': getCookie()
     },

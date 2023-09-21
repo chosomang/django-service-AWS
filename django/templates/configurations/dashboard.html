@@ -23,13 +23,9 @@
 <script src="{% static '/plugin/gridstack/gridstack-all.js' %}"></script>
 
 <!-- Page Essential -->
-<link rel="stylesheet" href="{% static '/setting/css/dashboard.css' %}">
-<script src="{% static '/setting/js/dashboard.js' %}"></script>
+<link rel="stylesheet" href="{% static '/configurations/css/dashboard.css' %}">
 {% endblock %}
 {% block content %}
-<style>
-    
-</style>
 <div id="layoutInfo">
     <div id="layoutName" class="text-teiren"></div>
     <div id="layoutbtns" style="display:none;">
@@ -87,7 +83,5 @@
 
 {% endblock %}
 {% block script %}
-<script>
-    
-</script>
+<script src="{% static '/configurations/js/dashboard.js' %}"></script>
 {% endblock %}

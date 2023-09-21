@@ -24,16 +24,17 @@ COMPLIANCE_VERSION = 'v1'
 AJAX_VERSION = 'v1'
 
 urlpatterns = [
-    path('', include('index.urls')),
+    path('', include('dashboard.urls')),
     path('', include(f'ajax_handler.{AJAX_VERSION}.urls')),
+    path('auth/', include('auth.urls')),
     path('admin/', admin.site.urls),
-    path('dashboard/', include('dashboard.urls')),
     path('integration/', include('M_equipments.urls')),
     path('logs/', include('M_logs.urls')),
     path('management/', include('M_threatD.urls')),
     path('configurations/', include('configurations.urls')),
     path(f'compliance/{COMPLIANCE_VERSION}/', include(f'compliance.{COMPLIANCE_VERSION}.urls')),
     path(f'api/{API_VERSION}/', include('api.urls')),
+    path('test/', include('testing.urls'))
     # path('', include('TeirenSIEM.urls')),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

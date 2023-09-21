@@ -50,7 +50,7 @@ function closeSidebar(e) {
 // Grid and Widget/Item ----------------------------------------------------------------------------------------------------------------
 var grid = 0
 $.ajax({
-    url: "/dashboard/grid/items/",
+    url: "/grid/items/",
     headers: {
         'X-CSRFToken': getCookie()
     },
@@ -101,7 +101,7 @@ $.ajax({
 
 function addItem(type) {
     $.ajax({
-        url: `/dashboard/grid/items/${type}/`,
+        url: `/grid/items/${type}/`,
         headers: {
             'X-CSRFToken': getCookie()
         },
@@ -138,7 +138,7 @@ function addItem(type) {
 
 // Layout -----------------------------------------------------------------------------------------------------------------------------
 $.ajax({
-    url: "/dashboard/grid/layouts/",
+    url: "/grid/layouts/",
     headers: {
         'X-CSRFToken': getCookie()
     },
@@ -180,7 +180,7 @@ function newLayout() {
         el.id = $(el.content)[0].id
     }
     $.ajax({
-        url: '/dashboard/grid/new/',
+        url: '/grid/new/',
         headers: {
             'X-CSRFToken': getCookie()
         },
@@ -226,7 +226,7 @@ function saveLayout() {
             el.id = $(el.content)[0].id
         }
         $.ajax({
-            url: '/dashboard/grid/save/',
+            url: '/grid/save/',
             headers: {
                 'X-CSRFToken': getCookie()
             },
@@ -261,7 +261,7 @@ function loadLayout(e) {
     $('#layoutbtns').fadeIn()
     $('#defaultCheckbox').removeClass('active')
     $.ajax({
-        url: '/dashboard/grid/load/',
+        url: '/grid/load/',
         headers: {
             'X-CSRFToken': getCookie()
         },
@@ -307,7 +307,7 @@ function deleteLayout(e) {
     var layout = $(e).parent()
     var name = layout.children().filter('span')[0].innerText
     $.ajax({
-        url: '/dashboard/grid/delete/',
+        url: '/grid/delete/',
         headers: {
             'X-CSRFToken': getCookie()
         },

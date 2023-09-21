@@ -37,17 +37,16 @@ REST_FRAMEWORK = {
 }
 # Application definition
 INSTALLED_APPS = [
-    'TeirenSIEM',
     'api',
     'M_logs',
     'M_equipments',
     'M_threatD',
-    'index',
     'configurations',
     'dashboard',
     'compliance',
     'ajax_handler',
     'testing',
+    'models',
     'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -130,7 +129,7 @@ USE_I18N = True
 USE_TZ = True
 USE_L10N = True
 # Login URL
-LOGIN_URL = '/login/'
+LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 

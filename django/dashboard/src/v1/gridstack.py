@@ -2,7 +2,7 @@ from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
-from TeirenSIEM.models import GridLayout
+from models.dashboard import GridLayout
 from . import gridstack_items as gitems
 import json, types
 
@@ -22,16 +22,20 @@ def save_layout(request):
     return HttpResponse(result)
 
 def new_layout(request):
-    if len(GridLayout.objects.filter(name=request.POST['name'])) > 0:
-        return HttpResponse('이미 저장된 이름입니다.')
-    layout = GridLayout(name=request.POST['name'], data=request.POST['data'])
-    layout.save()
-    layouts = GridLayout.objects.filter(name=request.POST['name'])
-    if len(layouts) == 1:
-        result = '정상적으로 저장되었습니다.'
-    else:
-        result = '오류가 발생했습니다. 다시 시도해주세요.'
-    return HttpResponse(result)
+    try:
+        if len(GridLayout.objects.filter(name=request.POST['name'])) > 0:
+            return HttpResponse('이미 저장된 이름입니다.')
+    except:
+        pass
+    finally:
+        layout = GridLayout(name=request.POST['name'], data=request.POST['data'])
+        layout.save()
+        layouts = GridLayout.objects.filter(name=request.POST['name'])
+        if len(layouts) == 1:
+            result = '정상적으로 저장되었습니다.'
+        else:
+            result = '오류가 발생했습니다. 다시 시도해주세요.'
+        return HttpResponse(result)
 
 def load_layout(request):
     layouts = GridLayout.objects.filter(name=request.POST['name'])

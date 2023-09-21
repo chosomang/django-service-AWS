@@ -1,22 +1,22 @@
-from django.shortcuts import render, HttpResponse
-from django.urls import reverse
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import JsonResponse, HttpResponseRedirect
-from django.contrib.auth.decorators import login_required
-from TeirenSIEM.integration import integrations
-from TeirenSIEM.log import log
-from TeirenSIEM import risk
-import math
-import xlwt
+# from django.shortcuts import render, HttpResponse
+# from django.urls import reverse
+# from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+# from django.http import JsonResponse, HttpResponseRedirect
+# from django.contrib.auth.decorators import login_required
+# from TeirenSIEM.integration import integrations
+# from TeirenSIEM.log import log
+# from TeirenSIEM import risk
+# import math
+# import xlwt
 
-from TeirenSIEM import risk
-from TeirenSIEM.log import log
+# from TeirenSIEM import risk
+# from TeirenSIEM.log import log
 
 
 # Dashboard
-@login_required
-def dashboard_view(request):
-    return render(request, "dashboard/dashboard.html")
+# @login_required
+# def dashboard_view(request):
+#     return render(request, "dashboard/dashboard.html")
 
 # Log Management
 
