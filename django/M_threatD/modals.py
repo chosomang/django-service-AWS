@@ -4,15 +4,15 @@ from common.risk.v1.rule.edit import get_edit_rule_page
 
 
 ## Rule Details Modal
-def rule_details(request, rule_type):
+def rule_details(request, cloud):
     if request.method == 'POST':
         if request.POST['cloud'] == 'Aws':
             context = {
-                rule_type: get_rule_details(dict(request.POST.items()), rule_type)
+                cloud: get_rule_details(dict(request.POST.items()), cloud)
                 }
-        return render(request, f"management/rules/{rule_type}/details.html", context)
+        return render(request, f"management/rules/{cloud}/details.html", context)
     
-def rule_edit_modal(request, rule_type):
+def rule_edit_modal(request, cloud):
     if request.method == 'POST':
         if request.POST['cloud'] == 'Aws':
             context = get_edit_rule_page(dict(request.POST.items()))

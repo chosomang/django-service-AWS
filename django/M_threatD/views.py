@@ -11,54 +11,46 @@ from common.risk.v1.notification.alert import alert_off
 from common.risk.v1.notification.alert import get_alert_logs
 from common.risk.v1.notification.detection import neo4j_graph
 
-HTML_FILE_PATH = 'management'
+HTML_FILE_PATH = 'M_threatD'
 
 @login_required
-def rules_view(request, cloud_type):
+def rules_view(request, cloud):
     context = {}
-    cloud_list = ['aws',
-                  'nhn',
-                  'ncp',
-                  'all',
-                  'officekeeper']
+    cloud_list = ['aws','nhn','ncp','all','officekeeper']
     try:
-        if cloud_type in cloud_list:
-            label_type = cloud_type[0].upper() + cloud_type[1:]
-        else:
-            # 404 not found
+        if cloud not in cloud_list:
             pass
     finally:
-        context.update(get_custom_rules(label_type=label_type))
-        context.update(get_default_rules(label_type=label_type))
+        context = get_custom_rules(cloud)
+        context.update(get_default_rules(cloud))
+        context.update({'cloud': cloud.capitalize()})
         context.update(check_topbar_alert())
-    
-    # comment: 
-    #   where is all.html?
-    return render(request, f"{HTML_FILE_PATH}/rules/{cloud_type}/{cloud_type}.html", context)
+        return render(request, f"risk/rules/rule.html", context)
+
 
 @login_required
-def visuals_view(request, cloud_type):
-    if cloud_type == 'user':
+def visuals_view(request, cloud):
+    if cloud == 'user':
         context = {'accounts': sorted(get_user_visuals(), key=lambda x: x['total'], reverse=True)}
-    elif cloud_type == 'ip':
+    elif cloud == 'ip':
         map = folium_test('37.5985', '126.97829999999999')
         context = {'map': map}
     else:
         context = {}
     context.update(check_topbar_alert())
-    return render(request, f"{HTML_FILE_PATH}/visuals/{cloud_type}.html", context)
+    return render(request, f"{HTML_FILE_PATH}/visuals/{cloud}.html", context)
 
 @login_required
-def alert_view(request, cloud_type):
+def alert_view(request, cloud):
     if request.method == 'POST':
         if request.POST['cloud'] == 'Aws':
             context = alert_off(dict(request.POST.items()))
             context.update(neo4j_graph(context))
             context.update(check_topbar_alert())
-        return render(request, f"{HTML_FILE_PATH}/alert/{cloud_type}.html", context)
+        return render(request, f"{HTML_FILE_PATH}/alert/{cloud}.html", context)
     else:
-        if cloud_type == 'details':
+        if cloud == 'details':
             return HttpResponseRedirect('/alert/logs/')
     context = (get_alert_logs())
     context.update(check_topbar_alert())
-    return render(request, f"{HTML_FILE_PATH}/alert/{cloud_type}.html", context)
+    return render(request, f"{HTML_FILE_PATH}/alert/{cloud}.html", context)

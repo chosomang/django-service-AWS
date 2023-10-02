@@ -42,14 +42,9 @@ def get_all_rules():
     return response
 
 # List Default Rules
-def get_default_rules(label_type:str):
-    global graph
+def get_default_rules(cloud:str):
     cypher= f"""
-<<<<<<< HEAD:django/common/risk/v1/rule/default.py
-    MATCH (r:RULE:{label_type} {{ruleType: 'default'}})
-=======
     MATCH (r:Rule:{cloud.capitalize()} {{ruleType: 'default'}})
->>>>>>> somang/siem-001:django/TeirenSIEM/risk/rule/default.py
     RETURN
     id(r) as id,
     CASE
@@ -70,14 +65,10 @@ def get_default_rules(label_type:str):
     return response
 
 # List Custom Rules
-def get_custom_rules(label_type:str):
+def get_custom_rules(cloud:str):
     global graph
     cypher= f"""
-<<<<<<< HEAD:django/common/risk/v1/rule/default.py
-    MATCH (r:RULE:{label_type} {{ruleType: 'custom'}})
-=======
     MATCH (r:Rule:{cloud.capitalize()} {{ruleType: 'custom'}})
->>>>>>> somang/siem-001:django/TeirenSIEM/risk/rule/default.py
     RETURN
     id(r) as id,
     CASE
@@ -115,12 +106,11 @@ def rule_on_off(request):
 
 ## Rule Detail Modal
 # List Rule Details
-def get_rule_details(request, type):
+def get_rule_details(request, rule_type):
     cloud = request['cloud']
     rule_name = request['rule_name']
-    global graph
     cypher = f"""
-    MATCH (r:Rule:{cloud} {{ruleName:'{rule_name}', ruleType:'{type}'}})
+    MATCH (r:Rule:{cloud} {{ruleName:'{rule_name}', ruleType:'{rule_type}'}})
     RETURN
         id(r) as id,
         CASE
@@ -155,7 +145,6 @@ def get_rule_details(request, type):
 
 # Check And List Related Flow
 def get_related_flow(cloud, ruleName, rule_id):
-    global graph
     cypher = f"""
         MATCH (rule:Rule:{cloud} {{ruleName: '{ruleName}'}})
         WHERE ID(rule) = {rule_id}

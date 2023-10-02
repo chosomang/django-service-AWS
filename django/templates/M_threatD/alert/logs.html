@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <h6 class="h5 mb-2 text-gray-800 ml-2 font-weight-bold">중요 위협 로그 확인하기</h6>
+    <p class="ml-2 mb-4">중요 위협 로그들을 확인할 수 있습니다. </p>
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-teiren">중요 위협 로그 목록</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive" style="overflow:hidden;">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                    style="text-align:center;overflow:scroll;">
+                    <thead>
+                        <tr>
+                            <th>클라우드</th>
+                            <th>탐지 시간</th>
+                            <th>탐지 정책</th>
+                            <th>탐지 행위</th>
+                            <th>행위 결과</th>
+                            <th>행위 시간</th>
+                            <th>sourceIp</th>
+                            <th>탐지 정책 번호</th>
+                            <th>상세보기</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            <th>클라우드</th>
+                            <th>탐지 시간</th>
+                            <th>탐지 정책</th>
+                            <th>탐지 행위</th>
+                            <th>행위 결과</th>
+                            <th>행위 시간</th>
+                            <th>sourceIp</th>
+                            <th>탐지 정책 번호</th>
+                            <th>상세보기</th>
+                        </tr>
+                    </tfoot>
+                    <tbody>
+                        {% if data %}
+                        {% for result in data %}
+                        {% if 'alert' in result %}
+                        <tr class="text-danger">
+                        {% else %}
+                        <tr>
+                        {% endif %}
+                            {% for key, value in result.items %}
+                            {% if key != 'form' %}
+                            {% if key == 'detectedAction' %}
+                            <td align="left" width="1000">{{value}}</td>
+                            {% elif key == 'eventTime_format' or key == 'detected_time' or key == 'actionDisplayName' %}
+                            <td width="200">{{value}}</td>
+                            {% elif key == 'cloud'%}
+                            <td width="200">{{value}}</td>
+                            {% elif key == 'alert' %}
+                            {% else %}
+                            <td>{{value}}</td>  
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                            <td width="300">
+                                <form method="POST" action="/management/alert/details/">
+                                    {% csrf_token %}
+                                    {% for key, value in result.form.items %}
+                                    <input type="hidden" name="{{key}}" value="{{value}}">
+                                    {% endfor %}
+                                    {% if 'alert' in result %}
+                                    <button class="btn btn-md btn-danger ">관련 로그</button>
+                                    {% else %}
+                                    <button class="btn btn-md btn-teiren ">관련 로그</button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $("#dataTable").DataTable({
+        //데이터 테이블 0번째 인덱스부터 거꾸로 정렬(최신순 정렬)
+        order: [
+            [0, 'desc']
+        ],
+        ordering: true,
+    });
+    $(function() {
+        $('#threat_top').addClass('show')
+        $(window).on("pageshow", function(event) {
+            if (event.originalEvent.persisted) {
+                location.reload();
+            }
+        });
+    })
+</script>
+{% endblock %}

@@ -68,17 +68,22 @@ def edit_add_log_property(request):
 
 #############################################
 
-# #############################################
+### Rule Delete
+## Rule Delete Action
+def delete_rule(request):
+    if request.method == 'POST':
+        if request.POST['cloud'] == 'Aws':
+            context = risk.rule.delete.delete_rule(dict(request.POST.items()))
+        return HttpResponse(context)
 
-# ### Rule Delete
-# ## Rule Delete Action
-# def delete_rule(request):
-#     if request.method == 'POST':
-#         if request.POST['cloud'] == 'Aws':
-#             context = risk.rule.delete.delete_rule(dict(request.POST.items()))
-#         return HttpResponse(context)
+#############################################
 
-# #############################################
+### Rule Add
+## Rule Add Modal
+def rule_add_modal(request, type):
+    if request.method == 'POST':
+        context = dict(request.POST.items())
+        return render(request, 'risk/rules/custom/add.html', context)
 
 ## Rule Add Modal Section
 def add_rule_section(request, type):

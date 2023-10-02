@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'compliance',
     'ajax_handler',
     'testing',
-    'models',
     'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',

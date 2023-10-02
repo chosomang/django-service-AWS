@@ -74,7 +74,9 @@ urlpatterns += [
     path('custom/add/<type>/', ajax.add_rule_section),
     path('custom/add/', ajax.add_rule),
 
-# ]
+    # On/Off Action
+    path('rules/<type>/on_off/', ajax.on_off),
+]
 
 # Neo4j Graph
 urlpatterns += [
