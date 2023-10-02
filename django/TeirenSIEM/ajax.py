@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse
 from TeirenSIEM import risk
 import TeirenSIEM.log as log
-import json
 
 
 ###################################################################
@@ -45,14 +44,14 @@ def rule_details(request, type):
 ## Rule Edit Modal
 def rule_edit_modal(request, type):
     if request.method == 'POST':
-        if request.POST['cloud'] == 'Aws':
-            context = risk.rule.edit.get_edit_rule_page(dict(request.POST.items()))
-            return render(request, "risk/rules/custom/edit_aws.html", context)
+        context = dict(request.POST.items())
+        context.update(risk.rule.edit.get_edit_rule_page(context))
+        context.update({'log_properties': risk.rule.add.get_log_properties(context)})
+        return render(request, "risk/rules/custom/edit.html", context)
 ## Rule Edit Action
 def edit_rule(request):
     if request.method == 'POST':
-        if request.POST['cloud'] == 'Aws':
-            context = risk.rule.edit.edit_rule(dict(request.POST.items()))
+        context = risk.rule.edit.edit_rule(dict(request.POST.items()))
         return HttpResponse(context)
 ## Rule Edit Default Rule (Add Action Slot)
 def edit_rule_add_action(request):
@@ -81,64 +80,48 @@ def edit_add_log_property(request):
 
 # #############################################
 
-# ### Rule Add
-# ## Rule Add Modal
-# def rule_add_modal(request, type):
-#     if request.method == 'POST':
-#         context = dict(request.POST.items())
-#         return render(request, 'risk/rules/custom/add.html', context)
+## Rule Add Modal Section
+def add_rule_section(request, type):
+    if request.method == 'POST':
+        context = dict(request.POST.items())
+        context.update({'log_properties': risk.rule.add.get_log_properties(context)})
+        if 'flow' in type:
+            if type == 'flow_check':
+                flow_check = risk.rule.add.get_flow_check(context)
+                if isinstance(flow_check, str):
+                    return HttpResponse(flow_check)
+                context.update(flow_check)
+            else:
+                context.update(risk.rule.add.get_flow_slot(context))
+            return render(request, "risk/rules/custom/add/flow_slot.html", context)
+        else:
+            if context:
+                if context['cloud'] == 'Aws':
+                    return render(request, f'risk/rules/custom/add/{type}.html', context)
+            else:
+                return render(request, f'risk/rules/custom/add/{type}.html')
 
-# ## Rule Add Modal Section
-# def add_rule_section(request, type):
-#     if request.method == 'POST':
-#         context = dict(request.POST.items())
-#         if type == 'property':
-#             context = dict(request.POST.items())
-#             context.update({'log_properties': risk.rule.add.get_log_properties(context)})
-#             return render(request, "risk/rules/custom/add/new_property_slot.html", context)
-#         else:
-#             if context:
-#                 if context['cloud'] == 'Aws':
-#                     if type == 'default':
-#                         context.update({'actions': risk.rule.add.get_default_actions(context)})
-#                         return render(request, f'risk/rules/custom/add/{type}.html', context)
-#                     if type == 'new':
-#                         context.update({'log_types': risk.rule.add.get_custom_log_types(context)})
-#                         context.update({'log_properties': risk.rule.add.get_log_properties(context)})
-#                         return render(request, f'risk/rules/custom/add/{type}_aws.html', context)
-#             else:
-#                 return render(request, f'risk/rules/custom/add/{type}.html')
+## Rule Add Action
+def add_rule(request):
+    if request.method == 'POST':
+        if request.POST['cloud'] == 'Aws':
+            context = risk.rule.add.add_rule(dict(request.POST.items()))
+        return HttpResponse(context)
 
-# ## Rule Add Action
-# def add_rule(request):
-#     if request.method == 'POST':
-#         if request.POST['cloud'] == 'Aws':
-#             context = risk.rule.add.add_rule(dict(request.POST.items()))
-#         return HttpResponse(context)
+#############################################
 
-# #############################################
-
-# ## Rule On_off
-# def on_off(request, type):
-#     if request.method == 'POST':
-#         if request.POST['cloud'] == 'Aws':
-#             context = risk.rule.default.rule_on_off(dict(request.POST.items()))
-#         return HttpResponse(context)
+## Rule On_off
+def on_off(request, type):
+    if request.method == 'POST':
+        if request.POST['cloud'] == 'Aws':
+            context = risk.rule.default.rule_on_off(dict(request.POST.items()))
+        return HttpResponse(context)
 
 #############################################
 ## Visuals User Details Modal
-<<<<<<< HEAD
-# def user_details(request):
-#     if request.method == 'POST':
-#         if request.POST['cloud'] == 'Aws':
-#             context = dict(request.POST.items())
-#             context.update(risk.user.user_graph(context))
-#         return render(request, 'risk/visuals/user/details.html', context)
-=======
 def user_details(request):
     if request.method == 'POST':
         if request.POST['cloud'] == 'Aws':
             context = dict(request.POST.items())
             context.update(risk.visual.user.user.user_graph(context))
             return render(request, 'risk/visuals/user/details.html', context)
->>>>>>> somang/siem-001

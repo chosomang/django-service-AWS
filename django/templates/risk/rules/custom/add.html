@@ -5,68 +5,45 @@
         <h2 class="mb-3 font-weight-bold text-center text-teiren">{{cloud}} 사용자 설정 정책 추가</h2>
         <div class="card-body shadow" style="border-radius:20px;">
             <div id="addbtns" class='row justify-content-center'>
-                <button type='button' onclick='staticRule("{{cloud}}");return false' class='btn btn-md btn-outline-teiren mt-4 mr-3' >Static 정책</button>
-                <button type='button' onclick='dynamicRule("{{cloud}}");return false' class='btn btn-md btn-outline-teiren mt-4 mr-3' >Dynamic 정책</button>
+                <button type='button' onclick='addSection("{{cloud}}", "static");return false' class='btn btn-md btn-outline-teiren mt-4 mr-3' >Static 정책</button>
+                <button type='button' onclick='addSection("{{cloud}}", "dynamic");return false' class='btn btn-md btn-outline-teiren mt-4 mr-3' >Dynamic 정책</button>
             </div>
-            <div id="new_rules">
-            </div>
-            <input type='button' value='정책 추가' class="btn btn-teiren btn-block mt-4" onclick=''>
+            <form id="new_rules">
+                <input type="hidden" name="count" id="count" value='' />
+                <input type="hidden" name="cloud" id="cloud" value='{{cloud}}' />
+            </form>
         </div>
     </div>
 </div>
 <script>
-    function staticRule(cloud){
+    function addSection(cloud, ruleClass){
         $.ajax({
-            url: '/custom/add/static/',
+            url: `/custom/add/${ruleClass}/`,
             headers:{
                 'X-CSRFToken': '{{ csrf_token }}'
             },
             type: 'post',
             data:{
-                cloud: cloud
+                cloud: cloud,
             }
         }).done(function(data){
-            $('#new_rules').append(data).show()
-            $('#rule_static').slideDown('normal')
+            $('#new_rules').append(data)
+            $('#rule_0').fadeIn('normal')
+            $('#addbtns').slideUp()
         })
-    }
-
-    function deleteSection(e){
-        if(e === 'static'){
-            $('#rule_static').slideUp('normal')
-            setTimeout(function(){
-                $('#rule_static').remove()
-            },500)
+        if (ruleClass == 'dynamic'){
+            $('#addNewRuleSetbtn').fadeOut('normal')
         }
     }
 
-    function hideSection(count){
-        var section = $('#rule_'+String(count))
-        section.find('.content').slideUp('normal')
-    }
-
-    function addProperty(cloud){
-        var count = $('#properties').find('.prop').length + 1
-        $.ajax({
-            url:'/custom/add/property/',
-            headers:{
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            type: 'post',
-            data:{
-                count: count,
-                cloud: cloud
-            }
-        }).done(function(data){
-            $('#properties').append(data)
-            $('#properties').find('#property'+count).hide().slideDown('normal')
-        })
-    }
-    
-    function deleteProperty(count, cloud){
-        $('#property'+count).slideUp('normal')
+    function deleteSection(e){
+        $('#rule_'+e).slideUp('normal')
         setTimeout(function(){
-            $('#property'+count).remove()
-        }, 300)
+            $('#rule_'+e).remove()
+        },500)
+        if (e == 0){
+            $('#addbtns').slideDown()
+            $('#addNewRuleSetbtn').fadeIn('normal')
+        }
     }
 </script>

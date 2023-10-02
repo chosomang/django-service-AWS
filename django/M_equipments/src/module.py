@@ -13,17 +13,6 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
 
 ## Integration List
-# def list_integration():
-#     global collection
-#     result = collection.find()
-#     if result:
-#         data = {}
-#         for num, doc in enumerate (list(result), start=1):
-#             doc.pop('_id')
-#             data[num] = doc
-#         data = {'list': data}
-#         return data
-#     return {'test': 0}
 def list_integration():
     cypher = f"""
     MATCH (i:Integration)

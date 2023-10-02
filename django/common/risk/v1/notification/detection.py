@@ -463,7 +463,6 @@ def get_static_details(request):
     eventTime = request['eventTime']
     cloud = request['cloud']
     id = request['id']
-    global graph
     cypher = f"""
     MATCH p=(rule:Rule:{cloud}{{ruleName:'{detected_rule}'}})<-[detected:DETECTED|FLOW_DETECTED]-(log:Log:{cloud} {{eventTime:'{eventTime}'}})
     WHERE ID(detected) = {id}
@@ -498,7 +497,6 @@ def get_dynamic_details(request):
     eventTime = request['eventTime']
     cloud = request['cloud']
     id = request['id']
-    global graph
     cypher = f"""
     MATCH p=(rule:Rule:{cloud}{{ruleName:'{detected_rule}'}})<-[detected:DETECTED|FLOW_DETECTED]-(log:Log:{cloud} {{eventTime:'{eventTime}'}})
     WHERE ID(detected) = {id}

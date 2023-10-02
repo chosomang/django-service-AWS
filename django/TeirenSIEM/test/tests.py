@@ -14,6 +14,8 @@ from TeirenSIEM.AWS_test.alert import get_node_json, get_relation_json
 from TeirenSIEM.models import GridLayout
 from django.template.loader import render_to_string
 from TeirenSIEM.risk.visual.user.user import get_user_static_data, get_user_dynamic_data
+from TeirenSIEM.risk.rule.default import get_default_rules
+from TeirenSIEM.risk.alert.detection import get_static, neo4j_graph
 
 # LOCAL
 # graph = Graph("bolt://127.0.0.1:7687", auth=('neo4j', 'teiren001'))
@@ -41,6 +43,7 @@ def test(request):
     # epoch = 1676374614161
     # data = datetime.fromtimestamp(epoch/1000 + 9*3600, timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
     # context = {'object': data}
+<<<<<<< HEAD
     # global graph
     # cypher = f"""
     # MATCH (a:Account {{name:'f-hk'}})
@@ -337,6 +340,15 @@ def test(request):
         ]) AS relations
     RETURN nodes, relations
     """
+=======
+    data ={}
+    data['detected_rule'] = 'get_secret_value'
+    data['eventTime'] ='2023-05-09T07:54:52Z'
+    data['cloud'] = 'Aws'
+    data['id'] = 4240
+    data['rule_class'] = 'static'
+    test = neo4j_graph(data)
+>>>>>>> somang/siem-001
     context = {'test': test}
     return render(request, 'wish/test.html', context)
 

@@ -1,17 +1,13 @@
-# from django.shortcuts import render, HttpResponse
-# from django.urls import reverse
-# from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-# from django.http import JsonResponse, HttpResponseRedirect
-# from django.contrib.auth.decorators import login_required
-# from TeirenSIEM.integration import integrations
-# from TeirenSIEM.log import log
-# from TeirenSIEM import risk
-# import math
-# import xlwt
-
-# from TeirenSIEM import risk
-# from TeirenSIEM.log import log
-
+from django.shortcuts import render, HttpResponse
+from django.urls import reverse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import JsonResponse, HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
+from TeirenSIEM.integration import integrations
+from TeirenSIEM.log import log
+from TeirenSIEM import risk
+import math
+import xlwt
 
 # Dashboard
 # @login_required
@@ -19,6 +15,17 @@
 #     return render(request, "dashboard/dashboard.html")
 
 # Log Management
+@login_required
+def log_view(request, cloud):
+    if request.method == 'POST':
+        context = dict(request.POST.items())
+        context = (log.get_log_page(context, cloud))
+        return render(request,f"log/dataTable.html",context)
+    context = dict(request.GET.items())
+    context = (log.get_log_page(context, cloud))
+    context['cloud']= cloud.capitalize()
+    context.update(risk.alert.alert.check_topbar_alert())
+    return render(request,f"log/log.html",context)
 
 
 # Risk Management
@@ -39,13 +46,13 @@
 #     return render(request, f"risk/alert/{type}.html", context)
 
 ## Rules
-# @login_required
-# def rules_view(request, type):
-#     if type == 'aws':
-#         context = risk.rule.default.get_custom_rules(type)
-#         context.update(risk.rule.default.get_default_rules(type))
-#     context.update(risk.alert.alert.check_topbar_alert())
-#     return render(request, f"risk/rules/{type}/{type}.html", context)
+@login_required
+def rules_view(request, type):
+    context = risk.rule.default.get_custom_rules(type)
+    context.update(risk.rule.default.get_default_rules(type))
+    context.update({'cloud': type.capitalize()})
+    context.update(risk.alert.alert.check_topbar_alert())
+    return render(request, f"risk/rules/rule.html", context)
 
 ## Visuals
 # @login_required

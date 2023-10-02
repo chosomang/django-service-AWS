@@ -21,80 +21,70 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
 # Delete Rule Action
 def delete_rule(request):
-    rule_type = request['log_type']
-    rule_name = request['rule_name']
-    rule_id = request['rule_id']
-    cloud = request['cloud']
-    global graph
-    if rule_type == 'FLOW':
-        cypher = f"""
-            MATCH (f:RULE:FLOW:{cloud} {{ruleName:'{rule_name}'}})
-            WHERE id(f) = {int(rule_id)}
-            WITH keys(f) as keys, f
-            UNWIND keys as key
-            WITH f, key WHERE key=~'rule[0-9]+' and key <> 'ruleType'
-            MATCH(r:RULE:{cloud} {{ruleName:f[key]}})
-            DETACH DELETE f
-            RETURN count(f) as count
-        """
-        result = graph.evaluate(cypher) is not None
-        if result > 0:
-            return '정책 삭제 완료'
-        else:
-            return '정책 삭제 실패'
+    if request['ruleClass'] == 'Dynamic':
+        if isinstance(delete_check:=delete_dynamic_rule(request),str):
+            return delete_check
     else:
-        flow_check = delete_flow_check(cloud, rule_name)
-        if len(flow_check) > 0:
-            if 'confirm' in request:
-                deleted_flow = []
-                for flow in flow_check:
-                    cypher = f"""
-                        MATCH (f:FLOW:{cloud}{{ruleName:'{flow}'}})
-                        WITH keys(f) as keys, f
-                        UNWIND keys as key
-                        WITH f, key WHERE key=~'rule[0-9]+'
-                        MATCH(r:RULE:{cloud}{{ruleName:f[key]}})
-                        WHERE r.ruleName <> '{rule_name}'
-                        DETACH DELETE f
-                        RETURN count(f) as count
-                    """
-                    result = graph.evaluate(cypher)
-                    if result > 0:
-                        deleted_flow.append(flow)
-                    else:
-                        if len(deleted_flow):
-                            return json.dumps(deleted_flow)+'는 삭제하였지만 다른 정책을 삭제하는데 문제가 발생했습니다.'
-                        else:
-                            return 'FLOW 정책 삭제 실패'
-                response = json.dumps(deleted_flow)+'정책 삭제 완료. <br> 계속 삭제를 진행하겠습니다.'
-            else:
-                response = '정책과 관련된 FLOW 정책:<br>'+json.dumps(flow_check)+'가(이) 존재합니다.<br>FLOW 정책도 함께 삭제됩니다.'
-        else:
-            cypher = f"""
-                MATCH (r:RULE:{cloud}{{ruleName:'{rule_name}'}})
-                DETACH DELETE r
-                RETURN count(r) as count
-            """
-            result = graph.evaluate(cypher)
-            if result > 0:
-                return '정책 삭제 완료'
-            else:
-                return '정책 삭제 실패'
-    return response
+        if isinstance(delete_check:=delete_static_rule(request),str):
+            return delete_check
+    return '정책 삭제 완료'
 
-# Check and Delete Flow Rule for Delete Rule Modal
-def delete_flow_check(cloud,rule_name):
-    global graph
+def delete_static_rule(request):
+    cloud = request['cloud']
+    ruleName = request['og_rule_name'] if 'og_rule_name' in request else request['rule_name']
     cypher = f"""
-        MATCH (f:FLOW:RULE:{cloud})
-        WITH keys(f) as keys, f
-        UNWIND keys as key
-        WITH f, key where key=~'rule[0-9]+'
-        WITH f where f[key]='{rule_name}'
-        RETURN f.ruleName as name
+    MATCH (rule:Rule:{cloud} {{ruleName:'{ruleName}'}})
+    DETACH DELETE rule
     """
-    response = []
-    results = graph.run(cypher)
-    for result in results:
-        response.append(result['name'])
-    return response
+    try:
+        graph.evaluate(cypher)
+        return 1
+    except:
+        return '정책 수정 실패. 다시 시도해주세요.'
+
+def delete_dynamic_rule(request):
+    cloud = request['cloud']
+    ruleName = request['og_rule_name'] if 'og_rule_name' in request else request['rule_name']
+    cypher = f"""
+    MATCH (rule:Rule:{cloud} {{ruleName:'{ruleName}'}})
+    UNWIND KEYS(rule) as keys
+    WITH rule, keys
+    WHERE keys =~ 'flow.*'
+    WITH rule, rule[keys] as flowName
+    MATCH (flow:Flow{{flowName:flowName}})
+    WITH rule, flow
+    OPTIONAL MATCH (rule)<-[:FLOW_DETECTED]-(log:Log)
+    WITH rule, flow, log
+    CALL apoc.do.when(
+        log IS NOT NULL,
+        "
+            OPTIONAL MATCH (log)<-[flow_rel:FLOW*]-(:Log)
+            WITH CASE WHEN flow_rel IS NULL THEN [] ELSE flow_rel END AS flow_rel
+            RETURN flow_rel AS flow_rel
+        ",
+        "
+            RETURN [] AS flow_rel
+        ",
+        {{log:log}}
+    )YIELD value
+    WITH rule, flow, value.flow_rel as flow_rels
+    CALL apoc.do.when(
+        SIZE(flow_rels) > 0,
+        "
+            UNWIND flow_rels as flow_rel
+            DELETE flow_rel
+        ",
+        "
+            RETURN 0
+        ",
+        {{flow_rels:flow_rels}}
+    )YIELD value
+    DETACH DELETE rule, flow
+    """
+    try:
+        graph.evaluate(cypher)
+        return 1
+    except:
+        return '정책 수정 실패. 다시 시도해주세요.'
+    
+
