@@ -15,7 +15,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view),
 
     # Log Management
-    path('log/<type>/', views.log_view),
+    path('log/<cloud>/', views.log_view),
 
     # Integration
     path('integration/', views.integration_view),

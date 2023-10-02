@@ -14,3 +14,11 @@ def div(value, arg):
 @register.filter(name='mul')
 def mul(value, arg):
     return math.ceil(value * arg * 10)/10
+
+@register.filter(name='list_item')
+def list_item(_list, index):
+    return _list[index]
+
+@register.simple_tag
+def make_list(*args):
+    return list(args)

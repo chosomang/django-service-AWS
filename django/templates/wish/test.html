@@ -9,84 +9,47 @@
 {% endblock %}
 {% block content %}
 <style>
-.btn-checkbox {
-    background-color: #ddd;
-    color: black;
-    border: none;
-    padding: 10px 24px;
-}
 
-.btn-checkbox.active {
-    background-color: #4CAF50; /* Green */
-    color: white;
-}
-
-#myInput {
-    width: -webkit-fill-available;
-    padding:12px;
-    border-radius:4px;
-    border:1px solid #ccc;
-}
-#mySelect {
-    width: -webkit-fill-available;
-    padding:12px;
-    border-radius:4px;
-    border:1px solid #ccc;
-}
 </style>
-
-    {{test}}
-
-<button class="btn-checkbox" id="myCheckbox">Check me</button>
-
-<select id="mySelect">
-  <option value='1'>Test 1</option>
-  <option value='2'>Test 2</option>
-  <option value='3'>Another Test</option>
-  <option value='4'>Yet Another Test</option>
-  <option value='5'>Final Test</option>
-</select>
-
+<div class="mt-4"></div>
+<input type="date" id="calendar">
+</div>
 
 {% endblock %}
 {% block script %}
 <script>
-    $('#myCheckbox').on('click', function() {
-        this.classList.toggle('active');
-        console.log(this)
+    $('.inputField input').on('focus', function() {
+        $(this).parent().find('.checkbox-container').slideDown('fast')
+    })
+    $('.inputField input').on('blur', function() {
+        var checkbox_container = $(this).parent().find('.checkbox-container')
+        setTimeout(function() {
+            if (!$(':checkbox:focus').length){
+                checkbox_container.slideUp('fast');
+            }
+        }, 10);
+    })
+    $(':checkbox').on('blur', function() {
+        setTimeout(function() {
+            if (!$(':checkbox:focus').length) {
+                $(this).parent().parent().find('.checkbox-container').slideUp();
+            }
+        }, 10);
     });
-    $(document).ready(function() {
-        // Initialize Select2 on your select element
-        $('#mySelect').select2({
-            placeholder: 'Select an option'
-        });
+    $('.inputField input').on('input', function() {
+        var input = $(this).val();
     
-        // Listen for keyup events on your input field
-        $('#myInput').on('keyup', function() {
-            var inputValue = $(this).val().toLowerCase();
+        // Iterate over each checkbox
+        $(this).parent().find('.checkbox-container input[type="checkbox"]').each(function() {
+            var checkboxValue = $(this);
     
-            // For each option in the select element,
-            $("#mySelect option").each(function() {
-                var title = $(this).text().toLowerCase();
-    
-                // If the input value is included in the option text,
-                if (title.indexOf(inputValue) !== -1) {
-                    // Show the option
-                    $(this).show();
-                } else {
-                    // Otherwise hide it
-                    $(this).hide();
-                }
-                
-                if(inputValue === ''){
-                     $(this).show();
-                 }
-            });
-    
-            // Open dropdown after filtering options.
-            $('#mySelect').select2('open');
+            // If the checkbox value doesn't contain the input string, hide it
+            if (!new RegExp(input, 'i').test(checkboxValue.val())) {
+                $(this).parent().hide();
+            } else {
+                $(this).parent().show();
+            }
         });
     });
-    
 </script>
 {% endblock %}

@@ -16,12 +16,16 @@ def dashboard_view(request):
 
 # Log Management
 @login_required
-def log_view(request, type):
-    context = {'type': type.upper()}
-    if type == 'aws':
-        context.update(log.get_log_page(dict(request.GET.items()), type))
+def log_view(request, cloud):
+    if request.method == 'POST':
+        context = dict(request.POST.items())
+        context = (log.get_log_page(context, cloud))
+        return render(request,f"log/dataTable.html",context)
+    context = dict(request.GET.items())
+    context = (log.get_log_page(context, cloud))
+    context['cloud']= cloud.capitalize()
     context.update(risk.alert.alert.check_topbar_alert())
-    return render(request,f"log/{type}.html",context)
+    return render(request,f"log/log.html",context)
 
 
 # Risk Management
@@ -44,11 +48,11 @@ def alert_view(request, type):
 ## Rules
 @login_required
 def rules_view(request, type):
-    if type == 'aws':
-        context = risk.rule.default.get_custom_rules(type)
-        context.update(risk.rule.default.get_default_rules(type))
+    context = risk.rule.default.get_custom_rules(type)
+    context.update(risk.rule.default.get_default_rules(type))
+    context.update({'cloud': type.capitalize()})
     context.update(risk.alert.alert.check_topbar_alert())
-    return render(request, f"risk/rules/{type}/{type}.html", context)
+    return render(request, f"risk/rules/rule.html", context)
 
 ## Visuals
 @login_required

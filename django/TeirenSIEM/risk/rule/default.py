@@ -45,11 +45,13 @@ def get_all_rules():
 def get_default_rules(cloud):
     global graph
     cypher= f"""
-    MATCH (r:RULE:{cloud.upper()} {{ruleType: 'default'}})
+    MATCH (r:Rule:{cloud.capitalize()} {{ruleType: 'default'}})
     RETURN
     id(r) as id,
-    CASE 
-        WHEN size(split(r.eventSource, ',')) > 1 THEN 'FLOW'
+    CASE
+        WHEN r.ruleClass = 'dynamic' THEN 'Dynamic'
+        WHEN r.eventSource IS NULL THEN 'All'
+        WHEN r.ruleClass IS NULL OR r.ruleClass = 'static' THEN split(r.eventSource,'.')[0]
         ELSE split(r.eventSource, '.')[0]
     END as type,
     r.ruleName as name,
@@ -67,16 +69,18 @@ def get_default_rules(cloud):
 def get_custom_rules(cloud):
     global graph
     cypher= f"""
-    MATCH (r:RULE:{cloud.upper()} {{ruleType: 'custom'}})
+    MATCH (r:Rule:{cloud.capitalize()} {{ruleType: 'custom'}})
     RETURN
-        id(r) as id,
-        CASE 
-            WHEN size(split(r.eventSource, ',')) > 1 THEN 'FLOW'
-            ELSE split(r.eventSource, '.')[0]
-        END as type,
-        r.ruleName as name,
-        r.ruleComment as comment,
-        r.on_off as on_off
+    id(r) as id,
+    CASE
+        WHEN r.ruleClass = 'dynamic' THEN 'Dynamic'
+        WHEN r.eventSource IS NULL THEN 'All'
+        WHEN r.ruleClass IS NULL OR r.ruleClass = 'static' THEN split(r.eventSource,'.')[0]
+        ELSE split(r.eventSource, '.')[0]
+    END as type,
+    r.ruleName as name,
+    r.ruleComment as comment,
+    r.on_off as on_off
     """
     results = graph.run(cypher)
     data = []
@@ -90,16 +94,14 @@ def rule_on_off(request):
     cloud = request['cloud']
     rule_name = request['rule_name']
     on_off = request['on_off']
-    global graph
     cypher = f"""
-    MATCH (r:RULE:{cloud} {{ruleName:'{rule_name}'}})
+    MATCH (r:Rule:{cloud} {{ruleName:'{rule_name}'}})
+    SET r.on_off = {abs(int(on_off)-1)}
     RETURN r
     """
-    node = graph.evaluate(cypher)
-    node['on_off'] = abs(int(on_off)-1)
     try:
-        graph.push(node)
-        return node['on_off']
+        graph.evaluate(cypher)
+        return abs(int(on_off)-1)
     except ClientError as e:
         return '실패'
 
@@ -110,11 +112,13 @@ def get_rule_details(request, type):
     rule_name = request['rule_name']
     global graph
     cypher = f"""
-    MATCH (r:RULE:{cloud} {{ruleName:'{rule_name}', ruleType:'{type}'}})
+    MATCH (r:Rule:{cloud} {{ruleName:'{rule_name}', ruleType:'{type}'}})
     RETURN
         id(r) as id,
-        CASE 
-            WHEN size(split(r.eventSource, ',')) > 1 THEN 'FLOW'
+        CASE
+            WHEN r.ruleClass = 'dynamic' THEN 'Dynamic'
+            WHEN r.eventSource IS NULL THEN 'All'
+            WHEN r.ruleClass IS NULL OR r.ruleClass = 'static' THEN split(r.eventSource,'.')[0]
             ELSE split(r.eventSource, '.')[0]
         END as type,
         r
@@ -122,11 +126,14 @@ def get_rule_details(request, type):
     results = graph.run(cypher)
     response = {}
     details = {}
-    filter = ['ruleType', 'ruleName', 'alert_email1', 'alert_email2', 'ruleComment', 'on_off', 'eventSource', 'is_allow']
+    filter = ['ruleType', 'ruleName', 'ruleComment', 'on_off', 'wheres']
+    filter += ['ruleKeys', 'ruleLogicals', 'ruleValues', 'ruleOperators']
     for result in results:
-        response.update({'id': result['id']})
+        rule_id = result['id']
+        response.update({'id': rule_id})
         response.update({'type': result['type']})
         for key, value in result['r'].items():
+            if key == 'query': continue
             if key in filter:
                 response.update({key:value})
                 continue
@@ -134,35 +141,37 @@ def get_rule_details(request, type):
     details = dict(sorted(details.items(), key=lambda x: x[0], reverse=False))
     response.update({'details': details})
     response['cloud'] = cloud
-    if response['type'] != 'FLOW':
-        response.update(get_related_flow_rule(cloud, rule_name))
+    if response['type'] == 'Dynamic':
+        response.update(get_related_flow(cloud, rule_name, rule_id))
     return response
 
-# Check And List Related Flow Rule
-def get_related_flow_rule(cloud,rule_name):
+# Check And List Related Flow
+def get_related_flow(cloud, ruleName, rule_id):
     global graph
     cypher = f"""
-        MATCH (f:FLOW:{cloud})
-        WITH keys(f) as keys, f
-        UNWIND keys as key
-        WITH f, key where key=~'rule.*' and key <> 'rule_type'
-        WITH f where f[key]='{rule_name}'
-        RETURN f, id(f) as id
+        MATCH (rule:Rule:{cloud} {{ruleName: '{ruleName}'}})
+        WHERE ID(rule) = {rule_id}
+        UNWIND KEYS(rule) as key
+        WITH DISTINCT(key) as key, rule
+        WHERE key =~ 'flow.*'
+        WITH rule[key] as flowName
+        MATCH (flow:FLOW_TEST{{flowName:flowName}})
+        RETURN COLLECT(flow) as flows
     """
     results = graph.run(cypher)
     data = []
-    filter = ['ruleType', 'ruleName', 'ruleComment', 'alert_email1', 'alert_email2', 'on_off', 'eventSource', 'is_allow']
+    filter = ['flowName', 'flowComment']
     for result in results:
-        rule = {}
-        detail = {}
-        rule.update({'id': result['id']})
-        for key, value in result['f'].items():
-            if key in filter:
-                rule.update({key:value})
-            else:
-                detail.update({key.capitalize():value})
-        detail = dict(sorted(detail.items(), key=lambda x: x[0], reverse=False))
-        rule.update({'detail': detail})
-        data.append(rule)
+        for flow in result['flows']:
+            rule = {}
+            detail = {}
+            for key, value in flow.items():
+                if key in filter:
+                    rule.update({key:value})
+                else:
+                    detail.update({key.capitalize():value})
+            detail = dict(sorted(detail.items(), key=lambda x: x[0], reverse=False))
+            rule.update({'detail': detail})
+            data.append(rule)
     response = {'related': data}
     return response
