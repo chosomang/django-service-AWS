@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+<!-- CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+{% endblock %}
+{% block content %}
+<style>
+
+</style>
+<div class="mt-4"></div>
+{{test}}
+</div>
+
+{% endblock %}
+{% block script %}
+<script>
+    $('.inputField input').on('focus', function() {
+        $(this).parent().find('.checkbox-container').slideDown('fast')
+    })
+    $('.inputField input').on('blur', function() {
+        var checkbox_container = $(this).parent().find('.checkbox-container')
+        setTimeout(function() {
+            if (!$(':checkbox:focus').length){
+                checkbox_container.slideUp('fast');
+            }
+        }, 10);
+    })
+    $(':checkbox').on('blur', function() {
+        setTimeout(function() {
+            if (!$(':checkbox:focus').length) {
+                $(this).parent().parent().find('.checkbox-container').slideUp();
+            }
+        }, 10);
+    });
+    $('.inputField input').on('input', function() {
+        var input = $(this).val();
+    
+        // Iterate over each checkbox
+        $(this).parent().find('.checkbox-container input[type="checkbox"]').each(function() {
+            var checkboxValue = $(this);
+    
+            // If the checkbox value doesn't contain the input string, hide it
+            if (!new RegExp(input, 'i').test(checkboxValue.val())) {
+                $(this).parent().hide();
+            } else {
+                $(this).parent().show();
+            }
+        });
+    });
+</script>
+{% endblock %}

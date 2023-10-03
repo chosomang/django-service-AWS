@@ -173,7 +173,7 @@ setInterval(function () {
 
 function setDatanetwork(data_in, data_out) {
   $.ajax({
-    url: "/dashboard/status/",
+    url: "/status/",
     headers: {
       'X-CSRFToken': getCookie()
     },

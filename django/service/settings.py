@@ -38,13 +38,13 @@ REST_FRAMEWORK = {
 # Application definition
 INSTALLED_APPS = [
     'api',
+    'common',
     'M_logs',
     'M_equipments',
     'M_threatD',
     'configurations',
     'dashboard',
-    'compliance',
-    'ajax_handler',
+    # 'compliance',
     'testing',
     'rest_framework',
     'django.contrib.admin',

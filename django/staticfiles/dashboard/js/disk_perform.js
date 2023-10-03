@@ -159,7 +159,7 @@ setInterval(function () {
 
 function setDatadisk(data) {
   $.ajax({
-    url: "/dashboard/status/",
+    url: "/status/",
     headers: {
       'X-CSRFToken': getCookie()
     },

@@ -175,7 +175,7 @@
     function deleteRuleAction(event) {
         var data = $(event).serialize()
         $.ajax({
-            url: '/custom/delete/',
+            url: '/threat/custom/delete/',
             headers:{
                 'X-CSRFToken': '{{ csrf_token }}'
             },

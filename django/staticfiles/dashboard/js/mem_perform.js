@@ -160,7 +160,7 @@ setInterval(function () {
 
 function setDatamemory(data) {
   $.ajax({
-    url: "/dashboard/status/",
+    url: "/status/",
     headers: {
       'X-CSRFToken': getCookie()
     },

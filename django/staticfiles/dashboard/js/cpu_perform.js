@@ -164,7 +164,7 @@ setInterval(function () {
 
 function setDatacpu(data) {
   $.ajax({
-    url: "/dashboard/status/",
+    url: "/status/",
     headers: {
       'X-CSRFToken': getCookie()
     },

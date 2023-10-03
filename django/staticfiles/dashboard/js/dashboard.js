@@ -22,6 +22,7 @@ var grid = GridStack.init({
     staticGrid: true,
 });
 
+$('#no_data').hide()
 $('body').append(
     `<div id="loader" style="width:100vw; height:100vh; background-color:rgba(156, 154, 154, 0.1); position:absolute; top:0">
         <div class="spinner-border-lg text-teiren" style="margin:40vh 46vw"></div>
@@ -43,6 +44,7 @@ $.ajax({
     var data = JSON.parse(data)
     $('#loader').fadeOut()
     $('#temp').remove()
+    $('#no_data').remove()
     grid.removeAll()
     grid.load(data)
     for (i in data) {
@@ -63,6 +65,9 @@ $.ajax({
             $.getScript(scriptSrc)
         }
     }
-}).fail(function () {
+}).fail(function() {
+    $('#loader').fadeOut()
+    $('#temp').remove()
+    $('#no_data').show()
     grid.removeAll()
-})
+});

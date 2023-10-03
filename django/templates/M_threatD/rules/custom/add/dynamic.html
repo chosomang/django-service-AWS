@@ -156,7 +156,7 @@
             $('#count').val($('.rule').length-1)
             var data = $('#new_rules').serialize()
             $.ajax({
-                url: '/custom/add/',
+                url: '/threat/custom/add/',
                 headers:{
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
@@ -175,7 +175,7 @@
             var count = $('#new_rules').find('.rule').length
             $('#rule_'+count).remove()
             $.ajax({
-                url:'/custom/add/dynamic_slot/',
+                url:'/threat/custom/add/dynamic_slot/',
                 headers:{
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
@@ -202,7 +202,7 @@
         function addDynamicProperty(flow_num){
             var prop_num = $('#rule_'+flow_num).find('.prop').length + 1
             $.ajax({
-                url:'/custom/add/dynamic_property_slot/',
+                url:'/threat/custom/add/dynamic_property_slot/',
                 headers:{
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
@@ -232,7 +232,7 @@
 
         function dynamicFlow(){
             $.ajax({
-                url: '/custom/add/flow_check/',
+                url: '/threat/custom/add/flow_check/',
                 headers:{
                     'X-CSRFToken': '{{ csrf_token }}'
                 },

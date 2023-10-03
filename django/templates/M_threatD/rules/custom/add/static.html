@@ -78,7 +78,7 @@
             $('#count').val($('#new_rules').find('.rule').length)
             var data = $('#new_rules').serialize()
             $.ajax({
-                url: '/custom/add/',
+                url: '/threat/custom/add/',
                 headers:{
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
@@ -95,7 +95,7 @@
         function addProperty(cloud){
             var count = $('#properties').find('.prop').length + 1
             $.ajax({
-                url:'/custom/add/static_slot/',
+                url:'/threat/custom/add/static_slot/',
                 headers:{
                     'X-CSRFToken': '{{ csrf_token }}'
                 },

@@ -1,56 +1,43 @@
-import math
-from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.shortcuts import render, HttpResponse
 from django.contrib.auth.decorators import login_required
-from common.risk.v1.rule.default import get_default_rules
-from common.risk.v1.rule.default import get_custom_rules
-from common.risk.v1.visual.ip.folium import folium_test
-from common.risk.v1.visual.user.user import get_user_visuals
-from common.risk.v1.notification.alert import check_topbar_alert
-from common.risk.v1.notification.alert import alert_off
-from common.risk.v1.notification.alert import get_alert_logs
-from common.risk.v1.notification.detection import neo4j_graph
+from .src.notification import notification, detection
+from .src.rule import default
+from .src.visual.user import user
+from .src.visual import ip
+from django.http import JsonResponse, HttpResponseRedirect
 
-HTML_FILE_PATH = 'M_threatD'
+# Notifications
+@login_required
+def notification_view(request, threat):
+    if request.method == 'POST':
+        if request.POST['cloud'] == 'Aws':
+            context = notification.alert_off(dict(request.POST.items()))
+            context.update(detection.neo4j_graph(context))
+            context.update(notification.alert.check_topbar_alert())
+        return render(request, f"M_threatD/notifications/{threat}.html", context)
+    else:
+        if threat == 'details':
+            return HttpResponseRedirect('/alert/logs/')
+    context = (notification.get_alert_logs())
+    return render(request, f"M_threatD/notifications/{threat}.html", context)
 
+# Rules
 @login_required
 def rules_view(request, cloud):
-    context = {}
-    cloud_list = ['aws','nhn','ncp','all','officekeeper']
-    try:
-        if cloud not in cloud_list:
-            pass
-    finally:
-        context = get_custom_rules(cloud)
-        context.update(get_default_rules(cloud))
-        context.update({'cloud': cloud.capitalize()})
-        context.update(check_topbar_alert())
-        return render(request, f"risk/rules/rule.html", context)
+    context = default.get_custom_rules(cloud)
+    context.update(default.get_default_rules(cloud))
+    context.update({'cloud': cloud.capitalize()})
+    return render(request, f"M_threatD/rules/rule.html", context)
 
 
+## Visuals
 @login_required
-def visuals_view(request, cloud):
-    if cloud == 'user':
-        context = {'accounts': sorted(get_user_visuals(), key=lambda x: x['total'], reverse=True)}
-    elif cloud == 'ip':
-        map = folium_test('37.5985', '126.97829999999999')
+def visuals_view(request, threat):
+    if threat == 'user':
+        context = {'accounts': sorted(user.get_user_visuals(), key=lambda x: x['total'], reverse=True)}
+    elif threat == 'ip':
+        map = ip.folium.folium_test('37.5985', '126.97829999999999')
         context = {'map': map}
     else:
         context = {}
-    context.update(check_topbar_alert())
-    return render(request, f"{HTML_FILE_PATH}/visuals/{cloud}.html", context)
-
-@login_required
-def alert_view(request, cloud):
-    if request.method == 'POST':
-        if request.POST['cloud'] == 'Aws':
-            context = alert_off(dict(request.POST.items()))
-            context.update(neo4j_graph(context))
-            context.update(check_topbar_alert())
-        return render(request, f"{HTML_FILE_PATH}/alert/{cloud}.html", context)
-    else:
-        if cloud == 'details':
-            return HttpResponseRedirect('/alert/logs/')
-    context = (get_alert_logs())
-    context.update(check_topbar_alert())
-    return render(request, f"{HTML_FILE_PATH}/alert/{cloud}.html", context)
+    return render(request, f"M_threatD/visuals/{threat}.html", context)

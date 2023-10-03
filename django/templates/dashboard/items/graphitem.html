@@ -6,7 +6,10 @@
     function threat(e) {
         var data = $(e).serialize()
         $.ajax({
-            url: "/neo4j/",
+            url: "/threat/neo4j/",
+            headers:{
+                'X-CSRFToken': '{{csrf_token}}'
+            }
             data: data,
             type: "post"
         }).done(function(res) {

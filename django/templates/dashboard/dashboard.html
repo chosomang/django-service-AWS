@@ -26,7 +26,13 @@
 {% endblock %}
 {% block content %}
 <!-- Begin Page Content -->
-<div class="grid-stack"></div>
+<div class="grid-stack">
+    <div id="no_data" class="justify-content-center text-teiren" style="display:flex; margin:40vh 0; font-size:30px">
+        <a href="/configurations/dashboard">
+            <button class="btn btn-teiren">여기를 눌러서 대시보드 설정해주세요</button>
+        </a>
+    </div>
+</div>
 {% endblock %}
 {% block script %}
 <script src="{% static '/dashboard/js/dashboard.js' %}"></script>

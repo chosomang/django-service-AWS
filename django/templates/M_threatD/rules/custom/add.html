@@ -18,7 +18,7 @@
 <script>
     function addSection(cloud, ruleClass){
         $.ajax({
-            url: `/custom/add/${ruleClass}/`,
+            url: `/threat/custom/add/${ruleClass}/`,
             headers:{
                 'X-CSRFToken': '{{ csrf_token }}'
             },

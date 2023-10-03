@@ -102,15 +102,8 @@
                     <a class="nav-link dropdown-toggle" id="threats" role="button" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
                         <span class="h6 mr-2 d-lg-inline">위협관리</span>
-                        {% if top_alert %}
                         <div id="topbar_alert_div"class="d-flex justify-content-center" style="margin-left:-0.5rem; height:45%">
-                            <span id="topbar_alert" class="badge badge-danger text-center" style="height:45%">&nbsp;N&nbsp;</span>
-                        {% elif no_top_alert %}
-                        <div id="topbar_alert_div" class="d-flex justify-content-center" style="height:45%">
                             <span hidden id="topbar_alert" class="badge badge-danger text-center" style="height:45%">&nbsp;N&nbsp;</span>
-                        {% else %}
-                        <div>
-                        {% endif %}
                         </div>
                     </a>
                     <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -118,22 +111,18 @@
                         <h6 class="dropdown-header">
                             위협알림
                         </h6>
-                        <a class="dropdown-item d-flex align-items-center" href="/management/alert/logs">
+                        <a class="dropdown-item d-flex align-items-center" href="/threat/notifications/logs">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Theat Alert</div>
                                 <div class="text-truncate">위협 알림
-                                    {% if top_alert %}
-                                    <span id="topbar_alert_count" class="badge badge-danger text-center" style="border-radius:10px">&nbsp;{{ top_alert.count }}&nbsp;</span>
-                                    {% elif no_top_alert %}
-                                    <span hidden id="topbar_alert_count" class="badge badge-danger text-center" style="border-radius:10px">&nbsp;{{ top_alert.count }}&nbsp;</span>
-                                    {% endif %}
+                                    <span id="topbar_alert_count" class="badge badge-danger text-center" style="border-radius:10px"></span>
                                 </div>
                             </div>
                         </a>
                         <h6 class="dropdown-header">
                             룰 설정
                         </h6>
-                        <a id='rule_all' class="dropdown-item align-items-center" href="/management/rules/all">
+                        <a id='rule_all' class="dropdown-item align-items-center" href="/threat/rules/all">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">All</div>
                                 <div class="text-truncate">전체 룰 설정</div>
@@ -151,7 +140,7 @@
                                 <div class="text-truncate">NHN 룰 설정</div>
                             </div>
                         </a>
-                        <a id='rule_aws' class="dropdown-item d-flex align-items-center" href="/management/rules/aws">
+                        <a id='rule_aws' class="dropdown-item d-flex align-items-center" href="/threat/rules/aws">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Amazon</div>
                                 <div class="text-truncate">AWS 룰 설정</div>
@@ -166,7 +155,7 @@
                         <h6 class="dropdown-header">
                             Graph 시각화
                         </h6>
-                        <a id='visuals_user' class="dropdown-item d-flex align-items-center" href="/management/visuals/user">
+                        <a id='visuals_user' class="dropdown-item d-flex align-items-center" href="/threat/visuals/user">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">USER</div>
                                 <div class="text-truncate">사용자 중심 분석</div>

@@ -1,17 +1,18 @@
 # /webAPP/django/dashboard/
 # 127.0.0.1/dashboard
 from django.urls import path
-from dashboard.src.v1 import gridstack_items
-from dashboard.src.v1 import gridstack
+from dashboard.src import gridstack_items
+from dashboard.src import gridstack
 from dashboard import views
 from django.conf.urls.static import static
 
+URL_PATH = 'dashboard'
 # dashboard/
 urlpatterns = [
     path('', views.dashboard_view, name='dashboard'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
 ]
-# dashboard/grid
+# /grid
 urlpatterns += [
     path('grid/save/', gridstack.save_layout),
     path('grid/load/', gridstack.load_layout),
@@ -21,7 +22,8 @@ urlpatterns += [
     path('grid/items/<type>/', gridstack.add_item),
     path('grid/items/', gridstack.list_items),
 ]
-# dashboard/status
+
+# /status
 urlpatterns += [
     path("status/", gridstack_items.get_server_status),
 ]

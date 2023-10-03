@@ -1,15 +1,10 @@
-from M_equipments import views
-from M_equipments.src import module
 from django.urls import path
+from . import views
 
 urlpatterns = [
+    # Integration
     path('', views.integration_view),
-    path('<equipment>/', views.integration_type),
-]
-
-# Integrations
-urlpatterns += [
-    # AWS
-    path("aws/check/", module.integration_AWS),
-    path("aws/insert/", module.insert_AWS),
+    path('<equipment>/', views.integration_page),
+    path("<equipment>/check/", views.integration_check_ajax),
+    path("<equipment>/insert/", views.integration_insert_ajax),
 ]

@@ -15,7 +15,7 @@ function getCookie(name = 'csrftoken') {
 
 $('#help').on('show.bs.modal', function () {
     $.ajax({
-        url: '/modal/log/help/',
+        url: '/logs/modal/help/',
         headers: {
             'X-CSRFToken': getCookie()
         },
@@ -29,7 +29,7 @@ $('#detail-modal').on('show.bs.modal', function (event) {
     var id = button.data('id')
     var cloud = button.data('cloud')
     $.ajax({
-        url: '/modal/log/details/',
+        url: '/logs/modal/details/',
         headers: {
             'X-CSRFToken': getCookie()
         },
@@ -63,7 +63,7 @@ function searchFilter(e) {
         data = $('#search').serialize() + `&page=${e}&cloud=${cloud}`
     }
     $.ajax({
-        url: '/log/filter/',
+        url: '/logs/filter/',
         headers: {
             'X-CSRFToken': getCookie()
         },

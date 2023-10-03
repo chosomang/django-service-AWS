@@ -40,6 +40,85 @@ def delete_integration(request):
         return '로그 수집 중단 완료'
     else:
         return '로그 수집 중단 실패'
+## AWS CLOUD
+def integration_check(request):
+    import boto3
+    if request.method == 'POST':
+        data = {}
+        access_key = request.POST['access_key'].encode('utf-8').decode('iso-8859-1')  # 한글 입력 시 에러 발생 방지
+        if access_key == '':
+            data['class'] = 'btn btn-danger'
+            data['value'] = 'ACCESS KEY를 입력해주세요'
+            return data
+        secret_key = request.POST['secret_key'].encode('utf-8').decode('iso-8859-1')  # 한글 입력 시 에러 발생 방지
+        if secret_key == '':
+            data['class'] = 'btn btn-danger'
+            data['value'] = 'SECRET KEY를 입력해주세요'
+            return data
+        region_name = request.POST['region_name'].encode('utf-8').decode('iso-8859-1')
+        bucket_name = request.POST['bucket_name'].encode('utf-8').decode('iso-8859-1')
+        cypher = f"""
+        MATCH (i:Integration)
+        WHERE i.integrationType = 'Aws'
+            AND i.accessKey = '{access_key}'
+            AND i.secretKey = '{secret_key}'
+        RETURN count(i)
+        """
+        if graph.evaluate(cypher) > 0 :
+            data['class'] = 'btn btn-warning'
+            data['value'] = '이미 등록된 정보입니다.'
+        else:
+            session = boto3.Session(
+                aws_access_key_id = access_key,
+                aws_secret_access_key = secret_key
+            )
+            try:
+                s3_client = session.client('s3')
+                s3_client.list_buckets()
+                data['class'] = 'btn btn-success'
+                data['value'] = ' ✓ 키 인증 및 Cloudtrail 서비스 사용 확인 완료!'
+                data['modal'] = {}
+                data['modal']['access_key'] = access_key
+                data['modal']['secret_key'] = secret_key
+                data['modal']['reigion_name'] = region_name
+                data['modal']['bucket_name'] = bucket_name
+            except Exception:
+                data['class'] = 'btn btn-danger'
+                data['value'] = '인증 실패 (재시도)'
+            finally:
+                return data
+        return data
+    data = {}
+    data['class'] = 'btn btn-danger'
+    data['value'] = '인증 실패 (재시도)'
+    return data
+
+def integration_insert(request):
+    if request.method == 'POST':
+        access_key = request.POST['modal_access_key'].encode('utf-8').decode('iso-8859-1')
+        secret_key = request.POST['modal_secret_key'].encode('utf-8').decode('iso-8859-1')
+        region_name = request.POST['modal_region_name'].encode('utf-8').decode('iso-8859-1')
+        bucket_name = request.POST['modal_bucket_name'].encode('utf-8').decode('iso-8859-1')
+        cypher = f"""
+        CREATE (i:Integration 
+            {{
+                integrationType:'Aws',
+                accessKey:'{access_key}', 
+                secretKey:'{secret_key}',
+                regionName: '{region_name}',
+                regionName: '{bucket_name}'
+            }})
+        RETURN COUNT(i)
+        """
+        try:
+            if graph.evaluate(cypher) == 1:
+                data = "<span class='text-primary'>로그 수집/통합 설정 완료 </span>"
+            else:
+                raise Exception
+        except Exception:
+            data = "등록 실패"
+        finally:
+            return data
 
 # ## NCP Cloud Activity Tracer
 # def integration_NCP(request):
@@ -150,86 +229,6 @@ def delete_integration(request):
 #         finally:
 #             return HttpResponse(data)
 #     return False
-
-## AWS CLOUD
-def integration_AWS(request):
-    import boto3
-    if request.method == 'POST':
-        data = {}
-        access_key = request.POST['access_key'].encode('utf-8').decode('iso-8859-1')  # 한글 입력 시 에러 발생 방지
-        if access_key == '':
-            data['class'] = 'btn btn-danger'
-            data['value'] = 'ACCESS KEY를 입력해주세요'
-            return JsonResponse(data)
-        secret_key = request.POST['secret_key'].encode('utf-8').decode('iso-8859-1')  # 한글 입력 시 에러 발생 방지
-        if secret_key == '':
-            data['class'] = 'btn btn-danger'
-            data['value'] = 'SECRET KEY를 입력해주세요'
-            return JsonResponse(data)
-        region_name = request.POST['region_name'].encode('utf-8').decode('iso-8859-1')
-        bucket_name = request.POST['bucket_name'].encode('utf-8').decode('iso-8859-1')
-        cypher = f"""
-        MATCH (i:Integration)
-        WHERE i.integrationType = 'Aws'
-            AND i.accessKey = '{access_key}'
-            AND i.secretKey = '{secret_key}'
-        RETURN count(i)
-        """
-        if graph.evaluate(cypher) > 0 :
-            data['class'] = 'btn btn-warning'
-            data['value'] = '이미 등록된 정보입니다.'
-        else:
-            session = boto3.Session(
-                aws_access_key_id = access_key,
-                aws_secret_access_key = secret_key
-            )
-            try:
-                s3_client = session.client('s3')
-                s3_client.list_buckets()
-                data['class'] = 'btn btn-success'
-                data['value'] = ' ✓ 키 인증 및 Cloudtrail 서비스 사용 확인 완료!'
-                data['modal'] = {}
-                data['modal']['access_key'] = access_key
-                data['modal']['secret_key'] = secret_key
-                data['modal']['reigion_name'] = region_name
-                data['modal']['bucket_name'] = bucket_name
-            except Exception:
-                data['class'] = 'btn btn-danger'
-                data['value'] = '인증 실패 (재시도)'
-            finally:
-                return JsonResponse(data)
-        return JsonResponse(data)
-    data = {}
-    data['class'] = 'btn btn-danger'
-    data['value'] = '인증 실패 (재시도)'
-    return JsonResponse(data)
-
-def insert_AWS(request):
-    if request.method == 'POST':
-        access_key = request.POST['modal_access_key'].encode('utf-8').decode('iso-8859-1')
-        secret_key = request.POST['modal_secret_key'].encode('utf-8').decode('iso-8859-1')
-        region_name = request.POST['modal_region_name'].encode('utf-8').decode('iso-8859-1')
-        bucket_name = request.POST['modal_bucket_name'].encode('utf-8').decode('iso-8859-1')
-        cypher = f"""
-        CREATE (i:Integration 
-            {{
-                integrationType:'Aws',
-                accessKey:'{access_key}', 
-                secretKey:'{secret_key}',
-                regionName: '{region_name}',
-                regionName: '{bucket_name}'
-            }})
-        RETURN COUNT(i)
-        """
-        try:
-            if graph.evaluate(cypher) == 1:
-                data = "<span class='text-primary'>로그 수집/통합 설정 완료 </span>"
-            else:
-                raise Exception
-        except Exception:
-            data = "등록 실패"
-        finally:
-            return HttpResponse(data)
 
 # ## Azure Cloud
 # def integration_Azure(request):
