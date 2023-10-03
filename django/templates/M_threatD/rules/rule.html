@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block head %}
-<head>
-    <link rel="stylesheet" href="{% static '/css/tab_table.css' %}">
-</head>
+<!-- Page Essential -->
+<link rel="stylesheet" href="{% static '/css/tab_table.css' %}">
 {% endblock %}
 {% block content %}
 <div class="container-fluid">
@@ -117,107 +116,8 @@
 </div>
 {% endblock %}
 {% block script %}
-<script>
-    function addRuleModal(cloud) {
-        $.ajax({
-            url: 'add/',
-            headers:{
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            data: {
-                cloud: cloud
-            },
-            type: 'post'
-        }).done(function(data) {
-            $('#rule_body').html(data);
-        })
-        $('#rule-modal').modal('show');
-    }
-
-    function ruleDetails(event) {
-        var url = event.address.value
-        var data = $(event).serialize()
-        $.ajax({
-            url: url,
-            headers:{
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            data: data,
-            type: 'post'
-        }).done(function(data) {
-            $('#detail_body').html(data)
-        }).fail(function(){
-            $('#detail_body').html('fail')
-        })
-    }
-    function editRuleModal() {
-        var data = $('#edit_modal_form').serialize()
-        $('#edit_message').slideUp('normal')
-        $.ajax({
-            url: 'edit/',
-            headers:{
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            data: data,
-            type: 'post'
-        }).done(function(data) {
-            $('#edit_body').html(data)
-            $('#edit_body').hide().fadeIn()
-        })
-    }
-
-    function deleteRuleModal(event) {
-        $('#rule_name').html(event.rule_name.value)
-        var data = $(event).children('input').clone()
-        $('#del_form').html(data)
-    }
-
-    function deleteRuleAction(event) {
-        var data = $(event).serialize()
-        $.ajax({
-            url: '/threat/custom/delete/',
-            headers:{
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            data: data,
-            type: 'post'
-        }).done(function(data) {
-            if (data == '정책 삭제 완료') {
-                $('.modal').modal('hide')
-                alert(data)
-                window.location.reload()
-            } else {
-                alert(data)
-            }
-        }).fail(function() {
-            alert('다시 시도해주세요')
-        })
-    }
-
-    function ruleOnOff(event) {
-        var data = $(event.parentNode).serialize()
-        $.ajax({
-            url: 'on_off/',
-            headers:{
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            data: data,
-            type: 'post'
-        }).done(function(on_off) {
-            $(event.parentNode.on_off).val(on_off)
-            if (on_off == '1') {
-                $(event).val('  On  ')
-                $(event).css('background-color', '')
-                $(event).css('border-color', '')
-            } else {
-                $(event).val('  Off  ')
-                $(event).css('background-color', '#D3D3D3')
-                $(event).css('border-color', '#D3D3D3')
-            }
-        })
-    }
-    $('#threat_top').addClass('show');
-</script>
+<script src="{% static '/M_threatD/js/rule.js' %}"></script>
+<script src="{% static '/M_threatD/js/addRule/ruleSection.js' %}"></script>
 <script type="text/javascript">
     $(function() {
         $("#dataTable").DataTable({
