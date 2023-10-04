@@ -33,16 +33,13 @@ def main_test(request):
     MATCH (n:Log:Aws)
     RETURN KEYS(n)
     """
-    nodes = graph.run(cypher)
-    test =[]
-    for node in nodes:
-        test.append(node)
-    context = {'test': test}       
+    
+    context = {'test': 'test'}       
 
     return render(request, 'testing/test.html', context)
 
 def test2(request):
-    return HttpResponse('test')
+    return render(request, 'testing/ajaxTesting.html')
 # def cyto(request):
 #     global graph
 #     cypher = '''

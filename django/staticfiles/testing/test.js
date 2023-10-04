@@ -13,21 +13,26 @@ function getCookie(name) {
     return cookieValue;
 }
 
-$(function () {
-    const csrftoken = getCookie('csrftoken');
+// $(function () {
+//     const csrftoken = getCookie('csrftoken');
 
-    console.log('js test')
-    $.ajax({
-        url: '/ajax_js/',
-        headers: {
-            'X-CSRFToken': csrftoken
-        },
-        type: 'post',
-        data: {
-            test: 'js ajax test'
-        }
-    }).done(function(data){
-        console.log('js ajax')
-        console.log(data)
-    })
-})
+//     console.log('js test')
+//     $.ajax({
+//         url: '/ajax_js/',
+//         headers: {
+//             'X-CSRFToken': csrftoken
+//         },
+//         type: 'post',
+//         data: {
+//             test: 'js ajax test'
+//         }
+//     }).done(function(data){
+//         console.log('js ajax')
+//         console.log(data)
+//     })
+// })
+
+
+function test(){
+    console.log('testtest')
+}

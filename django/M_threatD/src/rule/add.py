@@ -200,6 +200,7 @@ def static_count_cypher(where_cypher, rule):
 def get_flow_check(request):
     flows = QueryDict(request['rules']).dict()
     count = int(request['rule_count'])
+    flow_names = []
     for i in range(1, count+1):
         for key, value in flows.items():
             if key[-3] == str(i):
@@ -207,11 +208,15 @@ def get_flow_check(request):
                     if not value:
                         return f"error 탐지 정책 {i}의 이름을 입력해주세요"
                     else:
+                        if value in flow_names:
+                            return f"error 탐지 정책 {i}: 서로 같은 이름의 탐지 정책이 존재합니다."
                         if f'flow_og_{i}_1' in flows:
                             if flows[f'flow_og_{i}_1'] == value:
+                                flow_names.append(value)
                                 continue
-                        if graph.evaluate(f"MATCH (flow:Flow {{flowName: '{value}'}}) RETURN COUNT(flow)") > 0:
+                        elif graph.evaluate(f"MATCH (flow:Flow {{flowName: '{value}'}}) RETURN COUNT(flow)") > 0 :
                             return f"error 탐지 정책 {i}: 같은 이름의 탐지 정책이 존재합니다. 탐지 정책 이름을 변경해주세요."
+                        flow_names.append(value)
                 if f'comment_{i}' in key:
                     if not value:
                         return f"error 탐지 정책 {i}의 설명을 입력해주세요"
@@ -311,6 +316,8 @@ def add_dynamic_rule(request):
         request.pop('check')
         return 1
     cypher = dynamic_cypher(flows, wheres, rule, count, cloud)
+    if cypher.startswith('탐지'):
+        return cypher
     result = rule_merge_test(cypher, rule, cloud, 'dynamic')
     return result
 
@@ -469,7 +476,7 @@ def rule_merge_test(cypher, rule, cloud, ruleClass):
     try:
         graph.evaluate(cypher)
     except ClientError as e:
-        return f"{e}"+ '정책 추가를 실패했습니다. 정책을 다시 검토하고 저장해주세요.'
+        return '정책 추가를 실패했습니다. 정책을 다시 검토하고 저장해주세요.'
     rule_cypher = f"""
     MATCH (rule:Rule:{cloud}
         {{
@@ -486,4 +493,4 @@ def rule_merge_test(cypher, rule, cloud, ruleClass):
         if graph.evaluate(rule_cypher) == 1:
             return '정책 추가 완료'
     except ClientError as e:
-        return f"{e}"#'정책 추가 실패'
+        return '정책 추가 실패'

@@ -12,44 +12,21 @@
 
 </style>
 <div class="mt-4"></div>
-{{test}}
-</div>
 
+<button id='test' onclick="test()">testsetset</button>
+<div id="scripts"></div>
 {% endblock %}
 {% block script %}
 <script>
-    $('.inputField input').on('focus', function() {
-        $(this).parent().find('.checkbox-container').slideDown('fast')
+    $.ajax({
+        url: '/test/test2/',
+        headers:{
+            'X-CSRFToken': '{{csrf_token}}'
+        },
+        type: 'post'
+    }).done(function(data){
+        var scriptSrc = $(data).filter('script').attr('src')
+        $('#scripts').append($('<script>').attr({'src':scriptSrc, 'id':'test'}))
     })
-    $('.inputField input').on('blur', function() {
-        var checkbox_container = $(this).parent().find('.checkbox-container')
-        setTimeout(function() {
-            if (!$(':checkbox:focus').length){
-                checkbox_container.slideUp('fast');
-            }
-        }, 10);
-    })
-    $(':checkbox').on('blur', function() {
-        setTimeout(function() {
-            if (!$(':checkbox:focus').length) {
-                $(this).parent().parent().find('.checkbox-container').slideUp();
-            }
-        }, 10);
-    });
-    $('.inputField input').on('input', function() {
-        var input = $(this).val();
-    
-        // Iterate over each checkbox
-        $(this).parent().find('.checkbox-container input[type="checkbox"]').each(function() {
-            var checkboxValue = $(this);
-    
-            // If the checkbox value doesn't contain the input string, hide it
-            if (!new RegExp(input, 'i').test(checkboxValue.val())) {
-                $(this).parent().hide();
-            } else {
-                $(this).parent().show();
-            }
-        });
-    });
 </script>
 {% endblock %}

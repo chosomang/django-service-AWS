@@ -58,7 +58,7 @@ def add_rule_section(request, section):
                 context.update(flow_check)
             else:
                 context.update(add.get_flow_slot(context))
-            return render(request, "risk/rules/custom/add/flow_slot.html", context)
+            return render(request, "M_threatD/rules/custom/add/flow_slot.html", context)
         else:
             if context:
                 return render(request, f'M_threatD/rules/custom/add/{section}.html', context)
