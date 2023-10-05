@@ -42,16 +42,17 @@
 
                     <!-- Content Row -->
                     <div class="row justify-content-center">
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
-                            <div class="card border-left-success shadow h-100 py-2">
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#' style="pointer-events: none;">
+                            <div class="card border-left-secondary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-md font-weight-bold text-success text-uppercase mb-1">
+                                            <div class="text-md font-weight-bold text-secondary text-uppercase mb-1">
                                                 Naver
                                             </div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                                <img src="{% static '/img/naver_icon.png' %}" width="40%" height="auto">
+                                                <img src="{% static '/img/naver_icon.png' %}" width="40%" height="auto"
+                                                    style="filter: grayscale(80%); opacity: 0.5;">
                                                 <p>Naver Cloud Platform</p>
                                             </div>
                                         </div>
@@ -59,7 +60,7 @@
                                 </div>
                             </div>
                         </a>
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#' style="pointer-events: none;">
                             <div class="card border-left-secondary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
@@ -69,7 +70,7 @@
                                             </div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">
                                                 <img src="{% static '/img/nhn_icon.png' %}" width="77%" height="20%"
-                                                    style="margin-top:15px; margin-bottom:15px;">
+                                                    style="margin-top:15px; margin-bottom:15px; filter: grayscale(80%); opacity: 0.5;">
                                                 <p>NHN Cloud</p>
                                             </div>
                                         </div>
@@ -93,14 +94,15 @@
                                 </div>
                             </div>
                         </a>
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
-                            <div class="card border-left-primary shadow h-100 py-2">
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#' style="pointer-events: none;">
+                            <div class="card border-left-secondary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-md font-weight-bold text-primary text-uppercase mb-2">
+                                            <div class="text-md font-weight-bold text-secondary text-uppercase mb-2">
                                                 AZURE</div>
-                                            <img src=" {% static '/img/azure_icon.png' %}" width="43%" height="auto">
+                                            <img src=" {% static '/img/azure_icon.png' %}" width="43%" height="auto"
+                                                style="filter: grayscale(80%); opacity: 0.5;">
                                             <div class="h5 mb-0 mt-3 font-weight-bold text-gray-800">
                                                 <p>Microsoft Azure</p>
                                             </div>
@@ -109,17 +111,17 @@
                                 </div>
                             </div>
                         </a>
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
-                            <div class="card border-left-primary shadow h-100 py-2">
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#' style="pointer-events: none;">
+                            <div class="card border-left-secondary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-md font-weight-bold text-primary text-uppercase mb-2">
+                                            <div class="text-md font-weight-bold text-secondary text-uppercase mb-2">
                                                 지란지교
                                             </div>
                                             <div class="h5 font-weight-bold text-gray-800">
                                                 <img class='mb-2' src=" {% static '/img/officekeeper_icon.png' %}"
-                                                    width="40%" height="auto">
+                                                    width="40%" height="auto" style="filter: grayscale(80%); opacity: 0.5;">
                                                 <p>Office Keeper</p>
                                             </div>
                                         </div>
@@ -127,15 +129,17 @@
                                 </div>
                             </div>
                         </a>
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
-                            <div class="card border-left-danger shadow h-100 py-2">
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#' style="pointer-events: none;">
+                            <div class="card border-left-secondary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-md font-weight-bold text-danger text-uppercase mb-1">
+                                            <div class="text-md font-weight-bold text-secondary text-uppercase mb-1">
                                                 KT</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                                <img src=" {% static '/img/kt_icon.png' %}" width="85%" height="auto">
+                                                <div>
+                                                    <img src=" {% static '/img/kt_icon.png' %}" width="85%" height="auto" style="filter: grayscale(80%); opacity: 0.5;">
+                                                </div>
                                                 <p>KT Cloud</p>
                                             </div>
                                         </div>
@@ -143,17 +147,17 @@
                                 </div>
                             </div>
                         </a>
-                        <a class="btn col-xl-3 col-md-6 mb-4" href='#'>
-                            <div class="card border-left-primary shadow h-100 py-2">
+                        <a class="btn col-xl-3 col-md-6 mb-4" href='#' style="pointer-events: none;">
+                            <div class="card border-left-secondary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-md font-weight-bold text-primary text-uppercase mb-2">
+                                            <div class="text-md font-weight-bold text-secondary text-uppercase mb-2">
                                                 Windows
                                             </div>
                                             <div class="h5 font-weight-bold text-gray-800">
                                                 <img class='mb-2' src=" {% static '/img/windows-logo.png' %}"
-                                                    width="40%" height="auto">
+                                                    width="40%" height="auto" style="filter: grayscale(80%); opacity: 0.5;">
                                                 <p>Windows Security Event Log</p>
                                             </div>
                                         </div>
@@ -227,6 +231,10 @@
                                             {% endfor %}
                                         </tr>
                                         {% endfor %}
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="5" style="font-size:20px">No Data</td>
+                                        </tr>
                                         {% endif %}
                                     </tbody>
                                 </table>
