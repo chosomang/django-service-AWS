@@ -107,6 +107,7 @@ function addItem(type) {
         },
         type: 'post'
     }).done(function (data) {
+        console.log(type)
         grid.addWidget(data)
         var scripts = $(data.content).filter('script:not([src])');
         if (scripts.length >= 1) {
@@ -124,7 +125,7 @@ function addItem(type) {
         $(`#${type}btn`).hide()
         if (type == 'recentDetection') {
             $.ajax({
-                url: `/dashboard/grid/items/graphitem/`,
+                url: `/grid/items/graphitem/`,
                 headers: {
                     'X-CSRFToken': getCookie()
                 },

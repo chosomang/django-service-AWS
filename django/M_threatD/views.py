@@ -13,7 +13,6 @@ def notification_view(request, threat):
         if request.POST['cloud'] == 'Aws':
             context = notification.alert_off(dict(request.POST.items()))
             context.update(detection.neo4j_graph(context))
-            context.update(notification.alert.check_topbar_alert())
         return render(request, f"M_threatD/notifications/{threat}.html", context)
     else:
         if threat == 'details':

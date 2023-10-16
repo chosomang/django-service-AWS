@@ -31,10 +31,15 @@ STATIC_DIR = BASE_DIR / 'staticfiles'
 def main_test(request):
     cypher = """
     MATCH (n:Log:Aws)
-    RETURN KEYS(n)
+    UNWIND KEYS(n) AS keys
+    WITH DISTINCT keys
+    RETURN keys
     """
-    
-    context = {'test': 'test'}       
+    results = graph.run(cypher)
+    test = []
+    for result in results:
+        test.append(result['keys'])
+    context = {'test': test}       
 
     return render(request, 'testing/test.html', context)
 
