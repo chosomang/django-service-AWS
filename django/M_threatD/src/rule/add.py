@@ -23,17 +23,25 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 def get_log_properties(request):
     cloud = request['cloud']
     cypher = f"""
-    MATCH (l:Log:{cloud})
-    UNWIND KEYS(l) AS keys
-    WITH DISTINCT keys
-    RETURN COLLECT(keys) as property
+    call apoc.meta.data({{sample: 999999}}) yield label, property, type
+    where label = 'Log' and type <> 'RELATIONSHIP'
+    return property
     """
+    cypher = f"""
+    MATCH (l:Log:Aws)
+    WITH l LIMIT 50000
+    WITH DISTINCT KEYS(l) as c_keys
+    UNWIND c_keys AS keys
+    WITH DISTINCT keys
+    WHERE NOT ANY(x IN split(keys,'_') WHERE x =~ '^([02-9]+)$')
+    RETURN COLLECT(DISTINCT(keys)) as props
+    """
+    response = graph.evaluate(cypher)
     # 'RETURN apoc.coll.toSet(REDUCE(res = [], k IN COLLECT(DISTINCT(keys)) | res + k)) AS property'
-    # results = graph.run(cypher)
+    # response = [ i['keys'] for i in graph.run(cypher).data()]
     # response = []
     # for result in results:
     #     response.append(result['property'])
-    response = graph.evaluate(cypher)
     return response
 
 
