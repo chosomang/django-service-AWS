@@ -42,7 +42,7 @@
         arr['rule_name'] = rule_name
         console.log(arr)
         $.ajax({
-            url: '/neo4j/',
+            url: '/threat/neo4j/',
             headers:{
                 'X-CSRFToken': '{{csrf_token}}'
             },
@@ -59,7 +59,7 @@
                 <input type="hidden" name="rule_name" value="${rule_name}">
                 <input type="hidden" name="detected_rule" value="${arr['detected_rule']}">
                 <input type="hidden" name="eventTime" value="${arr['eventTime']}">
-                <input type="hidden" name="rule_type" value="${arr['rule_type']}">
+                <input type="hidden" name="rule_class" value="${arr['rule_class']}">
                 <input type="hidden" name="cloud" value="${arr['cloud']}">
                 <input type="hidden" name="id" value="${arr['id']}">
                 <input type="submit" class="btn btn-block btn-teiren" value="상세보기">
