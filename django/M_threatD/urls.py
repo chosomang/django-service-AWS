@@ -10,6 +10,8 @@ urlpatterns = [
     path('rules/<cloud>/', views.rules_view),
     ## visuals
     path('visuals/<threat>/', views.visuals_view),
+    # User Threat AJAX ajax
+    path('visuals/user/details/', views.user_details),
 
     path("neo4j/",detection.neo4j_graph),
 ]

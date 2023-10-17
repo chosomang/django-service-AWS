@@ -40,3 +40,11 @@ def visuals_view(request, threat):
     else:
         context = {}
     return render(request, f"M_threatD/visuals/{threat}.html", context)
+
+## Visuals User Details Modal
+@login_required
+def user_details(request):
+    if request.method == 'POST':
+        context = dict(request.POST.items())
+        context.update(user.user_graph(context))
+        return render(request, 'M_threatD/visuals/user/details.html', context)

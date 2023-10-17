@@ -216,7 +216,7 @@ def get_user_table(request):
         r.ruleName AS detected_rule,
         l.eventTime AS eventTime,
         apoc.date.format(apoc.date.parse(l.eventTime, "ms", "yyyy-MM-dd'T'HH:mm:ssX"), "ms", "yyyy-MM-dd HH:mm:ss") AS detected_time,
-        r.ruleType AS rule_type,
+        r.ruleClass AS rule_class,
         [label IN LABELS(r) WHERE label <> 'Rule'][0] AS cloud
     ORDER BY detected_time DESC
     """
