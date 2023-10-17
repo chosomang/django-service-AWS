@@ -241,9 +241,8 @@ def threatSenario(request):
     """
     results = graph.run(cypher)
     data =[0,0,0,0]
-    average = 1
     for result in results:
-        average = result['average'] if 'average' in result else 1
+        average = result['average'] if result['average'] else 1
         level = result['level']
         data[level-1] = result['count']
     degree = [3.20, 3.73, 4.25, 4.85]
@@ -287,9 +286,8 @@ def threatLevel(request):
     """
     results = graph.run(cypher)
     data =[0,0,0,0]
-    average = 1
     for result in results:
-        average = result['average'] if 'average' in result else 1
+        average = result['average'] if result['average'] else 1
         level = result['level']
         data[level-1] = result['count']
     degree = [3.20, 3.73, 4.25, 4.85]
