@@ -27,7 +27,7 @@ $(function () {
             if (data.top_alert){
                 topbar_alert_count.removeAttr('hidden')
                 $('#topbar_alert').removeAttr('hidden')
-                $('#topbar_alert_div').attr('style', 'margin-left:-0.5rem; height:45%;')
+                $('#topbar_alert_div').attr('style', 'margin:0.3rem 0 1rem 0.1rem;; width:0.2rem; height:0.75rem; background-color:white;')
                 topbar_alert_count.text("\u00A0"+data.top_alert.count+"\u00A0")
             }
             else if (data.no_top_alert){
