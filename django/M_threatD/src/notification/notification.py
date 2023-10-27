@@ -29,18 +29,22 @@ def get_alert_logs():
         d.alert = 1 AND d.alert IS NOT NULL
     RETURN
         HEAD([label IN labels(r) WHERE label <> 'Rule']) AS cloud,
-        l.eventTime AS detected_time,
-        r.ruleComment as detectedAction,
-        l.eventName as actionDisplayName,
-        l.eventType as actionResultType,
         l.eventTime as eventTime,
         l.eventTime AS eventTime_format,
+        r.ruleComment as detectedAction,
+        l.eventName as actionDisplayName,
+        CASE
+            WHEN r.level = 1 THEN ['LOW', 'success']
+            WHEN r.level = 2 THEN ['MID', 'warning']
+            WHEN r.level = 3 THEN ['HIGH', 'caution']
+            ELSE ['CRITICAL', 'danger']
+        END AS level,
         l.sourceIPAddress as sourceIp,
         r.ruleName as detected_rule,
         r.ruleClass as rule_class,
         r.ruleName+'#'+id(d) AS rule_name,
         ID(d) as id
-    ORDER BY eventTime DESC
+    ORDER BY eventTime DESC, r.level DESC
     '''
     results = graph.run(cypher)
     data = check_alert_logs()
@@ -66,20 +70,24 @@ def check_alert_logs():
     WHERE
         d.alert <> 1
     RETURN
-        HEAD([label IN labels(r) WHERE label <> 'Rule']) AS cloud,
-        l.eventTime AS detected_time,
-        r.ruleComment AS detectedAction,
-        l.eventName AS actionDisplayName,
-        l.eventType AS actionResultType,
-        l.eventTime AS eventTime,
+    HEAD([label IN labels(r) WHERE label <> 'Rule']) AS cloud,
+        l.eventTime as eventTime,
         l.eventTime AS eventTime_format,
-        l.sourceIPAddress AS sourceIp,
-        r.ruleName AS detected_rule,
-        r.ruleName+'#'+id(d) AS rule_name,
+        r.ruleComment as detectedAction,
+        l.eventName as actionDisplayName,
+        CASE
+            WHEN r.level = 1 THEN ['LOW', 'success']
+            WHEN r.level = 2 THEN ['MID', 'warning']
+            WHEN r.level = 3 THEN ['HIGH', 'caution']
+            ELSE ['CRITICAL', 'danger']
+        END AS level,
+        l.sourceIPAddress as sourceIp,
+        r.ruleName as detected_rule,
         r.ruleClass as rule_class,
-        ID(d) AS id,
+        r.ruleName+'#'+id(d) AS rule_name,
+        ID(d) as id,
         d.alert AS alert
-    ORDER BY alert, eventTime DESC
+    ORDER BY alert, eventTime DESC, r.level DESC
     """
     results = graph.run(cypher)
     data = []
