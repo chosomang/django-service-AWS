@@ -24,8 +24,8 @@
     }
 
     .color-box-success{
-        color: #1cc88a;
-        background-color: rgba(28, 200, 138, 0.3);
+        color: #1ed45e;
+        background-color: rgba(30, 212, 94, 0.3);
     }
 </style>
 <div class="container-fluid">
@@ -43,6 +43,7 @@
                     style="text-align:center;overflow:scroll;">
                     <thead>
                         <tr>
+                            <th>확인여부</th>
                             <th>클라우드</th>
                             <th>행위 시간</th>
                             <th>탐지 정책</th>
@@ -55,6 +56,7 @@
                     </thead>
                     <tfoot>
                         <tr>
+                            <th>확인여부</th>
                             <th>클라우드</th>
                             <th>행위 시간</th>
                             <th>탐지 정책</th>
@@ -70,8 +72,10 @@
                         {% for result in data %}
                         {% if 'alert' in result %}
                         <tr class="text-danger">
+                            <td style="font-weight:900" width="200"><i class="fa-solid fa-eye-slash fa-bounce"></i></td>
                         {% else %}
                         <tr>
+                            <td class="text-teiren" style="font-weight:900" width="200"><i class="fa-solid fa-circle-check"></i></td>
                         {% endif %}
                             {% for key, value in result.items %}
                             {% if key != 'form' %}
@@ -130,12 +134,25 @@
                 return 5;
         }
     };
+    $.fn.dataTable.ext.type.order['alert-check-pre'] = function(data) {
+        switch(data) {
+            case '<i class="fa-solid fa-eye-slash fa-bounce"></i>':
+                return 1;
+            case '<i class="fa-solid fa-circle-check"></i>':
+                return 2;
+            default:
+                return 3;
+        }
+    };
     $("#dataTable").DataTable({
         //데이터 테이블 0번째 인덱스부터 거꾸로 정렬(최신순 정렬)
         order: [
-            [0, 'desc']
+            [0, 'asc']
         ],
         columnDefs: [{
+            targets:0,
+            type: 'alert-check'
+        },{
             targets: 4,
             type: 'threat-level'
         }],
