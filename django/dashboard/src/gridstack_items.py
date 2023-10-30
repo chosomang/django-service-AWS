@@ -391,7 +391,14 @@ def recentDetection(request):
     cypher = '''
     MATCH (r:Rule)<-[d:DETECTED|FLOW_DETECTED]-(l:Log)
     RETURN
+        d.alert as alert,
         id(d) AS No,
+        CASE
+            WHEN r.level = 1 THEN 'success' 
+            WHEN r.level = 2 THEN 'warning'
+            WHEN r.level = 3 THEN 'caution'
+            ELSE 'danger'
+        END AS level,
         head([label IN labels(r) WHERE label <> 'Rule']) AS cloud,
         head([label IN labels(r) WHERE label <> 'Rule'])+'/'+l.sourceIPAddress AS system,
         r.ruleName AS detected_rule,

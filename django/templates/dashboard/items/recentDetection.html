@@ -12,8 +12,10 @@
                     style="text-align:center;overflow:scroll;font-size:0.6rem;">
                     <thead>
                         <tr>
+                            <th>확인여부</th>
                             <th>위협 No</th>
-                            <th>장비명</th>
+                            <th>위협 정도</th>
+                            <th>리소스</th>
                             <th>탐지위협</th>
                             <th>행위</th>
                             <th>발생시간</th>
@@ -23,12 +25,26 @@
                     <tbody>
                         {% if recent_threat %}
                         {% for threat in recent_threat %}
+                        {% if  threat.alert == 0 %}
+                        <tr class="text-danger">
+                        {% else %}
                         <tr>
+                        {% endif %}
                             {% for key, value in threat.items %}
                             {% if key != 'form' %}
+                            {% if key == 'level' %}
+                            <td><i class="text-{{value}} fa-solid fa-circle"></i></td>
+                            {% elif key == 'alert' %}
+                                {% if value == 1 %}
+                                <td style="font-weight:900; font-size:0.9rem;"><i class="text-teiren fa-solid fa-circle-check"></i></td>
+                                {% else %}
+                                <td style="font-weight:900; font-size:0.9rem;"><i class="text-danger fa-solid fa-eye-slash fa-bounce"></i></td>
+                                {% endif %}
+                            {% else %}
                             <td>
                                 {{ value }}
                             </td>
+                            {% endif %}
                             {% endif %}
                             {% endfor %}
                             <td>

@@ -9768,7 +9768,10 @@
   a.text-warning:hover, a.text-warning:focus {
     color: #dda20a !important;
   }
-  
+
+  .text-caution {
+    color: #fd7e14 !important;
+  }
 
   .text-danger {
     color: #e74a3b !important;
