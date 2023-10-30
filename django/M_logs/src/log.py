@@ -49,7 +49,7 @@ def get_log_page(request, cloud):
             filter_key = key.split('_')[0]
         if filter_key not in table_filter:
             table_filter[filter_key] = []
-        filter_value = key.split('_')[1]
+        filter_value = '_'.join(key.split('_')[1:])
         if filter_value == 'regex':
             if request[key]:
                 filter_value = 'regex:' + request[key]
@@ -75,7 +75,7 @@ def get_log_page(request, cloud):
                     else:
                         continue
                 if filters[i].startswith('date'):
-                    if filters[i].split(':')[1]:
+                    if len(filters[i].split(':')) > 1:
                         where_cypher += 'AND (' if len(where_cypher) > 6 else '('
                         if filters[i].split(':')[0].split('_')[1] == 'start':
                             where_cypher += f"n.{key} >= '{filters[i].split(':')[1]}T00:00:01Z') "
@@ -94,6 +94,7 @@ def get_log_page(request, cloud):
                 else:
                     where_cypher += f"n.{key} = '{filters[i]}' "
                 where_cypher += ') ' if len(where_cypher) > 6 and i == len(filters)-1 else ''
+                # return {'error': where_cypher}
     #페이지당 보여줄 로그 개수
     limit = 10
     cypher = f"""
@@ -121,12 +122,14 @@ def get_log_page(request, cloud):
     """
     log_list = []
     try:
+        # return {'error': cypher}
         if graph.evaluate(cypher) is None:
             raise ClientError('','Neo.3.0.3')
         results = graph.run(cypher)
         for result in results:
             log_list.append(dict(result))
     except ClientError:
+        # return {'error': cypher}
         return {'error': 'No Data'}
 
     page_obj={'log_list': log_list}
