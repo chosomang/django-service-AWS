@@ -1,7 +1,7 @@
 from django.conf import settings
 from py2neo import Graph, ClientError
-from TeirenSIEM.risk.rule.add import add_static_rule, add_dynamic_rule
-from TeirenSIEM.risk.rule.delete import delete_static_rule, delete_dynamic_rule
+from M_threatD.src.rule.add import add_static_rule, add_dynamic_rule
+from M_threatD.src.rule.delete import delete_static_rule, delete_dynamic_rule
 import json
 ## LOCAL
 # graph = Graph("bolt://127.0.0.1:7687", auth=('neo4j', 'teiren001'))

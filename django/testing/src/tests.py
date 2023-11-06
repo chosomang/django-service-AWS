@@ -5,6 +5,7 @@ from django.http import JsonResponse, HttpResponseRedirect
 from django.conf import settings
 from py2neo import Graph
 from django.template.loader import render_to_string
+from M_threatD.src.notification.detection import get_node_json, get_relation_json
 import requests
 # LOCAL
 # graph = Graph("bolt://127.0.0.1:7687", auth=('neo4j', 'teiren001'))
@@ -29,17 +30,69 @@ STATIC_DIR = BASE_DIR / 'staticfiles'
 
 
 def main_test(request):
-    cypher = """
-    MATCH (n:Log:Aws)
-    UNWIND KEYS(n) AS keys
-    WITH DISTINCT keys
-    RETURN keys
+    cloud = "Aws"
+    cypher = f"""
+    match (rule:Rule {{ruleName:'test'}})<-[detect:DETECTED]-(log:Log {{eventName: 'GetCostForecast'}})
+where id(detect) = 241549
+WITH rule, detect, log
+OPTIONAL MATCH p=(log)<-[:ACTED*6]-(:Log)
+CALL apoc.do.when(
+        p IS NULL,
+        "
+            MATCH p=(log)<-[:ACTED|DATE*]-(:Account)
+            WITH COLLECT(p)[-1] as p
+            WITH NODES(p) as nodes, RELATIONSHIPS(p) as relations
+            RETURN nodes, relations
+            ",
+        "
+            MATCH p=(log)<-[:ACTED*..5]-(view:Log)
+            WITH COLLECT(p)[-1] as p
+            WITH NODES(p) as nodes, RELATIONSHIPS(p) as relations
+            WITH nodes, relations, nodes[-1] as last
+            MATCH (last)<-[:ACTED*]-(date:Date)<-[date_rel:DATE]-(account:Account)
+            WITH nodes + [account] as nodes, relations + [date_rel] as relations, date, last
+            MATCH (last)<-[:ACTED*]-(mid:Log)
+            WITH mid.eventName as eventName, COUNT(mid) as cnt, last, date, nodes, relations
+            WITH apoc.map.fromPairs(COLLECT([eventName, cnt])) as prop, nodes, relations, date, last, SUM(cnt) as total
+            CALL apoc.create.vNode(['Between'], apoc.map.merge(prop,{{name: total}})) YIELD node AS analysis
+            CALL apoc.create.vRelationship(date,'BETWEEN',{{}}, analysis) YIELD rel AS analyze1
+            CALL apoc.create.vRelationship(analysis,'BETWEEN',{{}}, last) YIELD rel AS analyze2
+            WITH nodes + [date,analysis] as nodes, relations + [analyze1,analyze2] as relations
+            RETURN nodes, relations
+        ",
+        {{log:log}}
+    ) YIELD value
+    WITH value.nodes + [rule] as nodes, value.relations + [detect] as relations, log
+    OPTIONAL MATCH (log)-[assumed:ASSUMED]->(role:Role)
+    WITH
+        CASE
+            WHEN role IS NULL THEN nodes
+            ELSE nodes + [role]
+        END AS nodes,
+        CASE
+            WHEN assumed IS NULL THEN relations
+            ELSE relations + [assumed]
+        END AS relations
+    UNWIND relations as relation
+    WITH nodes,
+        [
+            PROPERTIES(relation),
+            ID(relation),
+            ID(STARTNODE(relation)),
+            ID(ENDNODE(relation)),
+            TYPE(relation)
+        ] AS relation
+    RETURN nodes, COLLECT(relation) as relations
     """
     results = graph.run(cypher)
-    test = []
+    response = []
     for result in results:
-        test.append(result['keys'])
-    context = {'test': test}       
+        data = dict(result)
+        for node in data['nodes']:
+            response.append(get_node_json(node, cloud))
+        for relation in data['relations']:
+            response.append(get_relation_json(relation))
+    context = {'test': response}       
 
     return render(request, 'testing/test.html', context)
 

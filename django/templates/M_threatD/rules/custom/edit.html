@@ -104,7 +104,7 @@
                     <div class="form-group row text-center">
                         <div class="col-sm-6 mb-sm-1">
                             <span>탐지 횟수</span>
-                            {% if static.ruleCount > 1 %}
+                            {% if static.ruleCount > '1' %}
                                 <input type="text-area" class="form-control form-control-user" name="ruleCount" value="{{static.ruleCount}}" placeholder="정책 탐지 횟수 지정 (횟수 이상일 때 탐지)">
                             {% else %}
                                 <input type="text-area" class="form-control form-control-user" name="ruleCount" placeholder="정책 탐지 횟수 지정 (횟수 이상일 때 탐지)">
@@ -112,7 +112,7 @@
                         </div>
                         <div class="col-sm-6">
                             <span>탐지 시간 범위</span>
-                            {% if static.timeRange > 1 %}
+                            {% if static.timeRange > '1' %}
                             <input type="text-area" class="form-control form-control-user" name="timeRange" value="{{static.timeRange}}" placeholder="탐지 시간 범위 (초단위)">
                             {% else %}
                             <input type="text-area" class="form-control form-control-user" name="timeRange" placeholder="탐지 시간 범위 (초단위)">
@@ -244,7 +244,11 @@
                                 <div class="col-12 d-flex justify-content-center text-center mt-3">
                                     <div class="col-6">
                                         <span>탐지 횟수</span>
+                                        {% if flow.count %}
+                                        <input type="text-area" class="form-control form-control-user" name="flow_count_{{forloop.counter}}_1" value="{{flow.count}}" placeholder="정책 탐지 횟수 지정 (횟수 이상일 때 탐지)">
+                                        {% else %}
                                         <input type="text-area" class="form-control form-control-user" name="flow_count_{{forloop.counter}}_1" placeholder="정책 탐지 횟수 지정 (횟수 이상일 때 탐지)">
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -273,5 +277,9 @@
         </div>
     </div>
 </div>
+<script>
+    var wheres = '{{dynamic.wheres|safe}}'
+    var cloud = '{{cloud}}'
+</script>
 <script src="{% static '/M_threatD/js/editRule/dynamic.js' %}"></script>
 {% endif %}

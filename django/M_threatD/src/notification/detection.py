@@ -42,7 +42,7 @@ def get_node_json(node, cloud):
             if key == 'eventName':
                 data['name'] = value
             else:
-                if 'responseElements' in key or 'requestParameters' in key or 'tls' in key:
+                if any(x in key for x in ['responseElements','requestParameters','tls']):
                     continue
                 if 'userAgent' in key:
                     continue
@@ -74,7 +74,7 @@ def get_node_json(node, cloud):
             if key == 'name':
                 value = str(value)
                 value = value.split('_')[0]
-            if 'responseElements' in key or 'requestParameters' in key or 'tls' in key:
+            if any(x in key for x in ['responseElements','requestParameters','tls','query','ruleOperators', 'ruleValues','ruleKeys']):
                 continue
             if 'errorMessage' in key:
                 value = value.replace('\'', '[',1)

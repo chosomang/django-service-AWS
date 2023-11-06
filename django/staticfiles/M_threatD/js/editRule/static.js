@@ -15,6 +15,12 @@ function getCookie(name = 'csrftoken') {
 
 function ruleEditAction(event){
     var data = $('#edit_form').serialize()
+    var modal = $('#edit .card-body.shadow')[0]
+    $(modal).prepend(`
+        <div id="temp" style="background-color: #ffffffb8; height: -webkit-fill-available; width: -webkit-fill-available; display: flex; position: absolute; z-index: 9999; border-radius: 20px; margin: -2% 2% 1% -2%; justify-content: center; align-items: center;">
+            <div id="loader" class="spinner-border text-teiren" style="position:absolute; margin:25% 45%; z-index:9999;"></div>
+        <div>
+    `)
     $.ajax({
         url: '/threat/custom/edit/',
         headers:{
@@ -23,6 +29,8 @@ function ruleEditAction(event){
         data: data,
         type: 'post'
     }).done(function(data){
+        $('#temp').remove()
+        $('#loader').remove()
         alert(data)
         if (data == '정책 추가 완료'){
             $('.modal').modal('hide')

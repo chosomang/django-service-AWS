@@ -13,7 +13,13 @@ function getCookie(name = 'csrftoken') {
     return cookieValue;
 }
 
-function addNewRuleSet(){
+function addNewRuleSet(){    
+    var modal = $('#rule-modal .card-body.shadow')[0]
+    $(modal).prepend(`
+        <div id="temp" style="background-color: #ffffffb8; height: -webkit-fill-available; width: -webkit-fill-available; display: flex; position: absolute; z-index: 9999; border-radius: 20px; margin: -2% 2% 1% -2%; justify-content: center; align-items: center;">
+            <div id="loader" class="spinner-border text-teiren" style="position:absolute; margin:25% 45%; z-index:9999;"></div>
+        <div>
+    `)
     $('#count').val($('#new_rules').find('.rule').length)
     var data = $('#new_rules').serialize()
     $.ajax({
@@ -24,6 +30,8 @@ function addNewRuleSet(){
         data: data,
         type: 'post'
     }).done(function(response){
+        $('#temp').remove()
+        $('#loader').remove()
         alert(response)
         if(response == '정책 추가 완료'){
             window.location.reload()

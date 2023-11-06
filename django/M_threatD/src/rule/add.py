@@ -37,11 +37,6 @@ def get_log_properties(request):
     RETURN COLLECT(DISTINCT(keys)) as props
     """
     response = graph.evaluate(cypher)
-    # 'RETURN apoc.coll.toSet(REDUCE(res = [], k IN COLLECT(DISTINCT(keys)) | res + k)) AS property'
-    # response = [ i['keys'] for i in graph.run(cypher).data()]
-    # response = []
-    # for result in results:
-    #     response.append(result['property'])
     return response
 
 
@@ -123,7 +118,10 @@ def add_static_rule(request):
 def static_cypher(rule, cloud):
     rule_properties = ""
     where_cypher = ""
+    is_errorCode = 0
     for i in range(0, len(rule['key'])):
+        if rule['key'][i] == 'errorCode':
+            is_errorCode = 1
         rule_properties += f"{rule['key'][i]}:'{rule['value'][i]}', "
         where_cypher += f"toLower(log.{rule['key'][i]}) {rule['operator'][i]} toLower(rule.{rule['key'][i]})"
         if 'logical' in rule and len(rule['logical']) > i:
@@ -147,24 +145,24 @@ def static_cypher(rule, cloud):
     WITH rule
     """
     if 'ruleCount' in rule:
-        cypher += static_count_cypher(where_cypher, rule)
+        cypher += static_count_cypher(where_cypher, rule, is_errorCode)
     else:
         cypher += f"""
         MATCH (log:Log:{cloud})
         WHERE
-            log.errorCode IS NULL AND
+            {'log.errorCode IS NOT NULL AND' if is_errorCode == 1 else 'log.errorCode IS NULL AND'}
             {where_cypher}
         WITH rule, log
-        MERGE (log)-[:DETECTED]->(rule)
+        MERGE (log)-[:DETECTED {{alert:0, sent:0}}]->(rule)
         """
     result = rule_merge_test(cypher, rule, cloud, 'static')
     return result
 
-def static_count_cypher(where_cypher, rule):
+def static_count_cypher(where_cypher, rule, is_errorCode):
     count_cypher = f"""
     MATCH p=(firstLog:Log)-[:ACTED|NEXT*1..]->(log:Log)
     WHERE
-        log.errorCode IS NULL AND
+        {'log.errorCode IS NOT NULL AND' if is_errorCode == 1 else 'log.errorCode IS NULL AND'}
         {where_cypher}
     WITH datetime(firstLog.eventTime).epochSeconds AS time1,
     datetime(log.eventTime).epochSeconds AS time2, log, firstLog, rule
@@ -200,7 +198,7 @@ def static_count_cypher(where_cypher, rule):
 
     MATCH (t_log:Log)
     WHERE id(t_log) = l_logs
-    MERGE (t_log)-[:DETECTED{{firstLog:firstLog, path: logs}}]->(rule)
+    MERGE (t_log)-[:DETECTED{{firstLog:firstLog, path: logs, alert:0, sent:0}}]->(rule)
     """
     return count_cypher
 
@@ -265,6 +263,7 @@ def get_flow_slot(request):
         rules[f'{i}']['item'] = items
     result = {'flows': rules}
     if 'wheres' in request:
+        # return request
         result['wheres'] = json.loads(request['wheres'])
     return result
 
@@ -326,6 +325,7 @@ def add_dynamic_rule(request):
     cypher = dynamic_cypher(flows, wheres, rule, count, cloud)
     if cypher.startswith('탐지'):
         return cypher
+    # return cypher
     result = rule_merge_test(cypher, rule, cloud, 'dynamic')
     return result
 
@@ -340,8 +340,11 @@ def dynamic_cypher(flows, wheres, rule, count, cloud):
     ### adding flow cypher
     for i, flow in flows.items():
         prop_cypher = ""
+        is_errorCode = ''
         for item in range(len(flow['key'])):
             prop_cypher += f"{', ' if item != 0 else ''}{flow['key'][item]}: '{flow['val'][item]}'"
+            if flow['key'][item] == 'errorCode':
+                is_errorCode = 1
         cypher += f"""
         MERGE (flow{i}:Flow:{cloud}{{
             {prop_cypher},
@@ -353,10 +356,10 @@ def dynamic_cypher(flows, wheres, rule, count, cloud):
         with_cypher += f', flow{i}'
         if 'count' in flow:
             match_cypher += f"{'' if i == '1' else ', '}(log{i}:Log:{cloud})"
-            where_cypher += f"{'' if i == '1' else ' AND '}ID(log{i}) = l_logs{i} AND log{i}.errorCode IS NULL"
+            where_cypher += f"{'' if i == '1' else ' AND '}ID(log{i}) = l_logs{i} AND log{i}.errorCode IS {'NOT NULL' if is_errorCode else 'NULL'}"
         else:
             match_cypher += f"{'' if i == '1' else ', '}(log{i}:Log:{cloud}{{{prop_cypher}}})"
-            where_cypher += f"{'' if i == '1' else ' AND '}log{i}.errorCode IS NULL"
+            where_cypher += f"{'' if i == '1' else ' AND '}log{i}.errorCode IS {'NOT NULL' if is_errorCode else 'NULL'}"
         time_cypher += f', log{i}, datetime(log{i}.eventTime).epochSeconds AS time{i}'
         flow_reverse = [i] + flow_reverse
     ### where cypher
@@ -372,7 +375,6 @@ def dynamic_cypher(flows, wheres, rule, count, cloud):
     for prop in where_prop.copy():
         where_prop.remove(prop)
         where_prop.append("{" + ", ".join(f"{k}:{v}" for k, v in prop.items()) + "}")
-        # where_prop.append(str(type(prop)))
     ### adding rule cypher
     flow_names = ''
     for i in range(1, count+1):
@@ -430,21 +432,24 @@ def dynamic_cypher(flows, wheres, rule, count, cloud):
         MERGE (log{i})-[:CHECK{{path:{detection_path}}}]->(flow{i})
         """
         merge_cypher += f"{'' if i == 1 else f'-[:FLOW{{path:{detection_path}}}]->'}(log{i})"
-    merge_cypher += f'-[:FLOW_DETECTED{{path:{detection_path}}}]->(rule)'
+    merge_cypher += f'-[:FLOW_DETECTED{{path:{detection_path}, alert:0, sent:0}}]->(rule)'
     cypher += merge_cypher
     return cypher
 
 def dynamic_count_cypher(flow, i, rule, with_cypher):
     count_where_cypher = ''
+    is_errorCode = ''
     for item in range(len(flow['key'])):
+        if flow['key'][item] == 'errorCode':
+            is_errorCode = 1
         count_where_cypher += f""" firstLog.{flow['key'][item]}= flow{i}.{flow['key'][item]}
         AND log.{flow['key'][item]} = flow{i}.{flow['key'][item]}
         AND """
     count_cypher = f"""
     MATCH p=(firstLog:Log)-[:ACTED|NEXT*1..]->(log:Log)
     WHERE
-        {count_where_cypher}log.errorCode IS NULL
-        AND firstLog.errorCode IS NULL
+        {count_where_cypher}
+        {'log.errorCode IS NOT NULL AND firstLog.errorCode IS NOT NULL' if is_errorCode else 'log.errorCode IS NULL AND firstLog.errorCode IS NULL'}
     WITH datetime(firstLog.eventTime).epochSeconds AS time1,
         datetime(log.eventTime).epochSeconds AS time2, log, firstLog, {with_cypher}
     WHERE log.eventTime >= firstLog.eventTime
@@ -482,7 +487,7 @@ def dynamic_count_cypher(flow, i, rule, with_cypher):
 
 def rule_merge_test(cypher, rule, cloud, ruleClass):
     try:
-        graph.evaluate(cypher)
+        graph.run(cypher)
     except ClientError as e:
         return '정책 추가를 실패했습니다. 정책을 다시 검토하고 저장해주세요.'
     rule_cypher = f"""
