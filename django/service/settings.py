@@ -98,10 +98,10 @@ MONGODB = {
     'LOCAL': 'local'
 }
 NEO4J = {
-    'HOST': '13.124.121.1',
+    'HOST': '3.34.97.67',
     'PORT': '7687',
     'USERNAME': 'neo4j',
-    'PASSWORD': 'dbdnjs!23'
+    'PASSWORD': '1am^Ne04jUs2r!'
 }
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
