@@ -85,9 +85,11 @@
   {
     "selector": "node[label=\"Role\"]",
     "style": {
-      "background-color": "#f27b44",
-      "border-width": "2px",
-      "border-color": "#4282d6"
+      "background-color": "#f6c23e",
+      "border-color": "#f6c23e",
+      "border-opacity": "0.7",
+      "border-width": "7px",
+      "font-size": "30px"
     }
   },
   {
