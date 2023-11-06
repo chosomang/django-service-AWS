@@ -34,13 +34,13 @@
                         <h6 class="dropdown-header">
                             클라우드 로그
                         </h6>
-                        <a id='ncpcloudlog' class="dropdown-item d-flex align-items-center" href="#">
+                        <a id='ncpcloudlog' class="dropdown-item d-flex align-items-center disabled" href="#">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Naver</div>
                                 <div class="text-truncate">NCP 로그</div>
                             </div>
                         </a>
-                        <a id='nhncloudlog' class="dropdown-item d-flex align-items-center" href="#">
+                        <a id='nhncloudlog' class="dropdown-item d-flex align-items-center disabled" href="#">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">NHN</div>
                                 <div class="text-truncate">NHN 로그</div>
@@ -55,7 +55,7 @@
                         <h6 class="dropdown-header">
                             솔루션 로그
                         </h6>
-                        <a id='officekeeperlog' class="dropdown-item d-flex align-items-center" href="#">
+                        <a id='officekeeperlog' class="dropdown-item d-flex align-items-center disabled" href="#">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">지란지교</div>
                                 <div class="text-truncate">Office Keeper 로그</div>
@@ -65,8 +65,7 @@
                         <h6 class="dropdown-header">
                             시스템 로그
                         </h6>
-                        <a id='window_SecLoglog' class="dropdown-item d-flex align-items-center"
-                            href="#">
+                        <a id='window_SecLoglog' class="dropdown-item d-flex align-items-center disabled" href="#">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Windows</div>
                                 <div class="text-truncate">Windows Event 로그</div>
@@ -122,19 +121,19 @@
                         <h6 class="dropdown-header">
                             룰 설정
                         </h6>
-                        <a id='rule_all' class="dropdown-item align-items-center" href="/threat/rules/all">
+                        <a id='rule_all' class="dropdown-item align-items-center disabled" href="/threat/rules/all">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">All</div>
                                 <div class="text-truncate">전체 룰 설정</div>
                             </div>
                         </a>
-                        <a id='rule_ncp' class="dropdown-item d-flex align-items-center" href="#">
+                        <a id='rule_ncp' class="dropdown-item d-flex align-items-center disabled" href="#">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Naver</div>
                                 <div class="text-truncate">NCP 룰 설정</div>
                             </div>
                         </a>
-                        <a id='rule_nhn' class="dropdown-item d-flex align-items-center" href="#">
+                        <a id='rule_nhn' class="dropdown-item d-flex align-items-center disabled" href="#">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">NHN</div>
                                 <div class="text-truncate">NHN 룰 설정</div>
@@ -146,7 +145,7 @@
                                 <div class="text-truncate">AWS 룰 설정</div>
                             </div>
                         </a>
-                        <a id='rule_ofk' class="dropdown-item d-flex align-items-center" href="#">
+                        <a id='rule_ofk' class="dropdown-item d-flex align-items-center disabled" href="#">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">지란지교</div>
                                 <div class="text-truncate">Office Keeper 룰 설정</div>
@@ -161,7 +160,7 @@
                                 <div class="text-truncate">사용자 중심 분석</div>
                             </div>
                         </a>
-                        <a id='visuals_ip' class="dropdown-item d-flex align-items-center" href="#">
+                        <a id='visuals_ip' class="dropdown-item d-flex align-items-center disabled" href="#">
                             <div class="font-weight-bold">
                                 <div class="small text-gray-500">Ip</div>
                                 <div class="text-truncate">Ip 중심 분석</div>
@@ -182,13 +181,12 @@
                         <h6 class="dropdown-header">
                             SIEM 설정
                         </h6>
-                        <a id='default_setting' class="dropdown-item d-flex align-items-center"
-                            href="#">
-                            <div class="font-weight-bold">
+                        {% comment %} <a id='default_setting' class="dropdown-item d-flex align-items-center" href="#">
+                            <div class="font-weight-bold" >
                                 <div class="small text-gray-500">Default</div>
                                 <div class="text-truncate">기본 설정</div>
                             </div>
-                        </a>
+                        </a> {% endcomment %}
                         <a id='default_setting' class="dropdown-item d-flex align-items-center"
                             href="/configurations/dashboard">
                             <div class="font-weight-bold">
