@@ -16,7 +16,7 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 def list_integration():
     cypher = f"""
     MATCH (i:Integration)
-    WITH i.integrationType as type, {{ACCESS_KEY: i.accessKey, SECRET_KEY: i.secretKey}} as keys
+    WITH i.integrationType as type, {{ACCESS_KEY: i.accessKey, SECRET_KEY: i.secretKey, on_off: i.on_off}} as keys
     WITH apoc.map.fromLists([type], [keys]) as Integration
     RETURN Integration
     """
@@ -106,7 +106,8 @@ def integration_insert(request):
                 accessKey:'{access_key}', 
                 secretKey:'{secret_key}',
                 regionName: '{region_name}',
-                regionName: '{bucket_name}'
+                regionName: '{bucket_name}',
+                on_off: 0
             }})
         RETURN COUNT(i)
         """
@@ -119,6 +120,25 @@ def integration_insert(request):
             data = "등록 실패"
         finally:
             return data
+
+def collection_on_off(request, equipment):
+    """Running trigger for python script
+
+    Args:
+        request (bool): Return message successfully running or fail
+    """
+    try:
+        cypher = f"""
+        MATCH (i:Integration {{integrationType: '{equipment}', accessKey:'{request['main_key']}'}})
+        SET i.on_off = {int(request['on_off'])}
+        RETURN COUNT(i)
+        """
+        if 0 < graph.evaluate(cypher):
+            return 'success'
+        else:
+            raise Exception
+    except Exception:
+        return 'Fail To Change Collection Status. Please Try Again.'
 
 # ## NCP Cloud Activity Tracer
 # def integration_NCP(request):

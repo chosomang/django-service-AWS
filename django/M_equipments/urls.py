@@ -7,4 +7,5 @@ urlpatterns = [
     path('<equipment>/', views.integration_page),
     path("<equipment>/check/", views.integration_check_ajax),
     path("<equipment>/insert/", views.integration_insert_ajax),
+    path("<equipment>/collection/", views.integration_collection_ajax),
 ]

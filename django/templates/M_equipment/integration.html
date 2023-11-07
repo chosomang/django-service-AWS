@@ -183,54 +183,50 @@
                                     <thead>
                                         <tr>
                                             <th>No</th>
-                                            <th>키 종류</th>
-                                            <th>주 키</th>
-                                            <th>부가 키</th>
-                                            <th>키 삭제</th>
+                                            <th>Resource Type</th>
+                                            <th>Main Key</th>
+                                            <th>Delete Key</th>
+                                            <th>Collection On/Off</th>
                                         </tr>
                                     </thead>
                                     <tfoot>
                                         <tr>
                                             <th>No</th>
-                                            <th>키 종류</th>
-                                            <th>주 키</th>
-                                            <th>부가 키</th>
-                                            <th>키 삭제</th>
+                                            <th>Resource Type</th>
+                                            <th>Main Key</th>
+                                            <th>Delete Key</th>
+                                            <th>Collection On/Off</th>
                                         </tr>
                                     </tfoot>
                                     <tbody>
                                         {% if list %}
-                                        {% for num, integrations in list.items %}
-                                        <tr>
-                                            <td>{{ num }}</td>
-                                            {% for type, keys in  integrations.items %}
-                                            <td>{{ type }}</td>
-                                            {% if keys.ACCESS_KEY %}
-                                            <td>{{ keys.ACCESS_KEY }}</td>
-                                            <td>{{ keys.SECRET_KEY }}</td>
-                                            <td>
-                                                <button id='delete' class="btn btn-primary btn-icon-split btn-sm" style="background-color:#FF4747;border-color:#FF4747" 
-                                                    data-toggle="modal" data-target="#delete_modal" data-cloud='{{ type }}' data-main='{{ keys.ACCESS_KEY }}' data-sub='{{ keys.SECRET_KEY }}'>
-                                                    <span class="icon text-white-50">
-                                                        <i class="fas fa-trash"></i>
-                                                    </span>
-                                                </button>
-                                            </td>
-                                            {% elif keys.ACCOUNT %}
-                                            <td>{{ keys.ACCOUNT }}</td>
-                                            <td>{{ keys.PASSWORD }}</td>
-                                            <td>
-                                                <button id='delete' class="btn btn-primary btn-icon-split btn-sm" style="background-color:#FF4747;border-color:#FF4747" 
-                                                    data-toggle="modal" data-target="#delete_modal" data-cloud='{{ type }}' data-main='{{ keys.ACCOUNT }}' data-sub='{{ keys.PASSWORD }}'>
-                                                    <span class="icon text-white-50">
-                                                        <i class="fas fa-trash"></i>
-                                                    </span>
-                                                </button>
-                                            </td>
-                                            {% endif %}
+                                            {% for num, integrations in list.items %}
+                                            <tr>
+                                                <td>{{ num }}</td>
+                                                {% for type, keys in  integrations.items %}
+                                                    <td>{{ type }}</td>
+                                                    <td>{{ keys.ACCESS_KEY }}</td>
+                                                    <td>
+                                                        <button id='delete' class="btn btn-primary btn-icon-split btn-sm" style="background-color:#FF4747;border-color:#FF4747" 
+                                                            data-toggle="modal" data-target="#delete_modal" data-cloud='{{ type }}' data-main='{{ keys.ACCESS_KEY }}' data-sub='{{ keys.SECRET_KEY }}'>
+                                                            <span class="icon text-white-50">
+                                                                <i class="fas fa-trash"></i>
+                                                            </span>
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" class="on_off" value="{{keys.on_off}}" />
+                                                        {% if keys.on_off == 0 %}
+                                                        <button class="btn btn-md btn-outline-teiren" onclick="collectionOnOff(this, '{{type}}','{{ keys.ACCESS_KEY }}')">
+                                                        {% else %}
+                                                        <button class="btn btn-md btn-teiren" onclick="collectionOnOff(this,'{{type}}','{{ keys.ACCESS_KEY }}')">
+                                                        {% endif %}
+                                                            <i class="fa-solid fa-power-off"></i>
+                                                        </button>
+                                                    </td>
+                                                {% endfor %}
+                                            </tr>
                                             {% endfor %}
-                                        </tr>
-                                        {% endfor %}
                                         {% else %}
                                         <tr>
                                             <td colspan="5" style="font-size:20px">No Data</td>
@@ -277,5 +273,40 @@
 </div>
 {% endblock %}
 {% block script %}
-<script src="{% static "/M_equipment/js/equipment.js" %}"></script>
+<script src="{% static "/M_equipment/js/integration.js" %}"></script>
+<script>
+    function collectionOnOff(e, type, main_key){
+        var on_off = 0
+        var input = $(e.parentNode).find('input.on_off')[0]
+        if (input.value != 1){
+            on_off = 1
+        }
+        input.value = on_off
+        $.ajax({
+            url:`${type}/collection/`,
+            headers:{
+                'X-CSRFToken': '{{csrf_token}}'
+            },
+            data:{
+                main_key: main_key,
+                on_off: on_off
+            },
+            type:'post'
+        }).done(function(response){
+            if (response === 'success'){
+                if (on_off == 1){
+                    $(e).attr('class', 'btn btn-md btn-teiren')
+                } else {
+                    $(e).attr('class', 'btn btn-md btn-outline-teiren')
+                }
+            }
+            else{
+                alert(response)
+            }
+        })
+    }
+    function dd(){
+        
+    }
+</script>
 {% endblock %}

@@ -19,9 +19,17 @@ def integration_page(request, equipment):
     return render(request, f"M_equipment/{equipment}.html")
 
 def integration_check_ajax(request, equipment):
-    context = integration.integration_check(request)
-    return JsonResponse(context)
+    if request.method == 'POST':
+        context = integration.integration_check(request)
+        return JsonResponse(context)
 
 def integration_insert_ajax(request, equipment):
-    context = integration.integration_insert(request)
-    return HttpResponse(context)
+    if request.method == 'POST':
+        context = integration.integration_insert(request)
+        return HttpResponse(context)
+
+def integration_collection_ajax(request, equipment):
+    if request.method == 'POST':
+        data = dict(request.POST.items())
+        context = integration.collection_on_off(data, equipment)
+        return HttpResponse(context)
