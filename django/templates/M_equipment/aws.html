@@ -76,8 +76,7 @@
                                 <p>BUCKET NAME: <input type="text" class="form-control" id='modal_bucket_name' name="modal_bucket_name" value='' readonly></p>
                                 <div id='modal_body'>
                                     <p class='text-danger'>AWS cloud로부터 오는 로그들을 수집/통합 하시겠습니까?</p>
-                                    수집 로그는 Cloud trail에서 수집되는 로그입니다.<br>
-                                    ※ 동의하지 않을 시, 해당 서비스를 사용할 수 없습니다.
+                                    수집 로그는 Cloud trail에서 수집되는 로그입니다.
                                 </div>
                         </tbody>
                     </table>
@@ -147,7 +146,7 @@
             $('#insert_check').remove();
             document.getElementById('insert_complete').type = 'button';
         }).fail(function (data) {
-            $("#success_id").text('등록 실패!');
+            $("#success_id").text('존재하지 않거나, 유효하지 않는 정보입니다.');
         })
     });
     $('#insert_complete').on('click', function (event) {

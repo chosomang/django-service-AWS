@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from django.shortcuts import render, HttpResponse, redirect
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.conf import settings
 from py2neo import Graph
 from django.template.loader import render_to_string
@@ -28,6 +28,58 @@ STATIC_DIR = BASE_DIR / 'staticfiles'
 
 # Create your tests here.
 
+from testing.dockerHandler.handler import DockerHandler
+def trigger(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            access_key = data.get('access_key')
+            secret_key = data.get('secret_key')
+            region_name = data.get('region_name')
+        
+            print(access_key)
+            print(secret_key)
+            print(region_name)
+        
+            result = {'message': 'Python function executed successfully!'}
+            
+            return JsonResponse(result)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    else:
+        return HttpResponseBadRequest('Invalid request method')
+    # docker_handler = DockerHandler()
+    # client = docker_handler.client
+    
+    # environment = {
+    #     'AWS_ACCESS_KEY_ID': 'your_access_key',
+    #     'AWS_SECRET_ACCESS_KEY': 'your_secret_key',
+    #     'AWS_DEFAULT_REGION': 'your_region_name'
+    # }
+    
+    # # handling
+    # client.containers.run(
+    #     'image-name',
+    #     detach=True,
+    #     environment=environment,
+    # )
+    
+
+def running_trigger(request):
+    """Running trigger for python script
+
+    Args:
+        request (bool): Return message successfully running or fail
+    """
+    request_dict = {
+        'access_key': 'test_access_key',
+        'secret_key': 'test_secret_key',
+        'region_name': 'test_region_name',
+        'bucket_name': 'test_bucket_name'
+    }
+    print(request_dict)
+
+    return render(request, 'testing/trigger.html', {'request_dict': request_dict})
 
 def main_test(request):
     cloud = "Aws"
@@ -92,7 +144,7 @@ CALL apoc.do.when(
             response.append(get_node_json(node, cloud))
         for relation in data['relations']:
             response.append(get_relation_json(relation))
-    context = {'test': response}       
+    context = {'test': 'test'}       
 
     return render(request, 'testing/test.html', context)
 

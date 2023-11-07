@@ -21,7 +21,7 @@ $('#delete_modal').on('show.bs.modal', function(event) {
     $('#result').text('해당 경로의 로그 수집을 중단하시겠습니까?');
     if (button.data('cloud') == 'NHN_API') {
         $('#key1').text('NHN Cloud 회원 정보: ');
-        $('#key2').text('APP KEY: ')
+        $('#key2').text('APP KEY: ');
     }
 });
 
@@ -57,5 +57,5 @@ $('#delete_complete').on('click', function(event) {
 });
 
 $(function(){
-    $('#system_top').addClass('show')
+    $('#system_top').addClass('show');
 })
