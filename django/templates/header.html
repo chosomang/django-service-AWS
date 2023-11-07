@@ -194,6 +194,13 @@
                                 <div class="text-truncate">대시보드 설정</div>
                             </div>
                         </a>
+                        <a id='default_setting' class="dropdown-item d-flex align-items-center"
+                            href="/configurations/account">
+                            <div class="font-weight-bold">
+                                <div class="small text-gray-500">Account</div>
+                                <div class="text-truncate">사용자 설정</div>
+                            </div>
+                        </a>
                     </div>
                 </li>
 
@@ -232,18 +239,19 @@
                 <li class="nav-item dropdown no-arrow">
                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
-                        <span class="h7 mr-2 d-lg-inline small"> username
+                        <span class="h5 mr-2 d-lg-inline font-weight-bold"> 
+                            {{user}}
+                            <i class="fa-solid fa-user text-white ml-2" style=""></i>
                         </span>
-                        <img class="img-profile rounded-circle" src="{% static '/img/teiren_icon.png' %}">
                     </a>
                     <!-- Dropdown - User Information -->
                     <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                         aria-labelledby="userDropdown">
-                        <a class="dropdown-item" href="/settings/admins.php">
+                        <a class="dropdown-item disabled" href="/settings/admins/">
                             <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                             Profile
                         </a>
-                        <a class="dropdown-item" href="/settings/default">
+                        <a class="dropdown-item disabled" href="/settings/default">
                             <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
                             Settings
                         </a>
