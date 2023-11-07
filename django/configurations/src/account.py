@@ -1,9 +1,5 @@
-from django.template.loader import render_to_string
-from django.shortcuts import render, HttpResponse
-from django.http import JsonResponse, HttpResponseRedirect
 from django.conf import settings
 from py2neo import Graph
-from django.http import QueryDict
 
 # AWS
 host = settings.NEO4J['HOST']
@@ -13,10 +9,15 @@ password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
 def data_masking(text):
-    masking_text = text[3:-3]
-    start = text[:3]
-    end = text[-3:]
     response = ''
+    if len(text) > 6:
+        masking_text = text[3:-3]
+        start = text[:3]
+        end = text[-3:]
+    else:
+        masking_text = text[1:-1]
+        start = text[:1]
+        end = text[-1:]
     for ch in masking_text:
         if ch in ['-', '@', '.']:
             response += ch
@@ -32,6 +33,7 @@ def get_account_list():
         a.userName as userName,
         a.email as email,
         a.phoneNo as phoneNo
+    ORDER BY id(a) ASC
     """
     response = []
     results = graph.run(cypher)
@@ -50,7 +52,7 @@ def add_account(request):
         return f"[User ID: '{request['user_id']}'] already exists. Please try different ID"
     for key, value in request.items():
         if not value:
-            return f"{key.replace('_',' ').title()} is missing. Please fill out corresponding information."
+            return f"{key.replace('_',' ').title()} Is Missing. Please Try Again."
     cypher = f"""
     MERGE (a:Teiren:Account {{
         userName:'{request['user_name']}',
@@ -63,7 +65,7 @@ def add_account(request):
     """
     try:
         if 1 == graph.evaluate(cypher):
-            return f"{request['user_name']} Account Successfully Added"
+            return f"Created Account Successfully"
         else:
             raise Exception
     except Exception:
@@ -84,7 +86,7 @@ def verify_account(request):
     """
     result = graph.run(cypher).data()
     if len(result) < 1:
-        response = '[Verification Fail] Unknown information. Please check your information.'
+        response = '[Verification Fail] Unknown Information. Please Try Again.'
     elif result[0]['result'] == 'success':
         cypher = f"""
         MATCH (a:Teiren:Account {{userName:'{userName}', userId: '{userId}'}})
@@ -100,7 +102,7 @@ def verify_account(request):
             response = dict(result)
             break
     else:
-        response = '[Verification Fail] Wrong information. Please try again.'
+        response = '[Verification Fail] Wrong Information. Please Try Again.'
     return response
 
 def edit_account(request):
@@ -122,8 +124,28 @@ def edit_account(request):
     """
     try:
         if 1 == graph.evaluate(cypher):
-            return 'Account Successfully Changed'
+            return 'Changed Account Successfully'
         else:
             raise Exception
     except Exception:
-        return 'Failed to edit account. Please try again.'
+        return 'Failed To Edit Account. Please Try Again.'
+
+def delete_account(request):
+    for key, value in request.items():
+        if not value:
+            return f"[{key.replace('_', ' ').title()}] Is Missing. Please Try Again."
+    cypher = f"""
+    MATCH (a:Teiren:Account {{
+            userName:'{request['user_name']}',
+            userId:'{request['user_id']}',
+            userPassword: '{request['user_password']}'
+        }})
+    """
+    try:
+        graph.evaluate(f"{cypher} DETACH DELETE a")
+        if 0 == graph.evaluate(f"{cypher} RETURN COUNT(a)"):
+            return "Deleted Account Successfully"
+        else:
+            raise Exception
+    except Exception:
+        return "Failed To Delete Account. Please Try Again."

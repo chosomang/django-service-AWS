@@ -4,11 +4,11 @@
 <div class="container-fluid">
 
     <!-- Page Heading -->
-    <h1 class="h3 mb-2 text-gray-800">사용자 설정</h1>
-    <h5 class="mb-4">SIEM에 대한 사용자 설정을 변경할 수 있습니다.</h5>
+    <h1 class="h3 mb-2 text-gray-800">Account Settings</h1>
+    <h5 class="mb-4">Change your configuration of SIEM accounts</h5>
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h5 class="m-0 font-weight-bold text-teiren">기본 옵션 변경</h5>
+            <h5 class="m-0 font-weight-bold text-teiren">Account Configuration</h5>
         </div>
         <div class="card-body">            
             <div class="row">
@@ -25,18 +25,20 @@
                             <tr>
                                 <th>No</th>
                                 <th>UserName</th>
-                                <th>email</th>
+                                <th>Email</th>
                                 <th>Phone No.</th>
-                                <th>Edit</th>
+                                <th>Edit Account</th>
+                                <th>Delete Account</th>
                             </tr>
                         </thead>
                         <tfoot>
                             <tr>
                                 <th>No</th>
                                 <th>UserName</th>
-                                <th>email</th>
+                                <th>Email</th>
                                 <th>Phone No.</th>
-                                <th>Edit</th>
+                                <th>Edit Account</th>
+                                <th>Delete Account</th>
                             </tr>
                         </tfoot>
                         <tbody>
@@ -48,14 +50,25 @@
                                     <td>{{value}}</td>
                                 {% endfor %}
                                 <td>
-                                    <button id='edit' class="btn btn-teiren btn-md" data-toggle="modal" data-target="#verify_modal" data-name="{{account.userName}}">
+                                    <button class="btn btn-teiren btn-md" data-toggle="modal" data-target="#verify_modal" data-name="{{account.userName}}">
                                         <span class="icon text-white">
                                             Edit Account<i class="fa-solid fa-user-pen ml-2"></i>
                                         </span>
                                     </button>
                                 </td>
+                                <td>
+                                    <button class="btn btn-danger btn-md" data-toggle="modal" data-target="#delete_modal" data-name="{{account.userName}}">
+                                        <span class="icon text-white">
+                                            Delete Account<i class="fa-solid fa-user-slash ml-2"></i>
+                                        </span>
+                                    </button>
+                                </td>
                             </tr>
                             {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="6" style="font-size:20px">No Data</td>
+                            </tr>
                             {% endif %}
                         </tbody>
                     </table>
@@ -126,15 +139,15 @@
                         </div>
                         <div class="col-sm-12 mb-3">
                             <span>User Name</span>
-                            <input type="text" class="form-control form-control-user" id='user_name' name="user_name" placeholder="User Name">
+                            <input type="text" class="form-control form-control-user" name="user_name" placeholder="User Name">
                         </div>
                         <div class="col-sm-6 mb-1">
                             <span>User ID</span>
-                            <input type="text" class="form-control form-control-user" id='user_id' name="user_id" placeholder="User ID">
+                            <input type="text" class="form-control form-control-user" name="user_id" placeholder="User ID">
                         </div>
                         <div class="col-sm-6">
                             <span>User Password</span>
-                            <input type="text-area" class="form-control form-control-user" id="user_password" name="user_password" placeholder="User Password">
+                            <input type="text-area" class="form-control form-control-user" name="user_password" placeholder="User Password">
                         </div>
                     </div>
                 </form>
@@ -150,19 +163,74 @@
     <div class="modal-dialog" id="edit_detail">
     </div>
 </div>
+<!-- Delete Modal -->
+<div class="modal hide fade card-body" id="delete_modal" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header text-center">
+                <h4 class="m-0 font-weight-bold text-teiren">Account Verification</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size: 0.7rem">
+                <form id="delete_account">
+                    <div class="form-group row text-center">
+                        <div class="col-12 mb-4" style="font-size:0.9rem">
+                            <span class="text-danger">Verify Your Account Information Before Deleting</span>
+                        </div>
+                        <div class="col-sm-12 mb-3">
+                            <span>User Name</span>
+                            <input type="text" class="form-control form-control-user" name="user_name" readonly>
+                        </div>
+                        <div class="col-sm-6 mb-1">
+                            <span>User ID</span>
+                            <input type="text" class="form-control form-control-user" name="user_id" placeholder="User ID">
+                        </div>
+                        <div class="col-sm-6">
+                            <span>User Password</span>
+                            <input type="text-area" class="form-control form-control-user" name="user_password" placeholder="User Password">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer " id="modal_footer">
+                <button type='button' class="btn btn-md btn-outline-danger" onclick="deleteAccount()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 {% block script %}
 <script>
-    $('#verify_modal').on('show.bs.modal', function(event) {
-        $('#user_id')[0].value = ''
-        $('#user_password')[0].value = ''
-        $('#user_name')[0].value = $(event.relatedTarget).data('name')
-    });
-
     $('#add_modal').on('show.bs.modal', function(event) {
         input = $(this).find('input')
         input.each(function(){
             this.value = ''
+        })
+    });
+
+    $('#verify_modal').on('show.bs.modal', function(event) {
+        input = $(this).find('input')
+        input.each(function(){
+            if(this.name === 'user_name'){
+                this.value = $(event.relatedTarget).data('name')
+            }
+            else{
+                this.value = ''
+            }
+        })
+    });
+
+    $('#delete_modal').on('show.bs.modal', function(event) {
+        input = $(this).find('input')
+        input.each(function(){
+            if(this.name === 'user_name'){
+                this.value = $(event.relatedTarget).data('name')
+            }
+            else{
+                this.value = ''
+            }
         })
     });
 
@@ -176,7 +244,13 @@
             data: data,
             type:'post'
         }).done(function(response){
-            console.log(response)
+            if (response.startsWith('\n<meta')){
+                location.reload()
+            }
+            alert(response)
+            if (response.startsWith('Created')){
+                location.reload()
+            }
         })
     }
 
@@ -222,7 +296,30 @@
                 location.reload()
             } 
             alert(response)
-            if (response.startsWith('Account')){
+            if (response.startsWith('Changed')){
+                location.reload()
+            }
+        })
+    }
+
+    function deleteAccount(){
+        var data = $('#delete_account').serialize()
+        $.ajax({
+            url:'delete/',
+            headers:{
+                'X-CSRFToken': '{{csrf_token}}'
+            },
+            data: data,
+            type:'post'
+        }).done(function(response){
+            if (response.startsWith('Delete')){
+                alert(response)
+                location.reload()
+            }
+            else if (response.startsWith('Failed')){
+                alert(response)
+            } 
+            else{
                 location.reload()
             }
         })

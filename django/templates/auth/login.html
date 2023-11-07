@@ -17,18 +17,24 @@
                                     <form id='login_form' class="user w-100" method=post>
                                         {% csrf_token %}
                                         <div class="form-group">
-                                            <input type="text" class="form-control form-control-user" name="user_id"
-                                                placeholder="사용자 ID">
+                                            <input type="text" class="form-control form-control-user"
+                                                name="user_id" value="{{user_id}}" placeholder="사용자 ID">
                                         </div>
                                         <div class="form-group">
                                             <input type="password" class="form-control form-control-user"
-                                                name="password" placeholder="비밀번호">
+                                                name="user_password" value="{{user_password}}" placeholder="비밀번호">
                                         </div>
                                 </div>
                                 <div class="col-lg-3 d-lg-flex align-items-center">
                                     <div class="d-none d-lg-flex v-divider"></div>
-                                    <input type="submit" value="로그인"
-                                        class="btn btn-teiren btn-user btn-block d-none d-lg-block font-weight-bold h-75">
+                                    <div>
+                                        <input type="submit" value="로그인" class="btn btn-teiren btn-user btn-block mt-3 font-weight-bold" style="height:60%">
+                                        <a href="/auth/register/" style="height:30%">
+                                            <div class="btn btn-outline-teiren btn-user mt-2 font-weight-bold" >
+                                                <span>회원가입</span>
+                                            </div>
+                                        </a>
+                                    <div>
                                     <input type="submit" value="로그인"
                                         class="btn btn-teiren btn-user btn-block d-lg-none font-weight-bold">
                                     </form>

@@ -1,5 +1,6 @@
 from django.template.loader import render_to_string
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, redirect, HttpResponse
+from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from configurations.src import account
@@ -19,13 +20,15 @@ def account_config(request, config_type):
         data = dict(request.POST.items())
         if config_type == 'verify':
             context = account.verify_account(data)
-            if isinstance(context, str):
-                return HttpResponse()
-            else:
+            if not isinstance(context, str):
                 return render(request, f"{HTML_FILE_PATH}/account/edit.html", context)
         elif config_type == 'edit':
             context = account.edit_account(data)
-            return HttpResponse(context)
         elif config_type == 'add':
             context = account.add_account(data)
-            return HttpResponse(context)
+        elif config_type == 'delete':
+            context = account.delete_account(data)
+            if data['user_name'] == request.user.username:
+                logout(request)
+                return redirect('/auth/login/')
+        return HttpResponse(context)
