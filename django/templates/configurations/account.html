@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <h1 class="h3 mb-2 text-gray-800">사용자 설정</h1>
+    <h5 class="mb-4">SIEM에 대한 사용자 설정을 변경할 수 있습니다.</h5>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h5 class="m-0 font-weight-bold text-teiren">기본 옵션 변경</h5>
+        </div>
+        <div class="card-body">            
+            <div class="row">
+                <div class="d-flex w-100 mb-4 mr-3">
+                    <button type="button" class="btn btn-md ml-auto btn-teiren" data-toggle="modal" data-target="#add_modal">
+                        <span class="icon text-white">
+                            Add Account<i class="fa-solid fa-user-plus ml-2"></i>
+                        </span>
+                    </button>
+                </div>
+                <div class="table-responsive " style="overflow:hidden;word-break: break-all;">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0" style="table-layout:fixed;text-align:center;">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>UserName</th>
+                                <th>email</th>
+                                <th>Phone No.</th>
+                                <th>Edit</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>No</th>
+                                <th>UserName</th>
+                                <th>email</th>
+                                <th>Phone No.</th>
+                                <th>Edit</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {% if account_list %}
+                            {% for account in account_list %}
+                            <tr>
+                                <th>{{forloop.counter}}</th>
+                                {% for key, value in  account.items%}
+                                    <td>{{value}}</td>
+                                {% endfor %}
+                                <td>
+                                    <button id='edit' class="btn btn-teiren btn-md" data-toggle="modal" data-target="#verify_modal" data-name="{{account.userName}}">
+                                        <span class="icon text-white">
+                                            Edit Account<i class="fa-solid fa-user-pen ml-2"></i>
+                                        </span>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<!-- Add Modal -->
+<div class="modal hide fade card-body" id="add_modal" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header text-center">
+                <h4 class="m-0 font-weight-bold text-teiren">New Account</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size: 0.7rem">
+                <form id="add_account">
+                    <div class="form-group row text-center">
+                        <div class="col-sm-12 mb-3">
+                            <span>User Name</span>
+                            <input type="text" class="form-control form-control-user" name="user_name" placeholder="User Name" required>
+                        </div>
+                        <div class="col-sm-6 mb-1">
+                            <span>User ID</span>
+                            <input type="text" class="form-control form-control-user" name="user_id" placeholder="User ID" required>
+                        </div>
+                        <div class="col-sm-6">
+                            <span>User Password</span>
+                            <input type="text-area" class="form-control form-control-user" name="user_password" placeholder="User Password" required>
+                        </div>
+                        <div class="col-sm-6 mb-1">
+                            <span>Email</span>
+                            <input type="text" class="form-control form-control-user" name="email_add" placeholder="Email" required>
+                        </div>
+                        <div class="col-sm-6">
+                            <span>Phone Number</span>
+                            <input type="text-area" class="form-control form-control-user" name="phone_no" placeholder="Phone Number" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer " id="modal_footer">
+                <button type='button' class="btn btn-md btn-outline-teiren" onclick="addAccount()">Add Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Verify Modal -->
+<div class="modal hide fade card-body" id="verify_modal" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header text-center">
+                <h4 class="m-0 font-weight-bold text-teiren">Account Verification</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size: 0.7rem">
+                <form id="verify_account">
+                    <div class="form-group row text-center">
+                        <div class="col-12 mb-4" style="font-size:0.9rem">
+                            <span class="text-danger">Verify Your Account Information Before Editing</span>
+                        </div>
+                        <div class="col-sm-12 mb-3">
+                            <span>User Name</span>
+                            <input type="text" class="form-control form-control-user" id='user_name' name="user_name" placeholder="User Name">
+                        </div>
+                        <div class="col-sm-6 mb-1">
+                            <span>User ID</span>
+                            <input type="text" class="form-control form-control-user" id='user_id' name="user_id" placeholder="User ID">
+                        </div>
+                        <div class="col-sm-6">
+                            <span>User Password</span>
+                            <input type="text-area" class="form-control form-control-user" id="user_password" name="user_password" placeholder="User Password">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer " id="modal_footer">
+                <input type='button' class="btn btn-md btn-outline-teiren" onclick="verifyAccount()" value="Login">
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Edit Modal -->
+<div class="modal hide fade card-body" id="edit_modal" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog" id="edit_detail">
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('#verify_modal').on('show.bs.modal', function(event) {
+        $('#user_id')[0].value = ''
+        $('#user_password')[0].value = ''
+        $('#user_name')[0].value = $(event.relatedTarget).data('name')
+    });
+
+    $('#add_modal').on('show.bs.modal', function(event) {
+        input = $(this).find('input')
+        input.each(function(){
+            this.value = ''
+        })
+    });
+
+    function addAccount(){
+        var data = $('#add_account').serialize()
+        $.ajax({
+            url:'add/',
+            headers:{
+                'X-CSRFToken': '{{csrf_token}}'
+            },
+            data: data,
+            type:'post'
+        }).done(function(response){
+            console.log(response)
+        })
+    }
+
+    function verifyAccount(){
+        var data = $('#verify_account').serialize()
+        $.ajax({
+            url:'verify/',
+            headers:{
+                'X-CSRFToken': '{{csrf_token}}'
+            },
+            data: data,
+            type:'post'
+        }).done(function(response){
+            if(response.startsWith('[Verification Fail]')){
+                alert(response)
+            }
+            else if (response.startsWith('\n<meta')){
+                location.reload()
+            } 
+            else if (response === ''){
+                alert('[Verification Fail] Unknown information. Please check your information.')
+            }
+            else {
+                $('#edit_detail').html('')
+                $('#edit_detail').append(response)
+                $('#verify_modal').modal('hide')
+                $('#edit_modal').modal('show')
+            }
+        })
+    }
+
+    function editAccount(){
+        var data = $('#edit_account').serialize()
+        $.ajax({
+            url:'edit/',
+            headers:{
+                'X-CSRFToken': '{{csrf_token}}'
+            },
+            data: data,
+            type:'post'
+        }).done(function(response){
+            if (response.startsWith('\n<meta')){
+                location.reload()
+            } 
+            alert(response)
+            if (response.startsWith('Account')){
+                location.reload()
+            }
+        })
+    }
+</script>
+{% endblock %}
