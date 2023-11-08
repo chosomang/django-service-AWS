@@ -34,9 +34,9 @@ function executePythonFunction() {
     }
     
     var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-    var accessKey = 'your_access_key';  // Ajax로 전달할 값
-    var secretKey = 'your_secret_key';  // Ajax로 전달할 값
-    var regionName = 'your_region_name';  // Ajax로 전달할 값
+    var accessKey = 'AKIAZGVJQQXNJJUUR7EM';  // Ajax로 전달할 값
+    var secretKey = 'gh34WC0llIHrxJby3MwfAU7sJhE/37dWiaEV5IUh';  // Ajax로 전달할 값
+    var regionName = 'ap-northeast-2';  // Ajax로 전달할 값
 
     fetch('{% url "trigger" %}', {
         method: 'POST',
