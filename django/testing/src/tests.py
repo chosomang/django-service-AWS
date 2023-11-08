@@ -40,9 +40,9 @@ def trigger(request):
             print(access_key)
             print(secret_key)
             print(region_name)
+            
         
             result = {'message': 'Python function executed successfully!'}
-            
             return JsonResponse(result)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
