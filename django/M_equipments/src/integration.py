@@ -16,7 +16,7 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 def list_integration():
     cypher = f"""
     MATCH (i:Integration)
-    WITH i.integrationType as type, {{ACCESS_KEY: i.accessKey, SECRET_KEY: i.secretKey, on_off: i.on_off}} as keys
+    WITH i.integrationType as type, {{ACCESS_KEY: i.accessKey, SECRET_KEY: i.secretKey, REGION_NAME: i.regionName, isRunning: i.isRunning}} as keys
     WITH apoc.map.fromLists([type], [keys]) as Integration
     RETURN Integration
     """
@@ -80,7 +80,7 @@ def integration_check(request):
                 data['modal'] = {}
                 data['modal']['access_key'] = access_key
                 data['modal']['secret_key'] = secret_key
-                data['modal']['reigion_name'] = region_name
+                data['modal']['region_name'] = region_name
                 data['modal']['bucket_name'] = bucket_name
             except Exception:
                 data['class'] = 'btn btn-danger'
@@ -107,7 +107,8 @@ def integration_insert(request):
                 secretKey:'{secret_key}',
                 regionName: '{region_name}',
                 bucketName: '{bucket_name}',
-                isRunning: 0
+                isRunning: 0,
+                container_id: 'None'
             }})
         RETURN COUNT(i)
         """
@@ -121,24 +122,58 @@ def integration_insert(request):
         finally:
             return data
 
-def collection_on_off(request, equipment):
+from common.dockerHandler.handler import DockerHandler
+
+def container_trigger(request, equipment):
     """Running trigger for python script
 
     Args:
         request (bool): Return message successfully running or fail
     """
     try:
-        cypher = f"""
-        MATCH (i:Integration {{integrationType: '{equipment}', accessKey:'{request['main_key']}'}})
-        SET i.on_off = {int(request['on_off'])}
-        RETURN COUNT(i)
-        """
-        if 0 < graph.evaluate(cypher):
-            return 'success'
+        access_key = request.get('access_key')
+        secret_key = request.get('secret_key')
+        region_name = request.get('region_name')
+        
+        # isRunning을 통해, 현재 로그 수집기가 동작중인지 확인
+        integration_node = graph.nodes.match("Integration",
+                                    accessKey=access_key,
+                                    secretKey=secret_key,
+                                    regionName=region_name
+                                    ).first()
+        is_running = integration_node["isRunning"]
+        if is_running:
+            result = {
+                'isRunning': 1,
+                'isCreate': 0,
+                'containerId': integration_node['container_id']
+                }
+            return result
         else:
-            raise Exception
-    except Exception:
-        return 'Fail To Change Collection Status. Please Try Again.'
+            # docker hub에 main 브랜치의 이미지를 빌드시마다 항상 가져오기.
+            # 현재는 고정값으로 넣어둠
+            client = DockerHandler()
+            logcollector_image_name = 'aws_logcollector_image_v_1.0'
+            environment = {
+                'AWS_ACCESS_KEY_ID': access_key,
+                'AWS_SECRET_ACCESS_KEY': secret_key,
+                'AWS_DEFAULT_REGION': region_name
+            }
+            container = client.create_container(image_name=logcollector_image_name, 
+                                                environment=environment)
+            # Integration 노드의 isRunning 속성을 1로 업데이트
+            integration_node['isRunning'] = 1
+            integration_node['container_id'] = container.id
+            graph.push(integration_node)
+            
+            result = {
+                'isRunning': 1,
+                'isCreate': 1,
+                'containerId': container.id
+                }
+            return result
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
 
 # ## NCP Cloud Activity Tracer
 # def integration_NCP(request):
