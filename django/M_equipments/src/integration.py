@@ -23,7 +23,7 @@ def list_integration():
     results = graph.run(cypher)
     data = {}
     for num, result in enumerate (results, start=1):
-            data[num] = result['Integration']
+        data[num] = result['Integration']
     return {'list': data}
 
 ## Integration delete
@@ -106,8 +106,8 @@ def integration_insert(request):
                 accessKey:'{access_key}', 
                 secretKey:'{secret_key}',
                 regionName: '{region_name}',
-                regionName: '{bucket_name}',
-                on_off: 0
+                bucketName: '{bucket_name}',
+                isRunning: 0
             }})
         RETURN COUNT(i)
         """
