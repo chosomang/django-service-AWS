@@ -37,13 +37,37 @@ def trigger(request):
             secret_key = data.get('secret_key')
             region_name = data.get('region_name')
         
-            print(access_key)
-            print(secret_key)
-            print(region_name)
-            
+            # 위 3가지 속성에 해당하는 노드의 "isRunning" 속성을 py2neo를 이용해서 가져오기
+            pass
         
-            result = {'message': 'Python function executed successfully!'}
-            return JsonResponse(result)
+            # isRunning을 통해, 현재 로그 수집기가 동작중인지 확인
+            integration_node = graph.nodes.match("Integration",
+                                     accessKey=access_key,
+                                     secretKey=secret_key,
+                                     regionName=region_name
+                                     ).first()
+            is_running = integration_node["isRunning"]
+            if is_running:
+                result = {'message': '로그 수집기가 이미 동작중입니다.'}
+                return JsonResponse(result)
+            else:
+                # docker hub에 main 브랜치의 이미지를 빌드시마다 항상 가져오기.
+                # 현재는 고정값으로 넣어둠
+                client = DockerHandler()
+                logcollector_image_name = 'aws_logcollector_image_v_1.0'
+                environment = {
+                    'AWS_ACCESS_KEY_ID': access_key,
+                    'AWS_SECRET_ACCESS_KEY': secret_key,
+                    'AWS_DEFAULT_REGION': region_name
+                }
+                container = client.create_container(image_name=logcollector_image_name, 
+                                                    environment=environment)
+                # Integration 노드의 isRunning 속성을 1로 업데이트
+                integration_node['isRunning'] = 1
+                graph.push(integration_node)
+                
+                result = {'message': f'인스턴스가 성공적으로 저장되었습니다. 인스턴스 id: {container.id}'}
+                return JsonResponse(result)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     else:
