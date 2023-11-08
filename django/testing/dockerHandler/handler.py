@@ -30,21 +30,3 @@ class DockerHandler:
     """Docker Images"""
     def get_docker_image_list(self) -> list:
         return self.client.images.list()
-        
-
-client = DockerHandler()
-print(client.get_container_list())
-
-environment = {
-    'AWS_ACCESS_KEY_ID': 'AKIAZB7XDEIEUNPLJWFG',
-    'AWS_SECRET_ACCESS_KEY': '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',
-    'AWS_DEFAULT_REGION': 'us-east-1'
-}
-image_name = 'test_logcollector_1'
-
-# Create container
-container = client.create_container(image_name, environment)
-
-# print container log
-print(container.logs())
-print(container.id)
