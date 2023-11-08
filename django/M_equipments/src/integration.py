@@ -153,7 +153,7 @@ def container_trigger(request, equipment):
             # docker hub에 main 브랜치의 이미지를 빌드시마다 항상 가져오기.
             # 현재는 고정값으로 넣어둠
             client = DockerHandler()
-            logcollector_image_name = 'magarets/teiren-image'
+            logcollector_image_name = 'aws_logcollector_image'
             environment = {
                 'AWS_ACCESS_KEY_ID': access_key,
                 'AWS_SECRET_ACCESS_KEY': secret_key,
