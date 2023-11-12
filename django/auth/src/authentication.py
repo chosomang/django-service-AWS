@@ -11,7 +11,7 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 def login_account(request):
     cypher = f"""
     MATCH (a:Teiren:Account{{
-        userName: '{request['user_id']}',
+        userId: '{request['user_id']}',
         userPassword: '{request['user_password']}'
     }})
     RETURN 
