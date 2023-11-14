@@ -1,0 +1,193 @@
+<div class="sidebar shadow">
+    <div id="sidebar-top">
+        <ul class="navbar-icon">
+            <li>
+                <a class="nav-link" href="/">
+                    <span class="material-symbols-outlined">
+                        space_dashboard
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-link">
+                    <span class="material-symbols-outlined">
+                        list_alt
+                    </span>
+                </a>
+                <div class="collapse shadow">
+                    <span class="header">
+                        Log Management
+                    </span>
+                    <div class="collapse-item box">
+                        <input placeholder="Search">
+                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto"></button>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="item-header">
+                        Cloud Logs
+                    </div>
+                    <a class="collapse-item" href="/logs/aws">
+                        AWS Logs
+                    </a>
+                    <a class="collapse-item dark disabled" href="/logs/ncp">
+                        NCP Logs
+                    </a>
+                    <a class="collapse-item dark disabled" href="/logs/nhn">
+                        NHN Logs
+                    </a>
+                    <div class="divider"></div>
+                    <div class="item-header">
+                        Solution Logs
+                    </div>
+                    <a class="collapse-item dark disabled" href="/logs/ofk">
+                        Office Keeper Logs
+                    </a>
+                    <div class="divider"></div>
+                    <div class="item-header">
+                        System Logs
+                    </div>
+                    <a class="collapse-item dark disabled" href="/logs/winsec">
+                        Window Security Logs
+                    </a>
+                </div>
+            </li>
+            <li>
+                <a id="integration_side" class="nav-link" href="/integration">
+                    <span class="material-symbols-outlined">
+                        library_add
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a id="threat_side" class="nav-link">
+                    <span class="material-symbols-outlined">
+                        notification_important
+                    </span>
+                </a>
+                <div class="collapse shadow">
+                    <span class="header">
+                        Threat Management
+                    </span>
+                    <div class="collapse-item box">
+                        <input placeholder="Search">
+                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto"></button>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="item-header">
+                        Threat Alerts
+                    </div>
+                    <a class="collapse-item" href="/threat/notifications/logs">
+                        Threat Alerts
+                    </a>
+                    <div class="divider"></div>
+                    <div class="item-header">
+                        Rule Configuration
+                    </div>
+                    <a class="collapse-item" href="/threat/rules/aws">
+                        AWS Rules
+                    </a>
+                    <a class="collapse-item dark disabled" href="/threat/rules/ncp">
+                        NCP Rules
+                    </a>
+                    <a class="collapse-item dark disabled" href="/threat/rules/nhn">
+                        NHN Rules
+                    </a>
+                    <a class="collapse-item dark disabled" href="/threat/rules/ofk">
+                        Office Keeper Rules
+                    </a>
+                    <a class="collapse-item dark disabled" href="/threat/rules/nhn">
+                        NHN Rules
+                    </a>
+                    <div class="divider"></div>
+                    <div class="item-header">
+                        Visualization
+                    </div>
+                    <a class="collapse-item" href="/threat/visuals/user">
+                        User Analysis
+                    </a>
+                    <a class="collapse-item dark disabled" href="/threat/rules/aws">
+                        IP Analysis
+                    </a>
+                </div>
+            </li>
+            <li>
+                <a class="nav-link">
+                    <span class="material-symbols-outlined">
+                        assured_workload
+                    </span>
+                </a>
+                <div class="collapse shadow">
+                    <span class="header">
+                        Compliance Report
+                    </span>
+                    <div class="collapse-item box">
+                        <input placeholder="Search">
+                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto"></button>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="item-header">
+                        Compliance Report
+                    </div>
+                    <a class="collapse-item dark disabled" href="/compliance/ismsp">
+                        ISMS-P Report
+                    </a>
+                    <a class="collapse-item dark disabled" href="/compliance/gdpr">
+                        GDPR Report
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div id="sidebar-bottom">
+        <ul class="navbar-icon">
+            <li>
+                <a class="nav-link">
+                    <span class="material-symbols-outlined">
+                        settings
+                    </span>
+                </a>
+                <div class="collapse shadow">
+                    <span class="header">
+                        Configurations
+                    </span>
+                    <div class="collapse-item">
+                        <input placeholder="Search">
+                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto"></button>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="item-header">
+                        Configurations
+                    </div>
+                    <a class="collapse-item" href="/configurations/account">
+                        Account Configuration
+                    </a>
+                    <a class="collapse-item" href="/configurations/dashboard">
+                        Dashboard Configuration
+                    </a>
+                </div>
+            </li>
+            <li >
+                <a class="nav-link" href="#">
+                    <div class="h6 mr-2 d-flex align-items-center font-weight-bold">
+                        <i class="h3 fa-solid fa-circle-user ml-2"></i>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+<script>
+    $('.sidebar .nav-link').on('click', function(){
+        $('.nav-link').removeClass('focus')
+        $('.collapse').hide()
+        $($(this).parent().find('.collapse')[0]).css("display", "flex")
+        $(this).addClass('focus')
+    })
+    $(document).click(function(event) {
+        var target = $(event.target);
+        if (!target.closest(".collapse").length & !target.closest(".material-symbols-outlined").length) {
+            $(".nav-link").removeClass('focus')
+            $(".collapse").hide();
+        }
+    });
+</script>

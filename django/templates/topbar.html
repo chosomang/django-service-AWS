@@ -1,0 +1,66 @@
+{% load static %}
+<!-- Content Wrapper -->
+<div id="content-wrapper" class="d-flex flex-column">
+    <!-- Main Content -->
+    <div id="content">
+        <!-- Topbar -->
+        <nav class="topbar shadow">
+            <!-- Topbar Logo -->
+            <a href="/dashboard">
+                <div class="topbar-logo">
+                    <img src="{% static '/img/teiren_icon.png' %}" class="topbar-logo-img">
+                    TEIREN Cloud
+                </div>
+            </a>
+            <ul class="navbar-icon" hidden>
+                <li>
+                    <a class="nav-link" href="#">
+                        <span class="material-symbols-outlined">
+                            grid_view
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-link" href="#" aria-haspopup="true">
+                        <span class="material-symbols-outlined">
+                            list_alt
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-link" href="#">
+                        <span class="material-symbols-outlined">
+                            security
+                        </span>
+                    </a>
+                </li>
+            </ul>
+            <!-- Topbar Navbar -->
+            <ul class="navbar-nav">
+                <!-- TOP BAR NAV ITEM-->
+                <li >
+                    <a class="nav-link" href="/threat/notifications/logs">
+                        <i class="h3 text-danger fa-beat fa-regular fa-bell"></i>
+                    </a>
+                </li>
+                <li >
+                    <a class="nav-link" href="/configurations/account">
+                        <span class="material-symbols-outlined">
+                            settings
+                        </span>
+                    </a>
+                </li>
+                <!-- TOP BAR DIVIDER -->
+                <div class="topbar-divider d-sm-block"></div>
+                <!-- TOP BAR USER INFO-->
+                <li >
+                    <a class="nav-link" href="#">
+                        <div class="h6 mr-2 d-flex align-items-center font-weight-bold">
+                            {{user}}
+                            <i class="h4 fa-solid fa-circle-user ml-2"></i>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- End of Topbar -->
