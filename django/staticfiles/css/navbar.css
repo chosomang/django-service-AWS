@@ -43,6 +43,13 @@ nav>a {
     justify-content: flex-end;
 }
 
+.topbar .navbar-icon .divider{
+    display: flex;
+    width: 1px;
+    margin: 16px 10px;
+    border-right: 2px solid #94a2b370;
+}
+
 .topbar .navbar-icon .nav-link {
     height: 4.375rem;
     display: flex;
