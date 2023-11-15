@@ -5,6 +5,10 @@
 <link rel="stylesheet" href="{% static '/css/tab_table.css' %}">
 {% endblock %}
 {% block content %}
+<div class="locationbar ml-2">
+    <span>Threat Management &nbsp;&nbsp;>&nbsp;&nbsp;Rule configuration &nbsp;&nbsp;>&nbsp;&nbsp; </span>
+    <span class="current">{{cloud|upper}} Rules<span>
+</div>
 <div>
     <div>
         <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{cloud|upper}} Rules</h6>
