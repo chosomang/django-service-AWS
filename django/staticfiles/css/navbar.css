@@ -255,14 +255,23 @@ nav>a {
     margin-bottom: 14px;
 }
 
+.sidebar .item-toggle{
+    width: 100%;
+}
+
 .sidebar .collapse .item-header {
-    color: #57626F;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
     font-family: NanumSquare;
     font-size: 15px;
     font-style: normal;
     font-weight: 800;
     line-height: normal;
     margin: 14px 0;
+    color: #57626F;
+    background-color: white;
+    border: none;
 }
 
 .sidebar .divider {
@@ -323,6 +332,7 @@ nav>a {
     color: #94A2B3;
 }
 
+
 .sidebar .collapse-hide-btn {
     margin-left: auto;
     margin-right: -10px;
@@ -358,8 +368,7 @@ nav>a {
 
 .body-content {
     width: calc(100vw - 60px);
-    height: 100%;
-    max-height: calc(100vh - 60px);
+    height: calc(100vh - 60px);
     overflow-y: scroll;
     margin-left: 60px;
     padding: 10px;

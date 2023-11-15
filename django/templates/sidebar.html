@@ -28,32 +28,47 @@
                         <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto"></button>
                     </div>
                     <div class="divider"></div>
-                    <div class="item-header">
-                        Cloud Logs
+                    <div class="item-toggle">
+                        <button class="item-header">
+                            Cloud Logs
+                            <span class="material-symbols-outlined">
+                                expand_more
+                            </span>
+                        </button>
+                        <a class="collapse-item" href="/logs/aws" style="display:none;">
+                            AWS Logs
+                        </a>
+                        <a class="collapse-item dark disabled" href="/logs/ncp" style="display:none;">
+                            NCP Logs
+                        </a>
+                        <a class="collapse-item dark disabled" href="/logs/nhn" style="display:none;">
+                            NHN Logs
+                        </a>
                     </div>
-                    <a class="collapse-item" href="/logs/aws">
-                        AWS Logs
-                    </a>
-                    <a class="collapse-item dark disabled" href="/logs/ncp">
-                        NCP Logs
-                    </a>
-                    <a class="collapse-item dark disabled" href="/logs/nhn">
-                        NHN Logs
-                    </a>
                     <div class="divider"></div>
-                    <div class="item-header">
-                        Solution Logs
+                    <div class="item-toggle">
+                        <button class="item-header">
+                            Solution Logs
+                            <span class="material-symbols-outlined">
+                                expand_more
+                            </span>
+                        </button>
+                        <a class="collapse-item dark disabled" href="/logs/ofk" style="display:none;">
+                            Office Keeper Logs
+                        </a>
                     </div>
-                    <a class="collapse-item dark disabled" href="/logs/ofk">
-                        Office Keeper Logs
-                    </a>
                     <div class="divider"></div>
-                    <div class="item-header">
-                        System Logs
+                    <div class="item-toggle">
+                        <button class="item-header">
+                            System Logs
+                            <span class="material-symbols-outlined">
+                                expand_more
+                            </span>
+                        </button>
+                        <a class="collapse-item dark disabled" href="/logs/winsec" style="display:none;">
+                            Window Security Logs
+                        </a>
                     </div>
-                    <a class="collapse-item dark disabled" href="/logs/winsec">
-                        Window Security Logs
-                    </a>
                 </div>
             </li>
             <li>
@@ -91,34 +106,44 @@
                         <div id="sidebar_alert" class="fa-bounce" hidden></div>
                     </a>
                     <div class="divider"></div>
-                    <div class="item-header">
-                        Rule Configuration
-                    </div>
-                    <a class="collapse-item" href="/threat/rules/aws">
-                        AWS Rules
-                    </a>
-                    <a class="collapse-item dark disabled" href="/threat/rules/ncp">
-                        NCP Rules
-                    </a>
-                    <a class="collapse-item dark disabled" href="/threat/rules/nhn">
-                        NHN Rules
-                    </a>
-                    <a class="collapse-item dark disabled" href="/threat/rules/ofk">
-                        Office Keeper Rules
-                    </a>
-                    <a class="collapse-item dark disabled" href="/threat/rules/nhn">
-                        NHN Rules
-                    </a>
+                    <div class="item-toggle">
+                        <button class="item-header">
+                            Rule Configuration
+                            <span class="material-symbols-outlined">
+                                expand_more
+                            </span>
+                        </button>
+                        <a class="collapse-item" href="/threat/rules/aws" style="display:none;">
+                            AWS Rules
+                        </a>
+                        <a class="collapse-item dark disabled" href="/threat/rules/ncp" style="display:none;">
+                            NCP Rules
+                        </a>
+                        <a class="collapse-item dark disabled" href="/threat/rules/nhn" style="display:none;">
+                            NHN Rules
+                        </a>
+                        <a class="collapse-item dark disabled" href="/threat/rules/ofk" style="display:none;">
+                            Office Keeper Rules
+                        </a>
+                        <a class="collapse-item dark disabled" href="/threat/rules/nhn" style="display:none;">
+                            NHN Rules
+                        </a>
+                    </div>                    
                     <div class="divider"></div>
-                    <div class="item-header">
-                        Visualization
+                    <div class="item-toggle">
+                        <button class="item-header">
+                            Visualization
+                            <span class="material-symbols-outlined">
+                                expand_more
+                            </span>
+                        </button>
+                        <a class="collapse-item" href="/threat/visuals/user" style="display:none;">
+                            User Analysis
+                        </a>
+                        <a class="collapse-item dark disabled" href="/threat/rules/aws" style="display:none;">
+                            IP Analysis
+                        </a>
                     </div>
-                    <a class="collapse-item" href="/threat/visuals/user">
-                        User Analysis
-                    </a>
-                    <a class="collapse-item dark disabled" href="/threat/rules/aws">
-                        IP Analysis
-                    </a>
                 </div>
             </li>
             <li>
@@ -210,9 +235,26 @@
         $($(this).parent().find('.collapse')[0]).addClass("open")
         $(this).addClass('focus')
     })
+
     $('.sidebar .collapse-hide-btn').on('click', function(){
         $('.nav-link').removeClass('focus')
         $('.sidebar .collapse').removeClass('open')
+    })
+
+    $('.sidebar .item-header').on('click',function(){
+        var chevron = $($(this).find('.material-symbols-outlined')[0])
+        var buttons = $(this).parent().find('a')
+        if ($.trim(chevron.text()) == 'expand_more'){
+            chevron.text('expand_less')      
+            buttons.each(function(){
+                $(this).slideDown()
+            })
+        } else {
+            chevron.text('expand_more')
+            buttons.each(function(){
+                $(this).slideUp()
+            })
+        }
     })
 
     $(document).click(function(event) {
@@ -220,6 +262,8 @@
         if (!target.closest(".sidebar .collapse").length & !target.closest(".sidebar .material-symbols-outlined").length) {
             $(".sidebar .nav-link").removeClass('focus')
             $(".sidebar .collapse").removeClass('open');
+            $(".sidebar .item-toggle a").hide();
+            $(".sidebar .item-toggle .item-header .material-symbols-outlined").text('expand_more')
         }
         if (!target.closest(".topbar .collapse").length & !target.closest(".topbar .nav-link").length) {
             $(".topbar .collapse").removeClass('open');
