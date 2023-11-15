@@ -1,17 +1,17 @@
 {% load custom_filter %}
-<h4 class='m-0 mb-2 font-weight-bold text-teiren' style='text-align:center;'>{{details.eventName}}#{{id}}의 상세정보</h4>
+<h4 class='m-0 mb-2 font-weight-bold text-teiren' style='text-align:center;'>{{details.eventName}}#{{id}} Details</h4>
 <div class='tabs'>
     <input type='radio' id='modal-tab1' name='tab-control-modal' checked>
     <input type='radio' id='modal-tab2' name='tab-control-modal'>
     <ul>
         <li title='TABLE FORMAT'>
             <label for='modal-tab1' role='button'>
-                <span>테이블 형식</span>
+                <span>Table Format</span>
             </label>
         </li>
         <li title='JSON FORMAT'>
             <label for='modal-tab2' role='button'>
-                <span>JSON 형식(원본)</span>
+                <span>JSON Format</span>
             </label>
         </li>
     </ul>
@@ -27,7 +27,7 @@
                         <table class='table table-bordered' id='dataTable' width='100%' cellspacing='0' style='table-layout:fixed;text-align:center;overflow-wrap:break-word;white-space:normal;'>
                             <thead>
                                 <tr>
-                                    <th>Node Id</th>
+                                    <th>Log Id</th>
                                     <td>{{id}}</td>
                                 </tr>
                             </thead>

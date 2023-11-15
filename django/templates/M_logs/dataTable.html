@@ -1,9 +1,9 @@
-<div class="card-header py-3">
-    <h6 class="m-0 font-weight-bold text-teiren">로그 목록 ( {{total_log}} 개중 {{current_log.0}}~{{current_log.1}})
+<div class="card-header py-3" id="log_table">
+    <h6 class="m-0 font-weight-bold text-teiren">Log List ({{current_log.0}}~{{current_log.1}} out of {{total_log}})
     </h6>
 </div>
 
-<div class="card-body" id="log_table">
+<div class="card-body" style="font-size:12px;">
     <div class="table-responsive" style="overflow:hidden;">
         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
                style="table-layout:fixed;text-align:center;">
@@ -18,7 +18,7 @@
                 <th>Region</th>
                 <th>role</th>
                 <th>sourceIP</th>
-                <th>More Details</th>
+                <th>Details</th>
             </tr>
             </thead>
             <tfoot>
@@ -32,7 +32,7 @@
                 <th>Region</th>
                 <th>role</th>
                 <th>sourceIP</th>
-                <th>More Details</th>
+                <th>Details</th>
             </tr>
             </tfoot>
             <tbody>
@@ -51,7 +51,7 @@
                 <td>
                     <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#detail-modal"
                         data-id={{log.id}} data-cloud={{log.cloud}} style="font-size:0.7vw">
-                        상세 보기
+                        Details
                     </button>
                 </td>
             </tr>
@@ -69,10 +69,10 @@
             <ul style="display:flex; list-style: none;">
                 {% if page_obj.has_previous %}
                 <li class="page-item" aria-current="page">
-                    <button class="page-link" onclick="searchFilter(1)">처음</button>
+                    <button class="page-link" onclick="searchFilter(1)">Start</button>
                 </li>
                 <li class="page-item" aria-current="page">
-                    <button class="page-link" onclick="searchFilter({{page_obj.previous_page_number}})">이전</button>
+                    <button class="page-link" onclick="searchFilter({{page_obj.previous_page_number}})">Prev</button>
                 </li>
                 {% endif %}
 
@@ -90,10 +90,10 @@
 
                 {% if page_obj.has_next %}
                 <li class="page-item" aria-current="page">
-                    <button class="page-link" onclick="searchFilter({{page_obj.next_page_number}})">다음</button>
+                    <button class="page-link" onclick="searchFilter({{page_obj.next_page_number}})">Next</button>
                 </li>
                 <li class="page-item" aria-current="page">
-                    <button class="page-link" onclick="searchFilter({{page_obj.paginator.num_pages}})">끝</button>
+                    <button class="page-link" onclick="searchFilter({{page_obj.paginator.num_pages}})">End</button>
                 </li>
                 {% endif %}
             </ul>

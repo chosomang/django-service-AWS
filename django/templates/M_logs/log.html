@@ -6,17 +6,20 @@
 {% endblock %}
 {% block content %}
 <!-- Begin Page Content -->
-
+<div class="locationbar ml-2">
+    <span>Log Management &nbsp;&nbsp;>&nbsp;&nbsp; </span>
+    <span class="current">{{cloud|upper}} <span>
+</div>
 <div>
     <!-- Page Heading -->
-    <h6 class="h3 font-weight-bold mb-2 text-gray-800 ml-2">{{cloud}} 로그 확인하기</h6>
-    <p class="h6 mb-4 ml-2">AWS에서 발생하는 모든 로그들을 한번에 확인할 수 있습니다. </p>
+    <h6 class="h3 font-weight-bold mb-2 text-gray-800 ml-2">{{cloud|upper}} Log</h6>
+    <p class="h6 mb-4 ml-2">{{cloud|upper}} Integrated Logs</p>
     <div id='test'></div>
     <!-- DataTales Example -->
     <div class="card shadow mb-4 ">
         <div class="card-header py-3" data-toggle="collapse" href="#searchCollapse" role="button" aria-expanded="false"
              aria-controls="collapseExample">
-            <h6 class="m-0 font-weight-bold text-teiren ">작업 내역 검색</h6>
+            <h6 class="m-0 font-weight-bold text-teiren ">Search</h6>
         </div>
         <div class="card-body collapse" id="searchCollapse">
             <div style="overflow:hidden;">
@@ -29,12 +32,12 @@
                                 <ul class="dropdown-menu shadow" style="overflow:hidden scroll; height: 530%;">
                                     <li class="dropdown-item">
                                         <label>
-                                            <input class="form-check-input eventSource" type="checkbox" name="eventSource_all" value="all" onclick="selectAll(this, 'eventSource')">전체
+                                            <input class="form-check-input eventSource" type="checkbox" name="eventSource_all" value="all" onclick="selectAll(this, 'eventSource')">All
                                         </label>
                                     </li>
                                     <li class="dropdown-item">
                                         <label>
-                                            <input class="form-check-input eventSource" type="checkbox" name="eventSource_regex" value="regex" onclick="selectcheck(this, 'eventSource')">정규표현식
+                                            <input class="form-check-input eventSource" type="checkbox" name="eventSource_regex" value="regex" onclick="selectcheck(this, 'eventSource')">Regex
                                         </label>
                                     </li>
                                     {%for eventSource in eventSource_list %}
@@ -47,22 +50,22 @@
                                 </ul>
                             </div>
                             <div id="eventSource_regex" class="btn-group ml-1 mt-3 w-75 regex" style="display:none;">
-                                <input class="btn btn-outline-teiren dropdown-toggle" name="eventSource_regex" placeholder="eventSource 정규표현식">
+                                <input class="btn btn-outline-teiren dropdown-toggle" name="eventSource_regex" placeholder="eventSource Regex">
                             </div>
                         </div>
                         <div class="dropdown d-flex flex-column justify-content-center align-items-center mb-4 pl-0 col-3">
-                            <span class="font-weight-bold" style="font-size: 0.7rem;">사용자</span>
+                            <span class="font-weight-bold" style="font-size: 0.7rem;">userName</span>
                             <div class="btn-group ml-1 w-75 search_input">
-                                <input class="btn btn-outline-teiren dropdown-toggle" placeholder="사용자">
+                                <input class="btn btn-outline-teiren dropdown-toggle" placeholder="userName">
                                 <ul class="dropdown-menu shadow" style="overflow:hidden scroll; height: 530%;">
                                     <li class="dropdown-item">
                                         <label>
-                                            <input class="form-check-input user" type="checkbox" name="user_all" value="all" onclick="selectAll(this, 'user')">전체
+                                            <input class="form-check-input user" type="checkbox" name="user_all" value="all" onclick="selectAll(this, 'user')">All
                                         </label>
                                     </li>
                                     <li class="dropdown-item">
                                         <label>
-                                            <input class="form-check-input user" type="checkbox" name="user_regex" value="regex" onclick="selectcheck(this, 'user')">정규표현식
+                                            <input class="form-check-input user" type="checkbox" name="user_regex" value="regex" onclick="selectcheck(this, 'user')">Regex
                                         </label>
                                     </li>
                                     {%for user in user_list %}
@@ -75,7 +78,7 @@
                                 </ul>
                             </div>
                             <div id="user_regex" class="btn-group ml-1 mt-3 w-75 regex" style="display:none;">
-                                <input class="btn btn-outline-teiren dropdown-toggle" name="user_regex" placeholder="사용자 정규표현식">
+                                <input class="btn btn-outline-teiren dropdown-toggle" name="user_regex" placeholder="userName Regex">
                             </div>
                         </div>
                         <div class="dropdown d-flex flex-column justify-content-center align-items-center mb-4 pl-0 col-3">
@@ -85,12 +88,12 @@
                                 <ul class="dropdown-menu shadow" style="overflow:hidden scroll; height: 530%;">
                                     <li class="dropdown-item">
                                         <label>
-                                            <input class="form-check-input region" type="checkbox" name="region_all" value="all" onclick="selectAll(this, 'region')">전체
+                                            <input class="form-check-input region" type="checkbox" name="region_all" value="all" onclick="selectAll(this, 'region')">All
                                         </label>
                                     </li>
                                     <li class="dropdown-item">
                                         <label>
-                                            <input class="form-check-input region" type="checkbox" name="region_regex" value="regex" onclick="selectcheck(this, 'region')">정규표현식
+                                            <input class="form-check-input region" type="checkbox" name="region_regex" value="regex" onclick="selectcheck(this, 'region')">Regex
                                         </label>
                                     </li>
                                     {%for region in region_list %}
@@ -103,7 +106,7 @@
                                 </ul>
                             </div>
                             <div id="region_regex" class="btn-group ml-1 mt-3 w-75 regex" style="display:none;">
-                                <input class="btn btn-outline-teiren dropdown-toggle" name="region_regex" placeholder="region 정규표현식">
+                                <input class="btn btn-outline-teiren dropdown-toggle" name="region_regex" placeholder="region Regex">
                             </div>
                         </div>
                         <div class="dropdown d-flex flex-column justify-content-center align-items-center mb-4 pl-0 col-3">
@@ -113,12 +116,12 @@
                                 <ul class="dropdown-menu shadow" style="overflow:hidden scroll; height: 530%;">
                                     <li class="dropdown-item">
                                         <label>
-                                            <input class="form-check-input sourceIPAddress" type="checkbox" name="sourceIPAddress_all" value="all" onclick="selectAll(this, 'sourceIPAddress')">전체
+                                            <input class="form-check-input sourceIPAddress" type="checkbox" name="sourceIPAddress_all" value="all" onclick="selectAll(this, 'sourceIPAddress')">All
                                         </label>
                                     </li>
                                     <li class="dropdown-item">
                                         <label>
-                                            <input class="form-check-input sourceIPAddress" type="checkbox" name="sourceIPAddress_regex" value="regex" onclick="selectcheck(this, 'sourceIPAddress')">정규표현식
+                                            <input class="form-check-input sourceIPAddress" type="checkbox" name="sourceIPAddress_regex" value="regex" onclick="selectcheck(this, 'sourceIPAddress')">Regex
                                         </label>
                                     </li>
                                     {%for sourceIPAddress in sourceIPAddress_list %}
@@ -131,7 +134,7 @@
                                 </ul>
                             </div>
                             <div id="sourceIPAddress_regex" class="btn-group ml-1 mt-3 w-75 regex" style="display:none;">
-                                <input class="btn btn-outline-teiren dropdown-toggle" name="sourceIPAddress_regex" placeholder="sourceIPAddress 정규표현식">
+                                <input class="btn btn-outline-teiren dropdown-toggle" name="sourceIPAddress_regex" placeholder="sourceIPAddress Regex">
                             </div>
                         </div>
                         <div class="dropdown d-flex flex-column justify-content-center align-items-center mb-4 pl-0 col-3">
@@ -152,12 +155,12 @@
                                 <ul class="dropdown-menu shadow" style="overflow:hidden scroll; height: 530%;">
                                     <li class="dropdown-item">
                                         <label>
-                                            <input class="form-check-input eventName" type="checkbox" name="eventName_all" value="all" onclick="selectAll(this, 'eventName')">전체
+                                            <input class="form-check-input eventName" type="checkbox" name="eventName_all" value="all" onclick="selectAll(this, 'eventName')">All
                                         </label>
                                     </li>
                                     <li class="dropdown-item">
                                         <label>
-                                            <input class="form-check-input eventName" type="checkbox" name="eventName_regex" value="regex" onclick="selectcheck(this, 'eventName')">정규표현식
+                                            <input class="form-check-input eventName" type="checkbox" name="eventName_regex" value="regex" onclick="selectcheck(this, 'eventName')">Regex
                                         </label>
                                     </li>
                                     {%for eventName in eventName_list %}
@@ -170,7 +173,7 @@
                                 </ul>
                             </div>
                             <div id="eventName_regex" class="btn-group ml-1 mt-3 w-75 regex" style="display:none;">
-                                <input class="btn btn-outline-teiren dropdown-toggle" name="eventName_regex" placeholder="eventName 정규표현식">
+                                <input class="btn btn-outline-teiren dropdown-toggle" name="eventName_regex" placeholder="eventName Regex">
                             </div>
                         </div>
                     </div>
@@ -184,7 +187,7 @@
     </div>
     <div class="card shadow mb-4" id="log_table">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-teiren">로그 목록 ( {{total_log}} 개중 {{current_log.0}}~{{current_log.1}})
+            <h6 class="m-0 font-weight-bold text-teiren">Log List ({{current_log.0}}~{{current_log.1}} out of {{total_log}})
             </h6>
         </div>
 
@@ -203,7 +206,7 @@
                         <th>Region</th>
                         <th>role</th>
                         <th>sourceIPAddress</th>
-                        <th>More Details</th>
+                        <th>Details</th>
                     </tr>
                     </thead>
                     <tfoot>
@@ -217,7 +220,7 @@
                         <th>Region</th>
                         <th>role</th>
                         <th>sourceIPAddress</th>
-                        <th>More Details</th>
+                        <th>Details</th>
                     </tr>
                     </tfoot>
                     <tbody>
@@ -231,7 +234,7 @@
                         <td>
                             <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#detail-modal"
                                 data-id={{log.id}} data-cloud={{log.cloud}} style="font-size:0.7vw">
-                                상세 보기
+                                Details
                             </button>
                         </td>
                     </tr>
@@ -249,10 +252,10 @@
                     <ul style="display:flex; list-style: none;">
                         {% if page_obj.has_previous %}
                         <li class="page-item" aria-current="page">
-                            <button class="page-link" onclick="searchFilter(1)">처음</button>
+                            <button class="page-link" onclick="searchFilter(1)">Start</button>
                         </li>
                         <li class="page-item" aria-current="page">
-                            <button class="page-link" onclick="searchFilter({{page_obj.previous_page_number}})">이전</button>
+                            <button class="page-link" onclick="searchFilter({{page_obj.previous_page_number}})">Prev</button>
                         </li>
                         {% endif %}
 
@@ -270,10 +273,10 @@
 
                         {% if page_obj.has_next %}
                         <li class="page-item" aria-current="page">
-                            <button class="page-link" onclick="searchFilter({{page_obj.next_page_number}})">다음</button>
+                            <button class="page-link" onclick="searchFilter({{page_obj.next_page_number}})">Next</button>
                         </li>
                         <li class="page-item" aria-current="page">
-                            <button class="page-link" onclick="searchFilter({{page_obj.paginator.num_pages}})">끝</button>
+                            <button class="page-link" onclick="searchFilter({{page_obj.paginator.num_pages}})">End</button>
                         </li>
                         {% endif %}
                     </ul>
@@ -310,7 +313,7 @@
             <div class="modal-body justify-content-center" id='detail'>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-teiren" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-md btn-teiren" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
