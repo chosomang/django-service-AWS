@@ -18,11 +18,7 @@ $('#delete_modal').on('show.bs.modal', function(event) {
     document.getElementById('cloud_name').value = button.data('cloud');
     document.getElementById('main_key').value = button.data('main');
     document.getElementById('sub_key').value = button.data('sub');
-    $('#result').text('해당 경로의 로그 수집을 중단하시겠습니까?');
-    if (button.data('cloud') == 'NHN_API') {
-        $('#key1').text('NHN Cloud 회원 정보: ');
-        $('#key2').text('APP KEY: ');
-    }
+    $('#result').text('Will You Delete Registered Information?');
 });
 
 $('#delete_accept').on('click', function(event) {
@@ -42,7 +38,7 @@ $('#delete_accept').on('click', function(event) {
         type: 'post'
     }).done(function(data) {
         $('#result').text(data);
-        if (data == '로그 수집 중단 완료') {
+        if (data == 'Deleted Registered Information') {
             $('#result').attr('class', 'text-primary');
             $('#delete_check').remove();
             document.getElementById('delete_complete').type = 'button';
@@ -56,6 +52,5 @@ $('#delete_complete').on('click', function(event) {
     location.reload();
 });
 
-$(function(){
-    $('#system_top').addClass('show');
-})
+
+$('#integration_side').addClass('active');

@@ -37,9 +37,9 @@ def delete_integration(request):
     RETURN COUNT(i)
     """
     if  graph.evaluate(cypher) > 0:
-        return '로그 수집 중단 완료'
+        return 'Deleted Registered Information'
     else:
-        return '로그 수집 중단 실패'
+        return 'Failed to Delete Information'
 ## AWS CLOUD
 def integration_check(request):
     import boto3
@@ -48,12 +48,12 @@ def integration_check(request):
         access_key = request.POST['access_key'].encode('utf-8').decode('iso-8859-1')  # 한글 입력 시 에러 발생 방지
         if access_key == '':
             data['class'] = 'btn btn-danger'
-            data['value'] = 'ACCESS KEY를 입력해주세요'
+            data['value'] = 'Insert ACCESS KEY'
             return data
         secret_key = request.POST['secret_key'].encode('utf-8').decode('iso-8859-1')  # 한글 입력 시 에러 발생 방지
         if secret_key == '':
             data['class'] = 'btn btn-danger'
-            data['value'] = 'SECRET KEY를 입력해주세요'
+            data['value'] = 'Insert SECRET KEY'
             return data
         region_name = request.POST['region_name'].encode('utf-8').decode('iso-8859-1')
         bucket_name = request.POST['bucket_name'].encode('utf-8').decode('iso-8859-1')
@@ -66,7 +66,7 @@ def integration_check(request):
         """
         if graph.evaluate(cypher) > 0 :
             data['class'] = 'btn btn-warning'
-            data['value'] = '이미 등록된 정보입니다.'
+            data['value'] = 'Already Registered Information'
         else:
             session = boto3.Session(
                 aws_access_key_id = access_key,
@@ -76,7 +76,7 @@ def integration_check(request):
                 s3_client = session.client('s3')
                 s3_client.list_buckets()
                 data['class'] = 'btn btn-success'
-                data['value'] = ' ✓ 키 인증 및 Cloudtrail 서비스 사용 확인 완료!'
+                data['value'] = ' ✓ Authenticated!'
                 data['modal'] = {}
                 data['modal']['access_key'] = access_key
                 data['modal']['secret_key'] = secret_key
@@ -84,13 +84,13 @@ def integration_check(request):
                 data['modal']['bucket_name'] = bucket_name
             except Exception:
                 data['class'] = 'btn btn-danger'
-                data['value'] = '인증 실패 (재시도)'
+                data['value'] = 'Failed To Authenticate (Try Again)'
             finally:
                 return data
         return data
     data = {}
     data['class'] = 'btn btn-danger'
-    data['value'] = '인증 실패 (재시도)'
+    data['value'] = 'Failed To Authenticate (Try Again)'
     return data
 
 def integration_insert(request):
@@ -114,11 +114,11 @@ def integration_insert(request):
         """
         try:
             if graph.evaluate(cypher) == 1:
-                data = "<span class='text-primary'>로그 수집/통합 설정 완료 </span>"
+                data = "<span class='text-primary'>Successfully Registered </span>"
             else:
                 raise Exception
         except Exception:
-            data = "등록 실패"
+            data = "Failed To Register"
         finally:
             return data
 
