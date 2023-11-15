@@ -2,7 +2,7 @@
     <div class="card shadow d-flex h-100">
         <!-- Card Header - Dropdown -->
         <div class="card-header">
-            <h6 class="m-0 font-weight-bold text-teiren">중요도 별 위협 개수</h6>
+            <h6 class="m-0 font-weight-bold text-teiren text-uppercase">Severity Overview</h6>
         </div>
         <!-- Card Body -->
         <div class="card-body p-2 d-flex" style="height:auto">
@@ -11,19 +11,19 @@
                     <tbody>
                         <tr>
                             <th class="text-danger" style="border-top: 0"><i class='text-xs fas fa-fw fa-exclamation-triangle'></i>CRITICAL</th>
-                            <td style="border-top: 0">{{senario.count.3}}건</td>
+                            <td style="border-top: 0">{{senario.count.3}}</td>
                         </tr>
                         <tr>
                             <th style="color:#fd7e14"><i class='text-xs fas fa-fw fa-exclamation-triangle'></i>HIGH</th>
-                            <td>{{senario.count.2}}건</td>
+                            <td>{{senario.count.2}}</td>
                         </tr>
                         <tr>
                             <th class="text-warning"><i class='text-xs fas fa-fw fa-exclamation-triangle'></i>MID</th>
-                            <td>{{senario.count.1}}건</td>
+                            <td>{{senario.count.1}}</td>
                         </tr>
                         <tr>
                             <th class="text-success"><i class="text-xs fas fa-fw fa-solid fa-circle-check"></i>LOW</th>
-                            <td>{{senario.count.0}}건</td>
+                            <td>{{senario.count.0}}</td>
                         </tr>  
                     </tbody>
                 </table>

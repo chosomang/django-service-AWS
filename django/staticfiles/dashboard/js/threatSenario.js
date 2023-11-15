@@ -60,7 +60,7 @@ var ctxthreatSenario = document.getElementById("senarioThreat");
 var myPieChart = new Chart(ctxthreatSenario, {
     type: 'doughnut',
     data: {
-        labels: ['정상', '주의', '경계', '심각'],
+        labels: ['LOW', 'CAUTION', 'ALERT', 'CRITICAL'],
         datasets: [{
             data: [1, 1, 1, 1],
             backgroundColor: ['#1cc88a', '#f6c23e', '#fd7e14', '#e74a3b'],

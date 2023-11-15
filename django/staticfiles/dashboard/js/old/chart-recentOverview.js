@@ -34,7 +34,7 @@ var recentOverview = new Chart(ctx, {
   data: {
     labels: Month,
     datasets: [{
-      label: "수집된 로그 개수",
+      label: "Collected Logs",
       lineTension: 0.3,
       backgroundColor: "rgba(78, 115, 223, 0.05)",
       borderColor: "rgba(78, 115, 223, 1)",
@@ -91,7 +91,7 @@ var recentOverview = new Chart(ctx, {
           padding: 10,
           // Include a dollar sign in the ticks
           callback: function(value, index, values) {
-            return number_format(value)+'개';
+            return number_format(value);
           }
         },
         gridLines: {

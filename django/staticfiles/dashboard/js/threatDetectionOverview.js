@@ -34,7 +34,7 @@ var threatOverview = new Chart(ctxthreatDetectionOverview, {
   data: {
     labels: Month,
     datasets: [{
-      label: "위협 로그 개수",
+      label: "Detected Threat",
       lineTension: 0.3,
       backgroundColor: "rgba(231, 74, 59, 0.05)",
       borderColor: "rgba(231, 74, 59, 1)",
@@ -92,7 +92,7 @@ var threatOverview = new Chart(ctxthreatDetectionOverview, {
           padding: 10,
           // Include a dollar sign in the ticks
           callback: function(value, index, values) {
-            return number_format(value)+'개';
+            return number_format(value);
           }
         },
         gridLines: {
@@ -124,7 +124,7 @@ var threatOverview = new Chart(ctxthreatDetectionOverview, {
       callbacks: {
         label: function(tooltipItem, chart) {
           var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-          return datasetLabel + ':' + number_format(tooltipItem.yLabel);
+          return datasetLabel + ': ' + number_format(tooltipItem.yLabel);
         }
       }
     }

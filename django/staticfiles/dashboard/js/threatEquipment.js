@@ -34,7 +34,7 @@ var myBarChart = new Chart(ctxthreatEquipment, {
   data: {
     labels: equip_threat['name'],
     datasets: [{
-      label: "위협 개수",
+      label: "Detected Threat",
       backgroundColor: equip_threat['color'],
       borderColor: "#4e73df",
       data: equip_threat['count']
@@ -68,7 +68,7 @@ var myBarChart = new Chart(ctxthreatEquipment, {
           min:0,
           maxTicksLimit:7,
           callback: function(value, index, values) {
-            return value+'개';
+            return value;
           }
         }
       }],
@@ -105,7 +105,7 @@ var myBarChart = new Chart(ctxthreatEquipment, {
       callbacks: {
         label: function(tooltipItem, chart) {
           var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-          return datasetLabel + ': ' + number_format(tooltipItem.xLabel)+'개';
+          return datasetLabel + ': ' + number_format(tooltipItem.xLabel);
         }
       }
     },

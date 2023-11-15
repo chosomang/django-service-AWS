@@ -33,7 +33,7 @@ var threatRule = new Chart(ctxthreatRule, {
   data: {
     labels: rule_detected_count['name'],
     datasets: [{
-      label: "위협 개수",
+      label: "Detected Threat",
       backgroundColor: rule_detected_count['color'],
       borderColor: "#4e73df",
       data: rule_detected_count['count']
@@ -67,7 +67,7 @@ var threatRule = new Chart(ctxthreatRule, {
           min:0,
           maxTicksLimit:7,
           callback: function(value, index, values) {
-            return value+'개';
+            return value;
           }
         }
       }],
@@ -104,7 +104,7 @@ var threatRule = new Chart(ctxthreatRule, {
       callbacks: {
         label: function(tooltipItem, chart) {
           var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-          return datasetLabel + ': ' + number_format(tooltipItem.xLabel)+'개';
+          return datasetLabel + ': ' + number_format(tooltipItem.xLabel);
         }
       }
     },
