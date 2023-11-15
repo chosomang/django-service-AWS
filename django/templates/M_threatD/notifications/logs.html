@@ -1,41 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<style>
-    .color-box{
-        font-weight:900;
-        padding: 0.4rem;        
-        border-radius: 5px;
-    }
-    
-    .color-box-danger{
-        color: #e74a3b;
-        background-color: rgba(231, 74, 59, 0.3);
-    }
-
-    .color-box-caution{
-        color: #fd7e14;
-        background-color: rgba(253, 126, 20, 0.3);
-    }
-
-    .color-box-warning{
-        color: #ffb700;
-        background-color: rgba(255, 212, 101, 0.3);
-    }
-
-    .color-box-success{
-        color: #1ed45e;
-        background-color: rgba(30, 212, 94, 0.3);
-    }
-</style>
 <div>
     <!-- Page Heading -->
-    <h6 class="h3 mb-2 text-gray-800 ml-2 font-weight-bold">중요 위협 로그 확인하기</h6>
-    <p class="h6 ml-2 mb-4">중요 위협 로그들을 확인할 수 있습니다. </p>
+    <h6 class="h3 mb-2 text-gray-800 ml-2 font-weight-bold">Threat Alert</h6>
+    <p class="h6 ml-2 mb-4">Notifications Of Detected Threats</p>
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-teiren">중요 위협 로그 목록</h6>
+            <h6 class="m-0 font-weight-bold text-teiren">Threat Alert List</h6>
         </div>
         <div class="card-body" style="font-size:12px;">
             <div class="table-responsive" style="overflow:hidden;">
@@ -43,28 +16,28 @@
                     style="text-align:center;overflow:scroll;">
                     <thead>
                         <tr>
-                            <th>확인여부</th>
-                            <th>클라우드</th>
-                            <th>행위 시간</th>
-                            <th>탐지 정책</th>
-                            <th>탐지 행위</th>
-                            <th>위협 중요도</th>
-                            <th>sourceIp</th>
-                            <th>탐지 정책 번호</th>
-                            <th>상세보기</th>
+                            <th>Status</th>
+                            <th>Resource</th>
+                            <th>Event Time</th>
+                            <th>Detected Rule</th>
+                            <th>Detected Event</th>
+                            <th>Severity</th>
+                            <th>Source Ip</th>
+                            <th>Detection No</th>
+                            <th>Details</th>
                         </tr>
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>확인여부</th>
-                            <th>클라우드</th>
-                            <th>행위 시간</th>
-                            <th>탐지 정책</th>
-                            <th>탐지 행위</th>
-                            <th>위협 중요도</th>
-                            <th>sourceIp</th>
-                            <th>탐지 정책 번호</th>
-                            <th>상세보기</th>
+                            <th>Status</th>
+                            <th>Resource</th>
+                            <th>Event Time</th>
+                            <th>Detected Rule</th>
+                            <th>Detected Event</th>
+                            <th>Severity</th>
+                            <th>Source Ip</th>
+                            <th>Detection No</th>
+                            <th>Details</th>
                         </tr>
                     </tfoot>
                     <tbody>
@@ -102,9 +75,9 @@
                                     <input type="hidden" name="{{key}}" value="{{value}}">
                                     {% endfor %}
                                     {% if 'alert' in result %}
-                                    <button class="btn btn-md btn-danger ">관련 로그</button>
+                                    <button class="btn btn-md btn-danger ">Details</button>
                                     {% else %}
-                                    <button class="btn btn-md btn-teiren ">관련 로그</button>
+                                    <button class="btn btn-md btn-teiren ">Details</button>
                                     {% endif %}
                                 </form>
                             </td>

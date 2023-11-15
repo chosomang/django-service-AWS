@@ -163,12 +163,12 @@ function deleteFlow(e){
 
 function newPropertyKey(e){
     var num = e.name.slice(-3)
-    if(e.value == '새로운 탐지 정책 속성'){
+    if(e.value == 'New Property'){
         $(".properties").find("#flow"+num).append(
             `
             <div id="flow_key_custom_${num}" class="col-6 mt-1">
-                <span>새로운 정책 속성</span>
-                <input type="text-area" class="form-control form-control-user" name="flow_custom_${num}" placeholder="새로운 탐지 정책 속성">
+                <span>New Property</span>
+                <input type="text-area" class="form-control form-control-user" name="flow_custom_${num}" placeholder="New Property">
             </div>
             `
         )
@@ -198,7 +198,7 @@ function resetRuleNumbers(num){
     rule.each(function(i){
         if (i == 0){ return true }
         this.id = `${this.id.slice(0,-1)}${i}`
-        $(this).find('.row h5').text(`탐지 정책 ${i}`)
+        $(this).find('.row h5').text(`Flow Detection ${i}`)
         var input = $(this).find('input').slice(0,2)
         input.each(function(){
             this.name = `${this.name.slice(0,-3)}${i}_1`
@@ -211,7 +211,7 @@ function resetFlowNumbers(num){
     var flow = $('.flow')
     flow.each(function(i){
         this.id = `${this.id.slice(0,-1)}${i+1}`
-        $(this).find('.row h6').text(`탐지 ${i+1}`)
+        $(this).find('.row h6').text(`Dynamic Detection ${i+1}`)
         var select = $(this).find('select')
         select.each(function(){
             if (this.name.includes('logical')){

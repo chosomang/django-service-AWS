@@ -2,17 +2,17 @@
     <table class="table table-bordered" id="dataTable_modal" width="100%" cellspacing="0" style="text-align:center;">
         <thead>
             <td>No</td>
-            <td>탐지된 정책</td>
-            <td>탐지 시간</td>
-            <td>정책 종류</td>
-            <td>상세보기</td>
+            <td>Detected Rule</td>
+            <td>Detected Time</td>
+            <td>Rule Type</td>
+            <td>Details</td>
         </thead>
         <tfoot>
             <td>No</td>
-            <td>탐지된 정책</td>
-            <td>탐지 시간</td>
-            <td>정책 종류</td>
-            <td>상세보기</td>
+            <td>Detected Rule</td>
+            <td>Detected Time</td>
+            <td>Rule Type</td>
+            <td>Details</td>
         </tfoot>
         <tbody>
             {% if table %}
@@ -26,7 +26,7 @@
                 <td>
                     <button type=button class="btn btn-outline-danger" onclick="rule_detail('{{log.arr}}')"
                         data-dismiss="modal" data-toggle="modal" data-target="#rule_modal">
-                        상세보기
+                        Details
                     </button>
                 </td>
             </tr>
@@ -62,7 +62,7 @@
                 <input type="hidden" name="rule_class" value="${arr['rule_class']}">
                 <input type="hidden" name="cloud" value="${arr['cloud']}">
                 <input type="hidden" name="id" value="${arr['id']}">
-                <input type="submit" class="btn btn-block btn-teiren" value="상세보기">
+                <input type="submit" class="btn btn-block btn-md btn-teiren" value="Detail Page">
                 `
             )
         })

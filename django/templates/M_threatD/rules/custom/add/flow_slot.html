@@ -5,7 +5,7 @@
 <div class="flow" id="flow_{{forloop.counter}}">
     {% if forloop.counter == 1 %}
         {% for num, items in flows.items %}
-            탐지 정책{{num}}
+            Flow Detection {{num}}
             <br>
             {% for item in items.item %}
                 {{item.0}}: {{item.1}}
@@ -35,24 +35,24 @@
     {% endif %}
     <div class="form-group row text-center">
         <div class="col-10 text-teiren">
-            <h6>탐지 {{forloop.counter}}</h6>
+            <h6>Dynamic Detection {{forloop.counter}}</h6>
         </div>
     </div>
     <div class="form-group row text-center">
         <div class="col-2">
-            <span>탐지 정책 선택</span>
+            <span>Flow Detection</span>
             <select type="text-area" class="form-control form-control-user" name="flow_srcNum_{{forloop.counter}}">
                 {% for num in flows %}
                     {% if num == where.srcNum.3 %}
-                    <option value="log{{num}}" selected>탐지 정책 {{num}}</option>
+                    <option value="log{{num}}" selected>{{num}}</option>
                     {% else %}
-                    <option value="log{{num}}">탐지 정책 {{num}}</option>
+                    <option value="log{{num}}">{{num}}</option>
                     {% endif %}
                 {% endfor %}
             </select>
         </div>
         <div class="col-3">
-            <span>탐지 로그 속성 선택</span>
+            <span>Detection Property</span>
             <input type="text-area" class="form-control form-control-user" list="flow_src_property_list_{{forloop.counter}}" name="flow_srcProperty_{{forloop.counter}}" value="{{where.srcProperty}}">
             <datalist id="flow_src_property_list_{{forloop.counter}}">
                 {% for property in log_properties %}
@@ -73,19 +73,19 @@
             </select>
         </div>
         <div class="col-2">
-            <span>탐지 정책 선택 </span>
+            <span>Flow Detection</span>
             <select type="text-area" class="form-control form-control-user" name="flow_dstNum_{{forloop.counter}}">
                 {% for num in flows %}
                     {% if num == where.dstNum.3 %}
-                    <option value="log{{num}}" selected>탐지 정책 {{num}}</option>
+                    <option value="log{{num}}" selected>Flow Detection {{num}}</option>
                     {% else %}
-                    <option value="log{{num}}">탐지 정책 {{num}}</option>
+                    <option value="log{{num}}">Flow Detection {{num}}</option>
                     {% endif %}
                 {% endfor %}
             </select>
         </div>
         <div class="col-3">
-            <span>탐지 로그 속성 선택</span>
+            <span>Detection Property</span>
             <input type="text-area" class="form-control form-control-user" list="flow_dst_property_list_{{forloop.counter}}" name="flow_dstProperty_{{forloop.counter}}" value="{{where.dstProperty}}">
             <datalist id="flow_dst_property_list_{{forloop.counter}}">
                 {% for property in log_properties %}
@@ -106,7 +106,7 @@
 <div class="flow" id="flow_{{flow_count}}">
     {% if flow_count == '1' %}
         {% for num, items in flows.items %}
-            탐지 정책{{num}}
+            Dynamic Detection{{num}}
             <br>
             {% for item in items.item %}
                 {{item.0}}: {{item.1}}
@@ -126,20 +126,20 @@
     {% endif %}
     <div class="form-group row text-center">
         <div class="col-10 text-teiren">
-            <h6>탐지 {{flow_count}}</h6>
+            <h6>Dynamic Detection {{flow_count}}</h6>
         </div>
     </div>
     <div class="form-group row text-center">
         <div class="col-2">
-            <span>탐지 정책 선택</span>
+            <span>Flow Detection</span>
             <select type="text-area" class="form-control form-control-user" name="flow_srcNum_{{flow_count}}">
                 {% for num in flows %}
-                    <option value="log{{num}}">탐지 정책 {{num}}</option>
+                    <option value="log{{num}}">{{num}}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-3">
-            <span>탐지 로그 속성 선택</span>
+            <span>Detection Property</span>
             <input type="text-area" class="form-control form-control-user" list="flow_src_property_list_{{flow_count}}" name="flow_srcProperty_{{flow_count}}">
             <datalist id="flow_src_property_list_{{flow_count}}">
                 {% for property in log_properties %}
@@ -155,15 +155,15 @@
             </select>
         </div>
         <div class="col-2">
-            <span>탐지 정책 선택 </span>
+            <span>Flow Detection</span>
             <select type="text-area" class="form-control form-control-user" name="flow_dstNum_{{flow_count}}">
                 {% for num in flows %}
-                    <option value="log{{num}}">탐지 정책 {{num}}</option>
+                    <option value="log{{num}}">{{num}}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-3">
-            <span>탐지 로그 속성 선택</span>
+            <span>Detection Property</span>
             <input type="text-area" class="form-control form-control-user" list="flow_dst_property_list_{{flow_count}}" name="flow_dstProperty_{{flow_count}}">
             <datalist id="flow_dst_property_list_{{flow_count}}">
                 {% for property in log_properties %}

@@ -1,7 +1,7 @@
 <div class="col-xl">
     <div class="mb-4">
         <div class="text-center">
-            <h2 class="m-0 font-weight-bold text-center text-teiren">정책 상세정보</h2>
+            <h2 class="m-0 font-weight-bold text-center text-teiren">Custom Rule Details</h2>
         </div>
     </div>
     <div class="card shadow mb-4">
@@ -61,17 +61,10 @@
                         </tr>
                         {% for key, value in custom.details.items %}
                             {% if value %}
-                                {% if key == 'Blank' %}
-                                <tr>
-                                    <td class="font-weight-bold">기타 행위 허용 수</td>
-                                    <td>{{value}}</td>
-                                </tr>
-                                {% else %}
                                 <tr>
                                     <td class="font-weight-bold">{{key}}</td>
                                     <td>{{value}}</td>
                                 </tr>
-                                {% endif %}
                             {% endif %}
                         {% endfor %}
                     </tbody>
@@ -81,7 +74,7 @@
         {% if custom.related %}
         <div class="">
             <div class="text-center">
-                <h4 class="m-0 font-weight-bold text-center text-teiren">관련 FLOW 정책</h4>
+                <h4 class="m-0 font-weight-bold text-center text-teiren">Related Flow Detection</h4>
             </div>
         </div>
         {% for related in custom.related %}
@@ -102,7 +95,7 @@
                             {% if value %}
                                 {% if key == 'Count' %}
                                 <tr>
-                                    <td class="font-weight-bold">탐지 횟수</td>
+                                    <td class="font-weight-bold">Detection Count</td>
                                     <td>{{value}}</td>
                                 </tr>
                                 {% else %}

@@ -15,36 +15,37 @@
 {% block content %}
 <div>
     <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">
-        사용자 중심 데이터 분석
+        User Analysis
     </h6>
     <p class="h6 mb-4 ml-2">
-        계정을 중심으로 어떤 로그가 생기고, 위협이 탐지되었는지 확인할 수 있습니다.
+        Discover User Centered Threat Detection
     </p>
 
     <!-- 그래프 출력 -->
     <div class="card shadow mb-4 ">
         <div class="card-header py-3 ">
-            <h6 class="m-0 font-weight-bold text-teiren ">위협 상관관계 출력</h6>
+            <h6 class="m-0 font-weight-bold text-teiren ">User Graph Analysis</h6>
         </div>
         <div class="card-body" style="font-size:12px">
             <div class="table-responsive" style="overflow:hidden;">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0" style="text-align:center;">
                     <thead class="h6">
-                        <td>장비명</td>
-                        <td>계정명</td>
-                        <td>탐지 횟수</td>
-                        <td>최근 위협</td>
-                        <td>최근 행위</td>
-                        <td>최근 행위 시간</td>
-                        <td>상세보기</td>
+                        <td>Resource</td>
+                        <td>Account</td>
+                        <td>Detection Count</td>
+                        <td>Recent Detection</td>
+                        <td>Recent Event</td>
+                        <td>Recent EventTime</td>
+                        <td>Details</td>
                     </thead>
                     <tfoot>
-                        <td>계정명</td>
-                        <td>탐지 횟수</td>
-                        <td>최근 위협</td>
-                        <td>최근 행위</td>
-                        <td>최근 행위 시간</td>
-                        <td>상세보기</td>
+                        <td>Resource</td>
+                        <td>Account</td>
+                        <td>Detection Count</td>
+                        <td>Recent Detection</td>
+                        <td>Recent Event</td>
+                        <td>Recent EventTime</td>
+                        <td>Details</td>
                     </tfoot>
                     <tbody>
                         {% if accounts %}
@@ -58,9 +59,9 @@
                             {% endfor %}
                             <td>
                                 {% if 'account_real' in account %}
-                                <button type=button class='btn btn-outline-teiren btn-md m-3' data-cloud="{{account.cloud}}" data-total="{{account.total}}" onclick='details(this); return false;' value="{{account.account_real}}" data-toggle='modal' data-target='#account_modal'>상세보기</button>
+                                <button type=button class='btn btn-outline-teiren btn-md m-3' data-cloud="{{account.cloud}}" data-total="{{account.total}}" onclick='details(this); return false;' value="{{account.account_real}}" data-toggle='modal' data-target='#account_modal'>Graph Details</button>
                                 {% else %}
-                                <button type=button class='btn btn-outline-teiren btn-md m-3' data-cloud="{{account.cloud}}" data-total="{{account.total}}" onclick='details(this); return false;' value={{account.account}} data-toggle='modal' data-target='#account_modal'>상세보기</button>
+                                <button type=button class='btn btn-outline-teiren btn-md m-3' data-cloud="{{account.cloud}}" data-total="{{account.total}}" onclick='details(this); return false;' value={{account.account}} data-toggle='modal' data-target='#account_modal'>Graph Details</button>
                                 {% endif %}
                             </td>
                         </tr>

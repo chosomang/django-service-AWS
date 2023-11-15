@@ -16,10 +16,10 @@
 {% endblock %}
 {% block content %}
 <!-- Begin Page Content -->
-<div class = 'container-fluid'>
+<div>
     <div>
-        <h3 class='mb-2 text-dark' style='margin-left:40px'>{{rule_name}}</h3>
-        <p class='mb-4' style='margin-left:40px; font-size:16px'>{{rule_name}}에 대한 상세 정보를 볼 수 있습니다.</p>
+        <h6 class='h3 mb-2 font-weight-bold text-gray-800 ml-2'>{{rule_name}}</h6>
+        <p class='h6 ml-2 mb-4'>Threat Detection Analysis</p>
     </div>
     <div class="tabs">
         <input type="radio" id="tab1" name="tab-control" checked>
@@ -27,8 +27,8 @@
         <ul class='ul'>
             <li title="DASHBOARD">
                 <label for="tab1" role="button">
-                    <i class="fas fa-fw fa-share-alt"></i>
-                    <span>GRAPH DB</span>
+                    <i class="fa-solid fa-circle-nodes"></i>
+                    <span>Graph Analysis</span>
                 </label>
             </li>
             <li title= "{{rule_name}}">

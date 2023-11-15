@@ -1,7 +1,7 @@
 <div class="col-xl">
     <div class="">
         <div class="text-center">
-            <h2 class="m-0 font-weight-bold text-center text-teiren">정책 상세정보</h2>
+            <h2 class="m-0 font-weight-bold text-center text-teiren">Teiren Default Rule Details</h2>
         </div>
         <br>
     </div>
@@ -68,7 +68,7 @@
         {% if default.related %}
         <div class="">
             <div class="text-center">
-                <h4 class="m-0 font-weight-bold text-center text-teiren">관련 FLOW 정책</h4>
+                <h4 class="m-0 font-weight-bold text-center text-teiren">Related Flow Detection</h4>
             </div>
         </div>
         {% for related in default.related %}
@@ -91,17 +91,10 @@
                         </tr>
                         {% for key, value in related.detail.items %}
                         {% if value %}
-                        {% if key == 'Blank' %}
-                        <tr>
-                            <td class="font-weight-bold">기타 행위 허용 수</td>
-                            <td>{{value}}</td>
-                        </tr>
-                        {% else %}
                         <tr>
                             <td class="font-weight-bold">{{key}}</td>
                             <td>{{value}}</td>
                         </tr>
-                        {% endif %}
                         {% endif %}
                         {% endfor %}
                         {% if related.alert_email1 and related.alert_email1 != '' %}

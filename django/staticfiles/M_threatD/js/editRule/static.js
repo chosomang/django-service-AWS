@@ -88,12 +88,12 @@ function resetStaticNumbers(e){
 
 function newPropertyKey(e){
     var num = e.name.slice(-1)
-    if(e.value == '새로운 정책 속성'){
+    if(e.value == 'New Property'){
         $("#properties").find("#property"+num).append(
             `
             <div id="property_key_custom_${num}" class="col-4">
-                <span>새로운 정책 속성</span>
-                <input type="text-area" class="form-control form-control-user" name="property_custom_${num}" placeholder="새로운 정책 속성">
+                <span>New Property</span>
+                <input type="text-area" class="form-control form-control-user" name="property_custom_${num}" placeholder="New Property">
             </div>
             `
         )

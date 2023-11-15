@@ -5,9 +5,9 @@
             <tr>
                 <th>No</th>
                 <th>Rule Type</th>
-                <th>기본 Rule 이름</th>
-                <th>설명</th>
-                <th>on/off</th>
+                <th>Rule Name</th>
+                <th>Comment</th>
+                <th>On/Off</th>
                 <th>Details</th>
             </tr>
         </thead>
@@ -15,9 +15,9 @@
             <tr>
                 <th>No</th>
                 <th>Rule Type</th>
-                <th>Rule 이름</th>
-                <th>설명</th>
-                <th>on/off</th>
+                <th>Rule Name</th>
+                <th>Comment</th>
+                <th>On/Off</th>
                 <th>Details</th>
             </tr>
         </tfoot>
@@ -25,7 +25,7 @@
             {% if default %}
             {% for rule in default %}
             <tr>
-                <td>{{ rule.id }}</td>
+                <td>{{ forloop.counter }}</td>
                 <td width="250">{{ rule.type }}</td>                
                 <td width="500">{{ rule.name }}</td>
                 <td width="2500" align="left">{{ rule.comment }}</td>
@@ -58,6 +58,10 @@
                 </td>
             </tr>
             {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="6" style="font-size:24px"> No Data</td>
+            </tr>
             {% endif %}
         </tbody>
     </table>
