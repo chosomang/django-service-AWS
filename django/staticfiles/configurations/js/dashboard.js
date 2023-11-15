@@ -93,7 +93,7 @@ $.ajax({
     result = data.items
     for (i in result) {
         var itemName = result[i]
-        var item = $('<div>', { id: `${itemName}btn`, class: "newWidget grid-stack-item" },).text(`${itemName}추가`)
+        var item = $('<div>', { id: `${itemName}btn`, class: "newWidget grid-stack-item" },).text(`Add ${itemName}`)
         $('#itemList').append(item)
     }
     GridStack.setupDragIn('#itemList .newWidget', { appendTo: 'body', helper: 'clone' });
