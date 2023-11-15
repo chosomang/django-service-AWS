@@ -16,7 +16,6 @@ function getCookie(name) {
 $(function () {
     const csrftoken = getCookie('csrftoken');
     setInterval(function(){
-        var topbar_alert_count = $('#topbar_alert_count')
         $.ajax({
             url: '/topbar/alert/',
             headers: {
@@ -25,15 +24,13 @@ $(function () {
             type:'post'
         }).done(function(data){
             if (data.top_alert){
-                topbar_alert_count.removeAttr('hidden')
-                $('#topbar_alert').removeAttr('hidden')
-                $('#topbar_alert_div').attr('style', 'margin:0.3rem 0 1rem 0.1rem;; width:0.2rem; height:0.75rem; background-color:white;')
-                topbar_alert_count.text("\u00A0"+data.top_alert.count+"\u00A0")
+                $('#sidebar_alert').removeAttr('hidden')
+                $('#topbar_alert').addClass('text-danger fa-bounce')
+                $('#sidebar_alert').text(data.top_alert.count)
             }
             else if (data.no_top_alert){
-                $('#topbar_alert_div').attr('style', 'height:45%;')
-                topbar_alert_count.attr('hidden', true)
-                $('#topbar_alert').attr('hidden', true)
+                $('#sidebar_alert').attr('hidden', true)
+                $('#topbar_alert').removeClass('text-danger fa-bounce')
             }
         })
     }, 1000);

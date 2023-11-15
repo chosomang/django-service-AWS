@@ -16,7 +16,7 @@ function getCookie(name = 'csrftoken') {
 var grid = GridStack.init({
     float: false,
     resizable: { handles: 'all' },
-    fitToContent: true,
+    fitToContent: false,
     cellHeight: 10,
     margin: 1,
     staticGrid: true,
