@@ -17,7 +17,7 @@ function getCookie(name = 'csrftoken') {
 $(function () {
     $('.grid-stack').append(
         `<div id="temp" class="d-flex justify-content-center align-items-center" style="width:100%; height:50vh;">
-            <button class="btn btn-lg btn-teiren" onclick="toggleLayoutSidebar()">레아이웃을 선택해주세요</button>
+            <button class="btn btn-lg btn-teiren" onclick="toggleLayoutSidebar()">Select Layout</button>
         </div>`
     )
 
@@ -148,8 +148,8 @@ $.ajax({
     for (i in data) {
         layout = $('<div>', { class: "layoutList row" })
         layout.append($('<span>', { class: "d-flex align-items-center" }).text(data[i]))
-        layout.append($('<button>', { class: "btn btn-sm btn-danger ml-auto delbox", onclick: "deleteLayout(this)" }).text('삭제'))
-        layout.append($('<button>', { class: "btn btn-sm btn-teiren ml-2", onclick: "loadLayout(this)" }).text('불러오기'))
+        layout.append($('<button>', { class: "btn btn-sm btn-danger ml-auto delbox", onclick: "deleteLayout(this)" }).text('Delete'))
+        layout.append($('<button>', { class: "btn btn-sm btn-teiren ml-2", onclick: "loadLayout(this)" }).text('Load Layout'))
         $('#layoutList').append(layout)
     }
 })
@@ -197,8 +197,8 @@ function newLayout() {
         else {
             layout = $('<div>', { class: "layoutList row" })
             layout.append($('<span>', { class: "d-flex align-items-center" }).text(name))
-            layout.append($('<button>', { class: "btn btn-sm btn-danger ml-auto delbox", onclick: "deleteLayout(this)" }).text('삭제'))
-            layout.append($('<button>', { class: "btn btn-sm btn-teiren ml-2", onclick: "loadLayout(this)" }).text('불러오기'))
+            layout.append($('<button>', { class: "btn btn-sm btn-danger ml-auto delbox", onclick: "deleteLayout(this)" }).text('Delete'))
+            layout.append($('<button>', { class: "btn btn-sm btn-teiren ml-2", onclick: "loadLayout(this)" }).text('Load Layout'))
             layout.hide()
             $('#layoutList').append(layout)
             layout.slideDown('normal')
@@ -242,7 +242,7 @@ function saveLayout() {
         })
     }
     else {
-        alert('레이아웃 이름을 지정해주세요.')
+        alert('Layout Name Is Missing')
     }
 }
 function loadLayout(e) {
