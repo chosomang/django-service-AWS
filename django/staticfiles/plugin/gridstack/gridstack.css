@@ -35,7 +35,7 @@
     position: absolute;
     width: auto;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 .grid-stack>.grid-stack-item.fit-to-content>.grid-stack-item-content {

@@ -61,7 +61,7 @@ $.ajax({
         resizable: { handles: 'all' },
         acceptWidgets: true,
         minRow: 8,
-        fitToContent: true,
+        fitToContent: false,
         cellHeight: 10,
         margin: 1,
         removable: '#delete-box',

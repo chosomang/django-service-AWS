@@ -43,7 +43,7 @@ def logTotal(request):
     context = {"total": format(log_total, ",")}
     if isinstance(request, dict):
         return render_to_string('dashboard/items/logTotal.html',context, request['request'])
-    response = {'w':2, 'content': render_to_string('dashboard/items/logTotal.html',context, request)}
+    response = {'w':2, 'h':8, 'content': render_to_string('dashboard/items/logTotal.html',context, request)}
     return JsonResponse(response)
 
 # 연동된 제품 개수
@@ -56,7 +56,7 @@ def integrationTotal(request):
     context = {'integration': total}
     if isinstance(request, dict):
         return render_to_string('dashboard/items/integrationTotal.html',context, request['request'])
-    response = {'w':2, 'content': render_to_string('dashboard/items/integrationTotal.html',context, request)}
+    response = {'w':2, 'h':8, 'content': render_to_string('dashboard/items/integrationTotal.html',context, request)}
     return JsonResponse(response)
 
 # 위협 로그 개수
@@ -69,7 +69,7 @@ def threatlogTotal(request):
     context = {'threat': total}
     if isinstance(request, dict):
         return render_to_string('dashboard/items/threatlogTotal.html',context, request['request'])
-    response = {'w':2, 'content': render_to_string('dashboard/items/threatlogTotal.html',context, request)}
+    response = {'w':2, 'h':8, 'content': render_to_string('dashboard/items/threatlogTotal.html',context, request)}
     return JsonResponse(response)
 
 # 위협 비율
@@ -91,7 +91,7 @@ def threatRatio(request):
     context = {"threat_ratio": math.ceil(threat_ratio*10)/10}
     if isinstance(request, dict):
         return render_to_string('dashboard/items/threatRatio.html',context, request['request'])
-    response = {'w':2, 'content': render_to_string('dashboard/items/threatRatio.html',context, request)}
+    response = {'w':2, 'h':8, 'content': render_to_string('dashboard/items/threatRatio.html',context, request)}
     return JsonResponse(response)
 
 
@@ -241,6 +241,7 @@ def threatSenario(request):
     """
     results = graph.run(cypher)
     data =[0,0,0,0]
+    average = 1
     for result in results:
         average = result['average'] if result['average'] else 1
         level = result['level']
@@ -286,6 +287,7 @@ def threatLevel(request):
     """
     results = graph.run(cypher)
     data =[0,0,0,0]
+    average = 1
     for result in results:
         average = result['average'] if result['average'] else 1
         level = result['level']
@@ -429,14 +431,14 @@ def recentDetection(request):
     context = {'recent_threat': data_list}
     if isinstance(request, dict):
         return render_to_string('dashboard/items/recentDetection.html',context, request['request'])
-    response = {'w':6, 'h':33,'x':5, 'content':render_to_string('dashboard/items/recentDetection.html', context, request)}
+    response = {'w':8, 'h':33, 'x':5, 'content':render_to_string('dashboard/items/recentDetection.html', context, request)}
     return JsonResponse(response)
 
 # Graph Visual
 def graphitem(request):
     if isinstance(request, dict):
         return render_to_string('dashboard/items/graphitem.html',{}, request['request'])
-    response = {'w':4, 'h':55, 'content':render_to_string('dashboard/items/graphitem.html', {}, request)}
+    response = {'w':4, 'h':56, 'x':0,'content':render_to_string('dashboard/items/graphitem.html', {}, request)}
     return JsonResponse(response)
 
 # CPU 사용량
