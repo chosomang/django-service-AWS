@@ -366,6 +366,23 @@ nav>a {
 
 /* End Sidebar */
 
+/* Locationbar */
+
+.locationbar{
+    width: 99%;
+    height: 35px;
+    color: #94A2B3;
+    font-size: 13px;
+    border-bottom: 1px solid #94a2b329;
+    margin-bottom: 20px;
+}
+
+.locationbar .current{
+    color: #24B6D4 !important;
+    font-weight: 700 !important;
+}
+/* End Locationbar */
+
 .body-content {
     width: calc(100vw - 60px);
     height: calc(100vh - 60px);
