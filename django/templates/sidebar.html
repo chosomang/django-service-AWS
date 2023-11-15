@@ -2,14 +2,14 @@
     <div id="sidebar-top">
         <ul class="navbar-icon">
             <li>
-                <a class="nav-link" href="/">
+                <a id="dashboard_side" class="nav-link" href="/">
                     <span class="material-symbols-outlined">
                         space_dashboard
                     </span>
                 </a>
             </li>
             <li>
-                <a class="nav-link">
+                <a id="log_side" class="nav-link">
                     <span class="material-symbols-outlined">
                         list_alt
                     </span>
@@ -72,11 +72,35 @@
                 </div>
             </li>
             <li>
-                <a id="integration_side" class="nav-link" href="/integration">
+                <a id="integration_side" class="nav-link">
                     <span class="material-symbols-outlined">
                         library_add
                     </span>
                 </a>
+                <div class="collapse shadow">
+                    <button class="collapse-hide-btn">
+                        <span class="material-symbols-outlined">
+                            arrow_back_ios_new
+                        </span>
+                    </button>
+                    <span class="header">
+                        Resource Management
+                    </span>
+                    <div class="collapse-item box">
+                        <input placeholder="Search">
+                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto"></button>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="item-header">
+                        Integration
+                    </div>
+                    <a class="collapse-item" href="/integration">
+                        Registration
+                    </a>
+                    <a class="collapse-item" href="/integration">
+                        Configuration
+                    </a>
+                </div>
             </li>
             <li>
                 <a id="threat_side" class="nav-link">

@@ -111,4 +111,4 @@ function ruleOnOff(event) {
         }
     })
 }
-$('#threat_top').addClass('show');
+$('#threat_side').addClass('active');

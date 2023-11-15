@@ -71,3 +71,5 @@ $.ajax({
     $('#no_data').show()
     grid.removeAll()
 });
+
+$('#dashboard_side').addClass('active')

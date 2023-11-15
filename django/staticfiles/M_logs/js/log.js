@@ -80,3 +80,4 @@ function searchFilter(e) {
         window.location.reload()
     })
 }
+$('#log_side').addClass('active')
