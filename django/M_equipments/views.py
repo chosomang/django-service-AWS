@@ -16,9 +16,10 @@ def integration_page(request, equipment):
         if request.method == 'POST':
             data = dict(request.POST.items())
             context = integration.delete_integration(data)
-            
             return HttpResponse(context)
-        
+    if equipment == 'configuration':
+        context = integration.list_integration()
+        return render(request, f"M_equipment/{equipment}.html", context)
     return render(request, f"M_equipment/{equipment}.html")
 
 def integration_check_ajax(request, equipment):
