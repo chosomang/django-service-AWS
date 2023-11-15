@@ -43,7 +43,7 @@ def logout_view(request):
     return redirect('/auth/login/?next=/')
 
 def register_view(request):
-    context = {'color': 'teiren', 'message': 'Register To Use Teiren SIEM'}
+    context = {'color': 'teiren', 'message': ['Register To Use', 'TEIREN CLOUD']}
     if request.method == "POST":
         data = dict(request.POST.items())
         message = register.check_account(data)
