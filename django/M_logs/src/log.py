@@ -54,39 +54,66 @@ def get_log_page(request, cloud):
             if request[key]:
                 filter_value = 'regex:' + request[key]
             else: continue
-        if filter_value == 'date':
+        if filter_value.startswith('date'):
             if request[key]:
                 filter_value = f"{key.split('_', 1)[1]}:{request[key]}"
+            else: continue
+        if filter_value.startswith('search'):
+            if request[key]:
+                if filter_value == 'search_key':
+                    if request[key] == "Account":
+                        filter_value = 'userIdentity_userName'
+                    elif request[key] == "Event Name":
+                        filter_value = 'eventName'
+                    elif request[key] == "Event Time":
+                        filter_value = 'eventTime'
+                    elif request[key] == "Source IP":
+                        filter_value = 'sourceIPAddress'
+                    elif request[key] == "Resource":
+                        filter_value = 'eventSource'
+                    else:
+                        filter_value = request[key]
+                else:
+                    filter_value = request[key]
             else: continue
         table_filter[filter_key].append(filter_value)
     # return {'error': str(table_filter)}
 
     where_cypher = 'WHERE '
     for key, filters in table_filter.items():
-        if len(filters) < 1 or key == 'search': continue
+        if len(filters) < 1 : continue
         if 'all' in filters: filters.remove('all')
         for i in range(0,len(filters)):
             if filters[i]:
                 if filters[i].startswith('regex:'):
                     if filters[i].split(':')[1]:
                         where_cypher += 'AND (' if i == 0 and len(where_cypher) > 6 else '('
-                        where_cypher += f"n.{key} =~ '{filters[i].split(':')[1]}') "
+                        if key == 'userIdentity_userName':
+                            where_cypher += f"n.{key} =~ '{filters[i].split(':')[1]}' OR n.userIdentity_type =~ '{filters[i].split(':')[1]}') "
+                        else:
+                            where_cypher += f"n.{key} =~ '{filters[i].split(':')[1]}') "
                         break
                     else:
                         continue
                 if filters[i].startswith('date'):
-                    if len(filters[i].split(':')) > 1:
-                        where_cypher += 'AND (' if len(where_cypher) > 6 else '('
-                        if filters[i].split(':')[0].split('_')[1] == 'start':
-                            where_cypher += f"n.{key} >= '{filters[i].split(':')[1]}T00:00:01Z') "
-                        else:
-                            where_cypher += f"n.{key} <= '{filters[i].split(':')[1]}T23:59:59Z') "
-                        continue
+                    where_cypher += 'AND (' if len(where_cypher) > 6 else '('
+                    if filters[i].split(':')[0].split('_')[1] == 'start':
+                        where_cypher += f"n.{key} >= '{filters[i].split(':')[1]}T00:00:01Z') "
                     else:
-                        continue
+                        where_cypher += f"n.{key} <= '{filters[i].split(':')[1]}T23:59:59Z') "
+                    continue
                 where_cypher += 'AND ' if i == 0 and len(where_cypher) > 6 else ''
                 where_cypher += '(' if i == 0 else ''
                 where_cypher += 'OR ' if len(where_cypher) > 6 and i > 0 else ''
+                if key == 'main':
+                    if len(filters) > 1:
+                        if filters[0] == 'userIdentity_userName':
+                            where_cypher += f"n.{filters[0]} =~ '.*{filters[1]}.*' OR n.userIdentity_type =~ '.*{filters[1]}.*') "
+                        else:
+                            where_cypher += f"n.{filters[0]} =~ '.*{filters[1]}.*') "
+                    else:
+                        where_cypher = where_cypher[:-1]
+                    break
                 if key == 'eventSource':
                     where_cypher += f"n.{key} = '{filters[i]}.amazonaws.com' "
                 elif key == 'userIdentity_userName':
@@ -94,7 +121,7 @@ def get_log_page(request, cloud):
                 else:
                     where_cypher += f"n.{key} = '{filters[i]}' "
                 where_cypher += ') ' if len(where_cypher) > 6 and i == len(filters)-1 else ''
-                # return {'error': where_cypher}
+    # return {'error': where_cypher}
     #페이지당 보여줄 로그 개수
     limit = 10
     cypher = f"""

@@ -58,10 +58,15 @@ function searchFilter(e) {
         checkbox.each(function () {
             this.checked = false
         })
-        $('.regex').slideUp('fast')
+        $('.calandar-input').val('')
+        $('.search-input')[0].value = ''
+        $('.regexbox').slideUp('fast')
+        $('.regexbox input').val('')
+
     } else {
         data = $('#search').serialize() + `&page=${e}&cloud=${cloud}`
     }
+    console.log(data)
     $.ajax({
         url: '/logs/filter/',
         headers: {
@@ -80,4 +85,36 @@ function searchFilter(e) {
         window.location.reload()
     })
 }
+
+$('.btn-collapse').on('click', function(){
+    var chevron = $($(this).find('.material-symbols-outlined')[0])
+    if ($.trim(chevron.text()) == 'expand_more'){
+        chevron.text('expand_less')
+        $('.searchcard-collapse').fadeIn()
+        $('.collapsecard').slideDown()
+    } else {
+        chevron.text('expand_more')
+        $('.collapsecard').slideUp()
+        $('.searchcard-collapse').fadeOut()
+    }
+})
+
+$('.btn-reset').hover(
+    function(){
+        $('.btn-reset .material-symbols-outlined').toggleClass('fa-spin fa-spin-reverse')
+    },
+    function(){
+        $('.btn-reset .material-symbols-outlined').toggleClass('fa-spin fa-spin-reverse')
+    }
+)
+
+$('.btn-info').hover(
+    function(){
+        $('.btn-info .material-symbols-outlined').toggleClass('fa-bounce')
+    },
+    function(){
+        $('.btn-info .material-symbols-outlined').toggleClass('fa-bounce')
+    }
+)
+
 $('#log_side').addClass('active')

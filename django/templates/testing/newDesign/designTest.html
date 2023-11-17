@@ -1,74 +1,46 @@
+{% extends 'base.html' %}
 {% load static %}
-<head>
-    {% include 'head.html' %}
-    <link rel="stylesheet" href="{% static '/css/authentication.css' %}">
-</head>
-<body class="bg-auth">
-    <div class="auth-container">
-        <div class="card border-0 auth-shadow w-100 h-100">
-            <div class="card-body d-flex justify-content-center align-items-center">
-                <div class="row w-100">
-                    <div class="col-6">
-                        <div class="auth-img">
-                            <img src="{% static '/img/teiren_icon.png' %}" class="w-100">
-                        </div>
-                    </div>
-                    {% if message == 'Register Success! Please Sign In' %}
-                    <div class="col-lg-10 p-2 w-100">
-                        <div class="d-flex justify-content-center font-weight-bold mb-3"><h3 class="text-{{color}}">{{message}}</h3></div>
-                        <a class="btn btn-block btn-teiren btn-lg" href="/auth/login/"><div>Sign In</div></a>
-                    {% else %}
-                    <div class="col-6 py-3 auth-input">
-                        <div class="auth-text">
-                            <h5 class="text-{{color}}">{{message}}</h5>
-                        </div>
-                        <form id='login_form' class="user" method=post>
-                            {% csrf_token %}
-                            <div class="form-group">
-                                <span class="material-symbols-outlined ml-auto">
-                                    badge
-                                </span>
-                                <input type="text" class="form-control form-control-user"
-                                    name="user_name" value="{{user_name}}" placeholder="User Name">
-                            </div>
-                            <div class="form-group">
-                                <span class="material-symbols-outlined ml-auto">
-                                    person
-                                    </span>
-                                <input type="text" class="form-control form-control-user" 
-                                    name="user_id" value="{{user_id}}" placeholder="User ID">
-                            </div>
-                            <div class="form-group">
-                                <span class="material-symbols-outlined ml-auto">
-                                    key
-                                </span>
-                                <input type="password" class="form-control form-control-user"
-                                    name="user_password" value="{{user_password}}" placeholder="User Password">
-                            </div>
-                            <div class="form-group">
-                                <span class="material-symbols-outlined ml-auto">
-                                    mail
-                                    </span>
-                                <input type="text" class="form-control form-control-user"
-                                    name="email_add" value="{{email_add}}" placeholder="Email">
-                            </div>
-                            <div class="form-group">
-                                <span class="material-symbols-outlined ml-auto">
-                                    phone_iphone
-                                    </span>
-                                <input type="text" class="form-control form-control-user"
-                                    name="phone_no" value="{{phone_no}}" placeholder="Phone Number">
-                            </div>
-                            <div class="divider"></div>
-                            <a href="/auth/register/" class="btn btn-outline-teiren btn-user btn-block font-weight-bold" >
-                                <span>회원가입</span>
-                            </a>
-                            <div></div>
-                        </form>
-                    {% endif %}
-                    </div>
-                </div>
+{% block head %}
+<!-- Page Essential -->
+<link rel="stylesheet" href="{% static '/css/tab.css' %}">
+<link rel="stylesheet" href="{% static '/css/searchcard.css' %}">
+{% endblock %}
+{% block content %}
+<!-- Begin Page Content -->
+<div class="locationbar ml-2">
+    <span>Log Management &nbsp;&nbsp;>&nbsp;&nbsp;Cloud Logs &nbsp;&nbsp;>&nbsp;&nbsp;</span>
+    <span class="current">{{cloud|upper}} <span>
+</div>
+<div>
+    <!-- Page Heading -->
+    <h6 class="h3 font-weight-bold mb-2 text-gray-800 ml-2">{{cloud|upper}} Log</h6>
+    <p class="h6 mb-4 ml-2">{{cloud|upper}} Integrated Logs</p>
+    <!-- DataTales Example -->
+    {% include "M_logs/searchcard.html" %}
+</div>
+<!-- Detail Modal -->
+<div class="modal fade card-body" id="detail-modal" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content p-1" style='width:1000px; height:auto'>
+            <div class='d-flex justify-content-end p-3'>
+                <button type="button" class=close data-dismiss="modal" aria-label="Close">x</button>
+            </div>
+            <img src="{% static '/img/teiren-side-logo.png' %}" style="margin:0 auto; margin-bottom:0; width:300px; height: 100px;">
+            <div class="modal-body justify-content-center" id='detail'>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-md btn-teiren" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
-</body>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    var cloud = '{{cloud}}'
+</script>
+<script src="{% static '/M_logs/js/filter_select.js' %}"></script>
+<script src="{% static '/M_logs/js/log.js' %}"></script>
+{% endblock %}
+

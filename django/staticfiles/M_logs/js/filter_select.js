@@ -25,8 +25,9 @@ function selectcheck(e, type){
             }
             this.checked = false
         })
-        $(e).parent().parent().parent().parent().find('.dropdown-menu').hide()
+        $(e).parent().parent().parent().parent().find('.search-dropdown-menu').hide()
         $(`#${type}_regex`).slideDown('fast')
+        $(`#${type}_regex`).focus()
     }
     else{
         var count = 0
@@ -37,6 +38,9 @@ function selectcheck(e, type){
                 this.checked = false
             }
             if(this.checked == true){
+                if(($(this).val()== 'regex')){
+                    return 1
+                }
                 count += 1 
             }
         })
@@ -46,12 +50,12 @@ function selectcheck(e, type){
     }
 }
 /// 체크박스 자동 표시/숨김
-$('.search_input input').on('focus', function(){
-    $(this).parent().find('.dropdown-menu').slideDown('fast')
+$('.searchbox-input').on('focus', function(){
+    $(this).parent().find('.search-dropdown-menu').slideDown('fast')
 })
 
-$('.search_input input').on('blur', function(){
-    var dropdown = $(this).parent().find('.dropdown-menu')
+$('.searchbox-input').on('blur', function(){
+    var dropdown = $(this).parent().find('.search-dropdown-menu')
     var this_var = this
     setTimeout(function() {
         if (!$('.dropdown-item:hover').length){
@@ -64,7 +68,7 @@ $('.search_input input').on('blur', function(){
     }, 10);
 })
 $(':checkbox').on('blur', function(e) {
-    var dropdown = $(this).parent().parent().parent().parent().find('.dropdown-menu')
+    var dropdown = $(this).parent().parent().parent().parent().find('.search-dropdown-menu')
     var this_var = this
     setTimeout(function() {
         if (!$('.dropdown-item:hover').length){
@@ -77,11 +81,11 @@ $(':checkbox').on('blur', function(e) {
     }, 10);
 });
 
-$('.search_input input').on('input', function() {
+$('.searchbox-input').on('input', function() {
     var input = $(this).val();
 
     // Iterate over each checkbox
-    $(this).parent().find('.dropdown-menu li input[type="checkbox"]').each(function() {
+    $(this).parent().find('.search-dropdown-menu li input[type="checkbox"]').each(function() {
         var checkboxValue = $(this);
         // If the checkbox value doesn't contain the input string, hide it
         if (!new RegExp(input, 'i').test(checkboxValue.val())) {
