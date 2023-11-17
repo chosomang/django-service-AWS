@@ -1,0 +1,181 @@
+<div class="searchcard shadow mb-4">
+    <form id="search">
+        <div class="searchcard-body py-3">
+            <select class="btn-select" name="main_search_key">
+                <option>Account</option>
+                <option>Event Name</option>
+                <option>Resource</option>
+                <option>Source IP</option>
+            </select>
+            <input class="search-input" name="main_search_value" placeholder="Search"/>
+            <button class="btn-search" type="button" onClick="searchFilter(1)">
+                <span class="material-symbols-outlined">
+                    search
+                </span>
+            </button>
+            <button class="btn-collapse" type="button">
+                <span class="material-symbols-outlined" style="font-size:30px">
+                    expand_more
+                </span>
+            </button>
+        </div>
+        <div class="collapsecard" style="display:none;">
+            <div class="searchcard-collapse pb-3" style="display:none;">
+                <div class="collapsebox">
+                    <div class="searchbox">
+                        <div class="searchbox-header">
+                            Account
+                        </div>
+                        <div class="w-75">
+                            <input class="searchbox-input dropdown-toggle" placeholder="Account">
+                            <ul class="search-dropdown-menu shadow" style="overflow:hidden scroll;">
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input user" type="checkbox" name="user_all" value="all" onclick="selectAll(this, 'user')">All
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input user" type="checkbox" value="regex" onclick="selectcheck(this, 'user')">Regex
+                                    </label>
+                                </li>
+                                {%for user in user_list %}
+                                <li class="dropdown-item" style="">
+                                    <label>
+                                        <input class="form-check-input user" type="checkbox" name="user_{{user}}" value="{{user}}" onclick="selectcheck(this, 'user')">{{user}}
+                                    </label>
+                                </li>
+                                {%endfor%}
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="user_regex" class="regexbox" style="display: none;">
+                        <input name="user_regex" class="regex-input" placeholder="Account Regex">
+                    </div>
+                </div>
+                <div class="collapsebox">
+                    <div class="searchbox">
+                        <div class="searchbox-header">
+                            Event Name
+                        </div>
+                        <div class="w-75">
+                            <input class="searchbox-input dropdown-toggle" placeholder="Event Name">
+                            <ul class="search-dropdown-menu shadow" style="overflow:hidden scroll;">
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input eventName" type="checkbox" name="eventName_all" value="all" onclick="selectAll(this, 'eventName')">All
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input eventName" type="checkbox" value="regex" onclick="selectcheck(this, 'eventName')">Regex
+                                    </label>
+                                </li>
+                                {%for eventName in eventName_list %}
+                                <li class="dropdown-item" style="">
+                                    <label>
+                                        <input class="form-check-input eventName" type="checkbox" name="eventName_{{eventName}}" value="{{eventName}}" onclick="selectcheck(this, 'eventName')">{{eventName}}
+                                    </label>
+                                </li>
+                                {%endfor%}
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="eventName_regex" class="regexbox" style="display: none;">
+                        <input name="eventName_regex" class="regex-input" placeholder="Event Name Regex">
+                    </div>
+                </div> 
+                <div class="collapsebox">
+                    <div class="searchbox">
+                        <div class="searchbox-header">
+                            Event Time
+                        </div>
+                        <div class="calandar">
+                            <input class="calandar-input" type="date" name="eventTime_date_start">
+                            <span style="font-size:14px;">~</span>
+                            <input class="calandar-input" type="date" name="eventTime_date_end">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="searchcard-collapse pb-3" style="display:none;">
+                <div class="collapsebox">
+                    <div class="searchbox">
+                        <div class="searchbox-header">
+                            Resource
+                        </div>
+                        <div class="w-75">
+                            <input class="searchbox-input dropdown-toggle" placeholder="Resource">
+                            <ul class="search-dropdown-menu shadow" style="overflow:hidden scroll;">
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input eventSource" type="checkbox" name="eventSource_all" value="all" onclick="selectAll(this, 'eventSource')">All
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input eventSource" type="checkbox" value="regex" onclick="selectcheck(this, 'eventSource')">Regex
+                                    </label>
+                                </li>
+                                {%for eventSource in eventSource_list %}
+                                <li class="dropdown-item" style="">
+                                    <label>
+                                        <input class="form-check-input eventSource" type="checkbox" name="eventSource_{{eventSource}}" value="{{eventSource}}" onclick="selectcheck(this, 'eventSource')">{{eventSource}}
+                                    </label>
+                                </li>
+                                {%endfor%}
+                            </ul>
+                        </div>
+                    </div>                    
+                    <div id="eventSource_regex" class="regexbox" style="display: none;">
+                        <input name="eventSource_regex" class="regex-input" placeholder="Resource Regex">
+                    </div>
+                </div>
+                <div class="collapsebox">
+                    <div class="searchbox">
+                        <div class="searchbox-header">
+                            Source IP
+                        </div>
+                        <div class="w-75">
+                            <input class="searchbox-input dropdown-toggle" placeholder="Source IP">
+                            <ul class="search-dropdown-menu shadow" style="overflow:hidden scroll;">
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input sourceIPAddress" type="checkbox" name="sourceIPAddress_all" value="all" onclick="selectAll(this, 'sourceIPAddress')">All
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input sourceIPAddress" type="checkbox" name="sourceIPAddress_regex" value="regex" onclick="selectcheck(this, 'sourceIPAddress')">Regex
+                                    </label>
+                                </li>
+                                {%for sourceIPAddress in sourceIPAddress_list %}
+                                <li class="dropdown-item" style="">
+                                    <label>
+                                        <input class="form-check-input sourceIPAddress" type="checkbox" name="sourceIPAddress_{{sourceIPAddress}}" value="{{sourceIPAddress}}" onclick="selectcheck(this, 'sourceIPAddress')">{{sourceIPAddress}}
+                                    </label>
+                                </li>
+                                {%endfor%}
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="sourceIPAddress_regex" class="regexbox" style="display: none;">
+                        <input name="sourceIPAddress_regex" class="regex-input" placeholder="Source IP Regex">
+                    </div>
+                </div>
+                <button class="btn-reset" type="button" onClick="searchFilter('reset')">
+                    <span class="material-symbols-outlined">
+                        restart_alt
+                    </span>
+                    Reset
+                </button>
+                <button class="btn-info disabled" type="button" onClick="searchFilter('reset')">
+                    <span class="material-symbols-outlined">
+                        info
+                    </span>
+                    Info
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
