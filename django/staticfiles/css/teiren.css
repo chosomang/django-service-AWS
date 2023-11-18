@@ -5185,8 +5185,8 @@ input[type="button"].btn-block {
 .card-header {
   padding: 0.75rem 1.25rem;
   margin-bottom: 0;
-  background-color: #f8f9fc;
-  border-bottom: 1px solid #e3e6f0;
+  background-color: #fbfefe;
+  border-bottom: 1px solid #eaeaea;
 }
 
 .card-header:first-child {
@@ -10891,6 +10891,14 @@ button.bg-dark:focus {
 
 .text-white {
   color: #fff !important;
+}
+
+.text-amazon{
+  color: #FF9900 !important;
+}
+
+.text-naver{
+  color: #3EAF0E !important;
 }
 
 .text-teiren {
