@@ -1,3 +1,4 @@
+{% load static %}
 <div class="sidebar shadow">
     <div id="sidebar-top">
         <ul class="navbar-icon">
@@ -24,8 +25,8 @@
                         Log Management
                     </span>
                     <div class="collapse-item box">
-                        <input placeholder="Search">
-                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto"></button>
+                        <input class="sidebar-search" placeholder="Search">
+                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto" onclick="sidebarSearch($(this).parent())"></button>
                     </div>
                     <div class="divider"></div>
                     <div class="item-toggle">
@@ -87,8 +88,8 @@
                         Resource Management
                     </span>
                     <div class="collapse-item box">
-                        <input placeholder="Search">
-                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto"></button>
+                        <input class="sidebar-search" placeholder="Search">
+                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto" onclick="sidebarSearch($(this).parent())"></button>
                     </div>
                     <div class="divider"></div>
                     <div class="item-toggle">
@@ -123,8 +124,8 @@
                         Threat Management
                     </span>
                     <div class="collapse-item box">
-                        <input placeholder="Search">
-                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto"></button>
+                        <input class="sidebar-search" placeholder="Search">
+                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto" onclick="sidebarSearch($(this).parent())"></button>
                     </div>
                     <div class="divider"></div>
                     <div class="item-header">
@@ -191,8 +192,8 @@
                         Compliance Report
                     </span>
                     <div class="collapse-item box">
-                        <input placeholder="Search">
-                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto"></button>
+                        <input class="sidebar-search" placeholder="Search">
+                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto" onclick="sidebarSearch($(this).parent())"></button>
                     </div>
                     <div class="divider"></div>
                     <div class="item-toggle">
@@ -231,8 +232,8 @@
                         Configurations
                     </span>
                     <div class="collapse-item box">
-                        <input placeholder="Search">
-                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto"></button>
+                        <input class="sidebar-search" placeholder="Search">
+                        <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto" onclick="sidebarSearch($(this).parent())"></button>
                     </div>
                     <div class="divider"></div>
                     <div class="item-header">
@@ -256,51 +257,4 @@
         </ul>
     </div>
 </div>
-<script>
-    $('.topbar .nav-link').on('click',function(){
-        $('.topbar .collapse').removeClass('open')
-        console.log($(this).parent().find('.collapse')[0])
-        $($(this).parent().find('.collapse')[0]).addClass('open')
-    })
-
-    $('.sidebar .nav-link').on('click', function(){
-        $('.nav-link').removeClass('focus')
-        $('.sidebar .collapse').removeClass('open')
-        $($(this).parent().find('.collapse')[0]).addClass("open")
-        $(this).addClass('focus')
-    })
-
-    $('.sidebar .collapse-hide-btn').on('click', function(){
-        $('.nav-link').removeClass('focus')
-        $('.sidebar .collapse').removeClass('open')
-    })
-
-    $('.sidebar .item-header').on('click',function(){
-        var chevron = $($(this).find('.material-symbols-outlined')[0])
-        var buttons = $(this).parent().find('a')
-        if ($.trim(chevron.text()) == 'expand_more'){
-            chevron.text('expand_less')      
-            buttons.each(function(){
-                $(this).slideDown()
-            })
-        } else {
-            chevron.text('expand_more')
-            buttons.each(function(){
-                $(this).slideUp()
-            })
-        }
-    })
-
-    $(document).click(function(event) {
-        var target = $(event.target);
-        if (!target.closest(".sidebar .collapse").length & !target.closest(".sidebar .material-symbols-outlined").length) {
-            $(".sidebar .nav-link").removeClass('focus')
-            $(".sidebar .collapse").removeClass('open');
-            $(".sidebar .item-toggle a").hide();
-            $(".sidebar .item-toggle .item-header .material-symbols-outlined").text('expand_more')
-        }
-        if (!target.closest(".topbar .collapse").length & !target.closest(".topbar .nav-link").length) {
-            $(".topbar .collapse").removeClass('open');
-        }
-    });
-</script>
+<script src="{% static '/js/navbar.js' %}"></script>
