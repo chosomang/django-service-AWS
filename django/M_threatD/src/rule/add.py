@@ -259,6 +259,10 @@ def get_flow_slot(request):
                 keys.append(value)
             if f'val_{i}' in key:
                 values.append(value)
+            if f'name_{i}' in key:
+                rules[f'{i}']['name'] = value
+            if f'comment_{i}' in key:
+                rules[f'{i}']['comment'] = value
         items = [[keys[i], values[i]] for i in range(len(keys))]
         rules[f'{i}']['item'] = items
     result = {'flows': rules}

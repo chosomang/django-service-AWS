@@ -1,18 +1,43 @@
-
+{% load static %}
 {% load custom_filter %}
+<link rel="stylesheet" href="{% static '/M_threatD/css/dynamic.css' %}">
 {% if wheres %}
 {% for where in wheres %}
 <div class="flow" id="flow_{{forloop.counter}}">
     {% if forloop.counter == 1 %}
-        {% for num, items in flows.items %}
-            Flow Detection {{num}}
-            <br>
-            {% for item in items.item %}
-                {{item.0}}: {{item.1}}
-                <br>
-            {% endfor %}
-            <br>
-        {% endfor %}
+        <div class="dynamic_detection">
+            <table id="dataTable" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th colspan="3">Name</th>
+                        <th colspan="4">Comment</th>
+                        <th colspan="12">Property : Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for num, flow in flows.items %}
+                        <tr>
+                            <td>{{num}}</td>
+                            <td colspan="3">{{flow.name}}</td>
+                            <td colspan="4">{{flow.comment}}</td>
+                            <td colspan="12">
+                                <table class="property-table">
+                                    {% for item in flow.item %}
+                                    <tr>
+                                        <td>
+                                            <p class="text-teiren font-weight-bold">{{item.0}}: </p>
+                                            <span class="font-weight-bold">{{item.1}}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                            </td>
+                        <tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% else %}
         <div class="form-group row text-center">
             <div class="col-10 text-teiren">
@@ -105,15 +130,39 @@
 {% else %}
 <div class="flow" id="flow_{{flow_count}}">
     {% if flow_count == '1' %}
-        {% for num, items in flows.items %}
-            Dynamic Detection{{num}}
-            <br>
-            {% for item in items.item %}
-                {{item.0}}: {{item.1}}
-                <br>
-            {% endfor %}
-            <br>
-        {% endfor %}
+        <div class="dynamic_detection">
+            <table id="dataTable" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th colspan="3">Name</th>
+                        <th colspan="4">Comment</th>
+                        <th colspan="12">Property : Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for num, flow in flows.items %}
+                        <tr>
+                            <td>{{num}}</td>
+                            <td colspan="3">{{flow.name}}</td>
+                            <td colspan="4">{{flow.comment}}</td>
+                            <td colspan="12">
+                                <table class="property-table">
+                                    {% for item in flow.item %}
+                                    <tr>
+                                        <td>
+                                            <p class="text-teiren font-weight-bold">{{item.0}}: </p>
+                                            <span class="font-weight-bold">{{item.1}}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                            </td>
+                        <tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% else %}
         <div class="form-group row text-center">
             <div class="col-10 text-teiren">
