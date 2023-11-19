@@ -5,6 +5,7 @@
             <th>Detected Rule</th>
             <th>Detected Time</th>
             <th>Rule Type</th>
+            <th>Severity</th>
             <th>Details</th>
         </thead>
         <tfoot>
@@ -12,6 +13,7 @@
             <th>Detected Rule</th>
             <th>Detected Time</th>
             <th>Rule Type</th>
+            <th>Severity</th>
             <th>Details</th>
         </tfoot>
         <tbody>
@@ -19,9 +21,13 @@
             {% for log in table %}
             <tr>
                 {% for key, value in log.items %}
-                {% if key != 'cloud' and key != 'eventTime' and key != 'arr' %}
-                <td>{{value}}</td>
-                {% endif %}
+                    {% if key != 'cloud' and key != 'eventTime' and key != 'arr' and key != 'level' %}
+                        <td>{{value}}</td>
+                    {% elif key == 'level' %}
+                        <td>
+                            <div class="color-box color-box-{{value.1}}">{{value.0}}</div>
+                        </td>
+                    {% endif %}
                 {% endfor %}
                 <td>
                     <button type=button class="btn btn-outline-danger" onclick="rule_detail('{{log.arr}}')"

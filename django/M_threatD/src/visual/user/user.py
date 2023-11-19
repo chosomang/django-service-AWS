@@ -217,7 +217,13 @@ def get_user_table(request):
         l.eventTime AS eventTime,
         apoc.date.format(apoc.date.parse(l.eventTime, "ms", "yyyy-MM-dd'T'HH:mm:ssX"), "ms", "yyyy-MM-dd HH:mm:ss") AS detected_time,
         r.ruleClass AS rule_class,
-        [label IN LABELS(r) WHERE label <> 'Rule'][0] AS cloud
+        [label IN LABELS(r) WHERE label <> 'Rule'][0] AS cloud,
+        CASE
+            WHEN r.level = 1 THEN ['LOW', 'success']
+            WHEN r.level = 2 THEN ['MID', 'warning']
+            WHEN r.level = 3 THEN ['HIGH', 'caution']
+            ELSE ['CRITICAL', 'danger']
+        END AS level
     ORDER BY detected_time DESC
     """
     results = graph.run(cypher).data()
