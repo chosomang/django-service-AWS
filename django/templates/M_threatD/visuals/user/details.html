@@ -1,26 +1,24 @@
 {% load static %}
 {% block head %}
-<head>
-    <link rel="stylesheet" href="{% static '/css/tab_table.css' %}">
-</head>
+<!-- Page Essential -->
+<link rel="stylesheet" href="{% static '/css/tab_table.css' %}">
 {% endblock %}
 <h4 class='mb-4 font-weight-bold text-teiren' style='text-align:center;'>{{account}} Details</h4>
 <div class='tabs'>
     <input type='radio' id='modal-tab1' name='tab-control-modal' checked>
     <input type='radio' id='modal-tab2' name='tab-control-modal'>
     <ul class="ul">
-        <li title='TABLE FORMAT'>
+        <li title='Graph Details'>
             <label for='modal-tab1' role='button'>
                 <span>Graph Details</span>
             </label>
         </li>
-        <li title='JSON FORMAT'>
+        <li title='{{account}}'>
             <label for='modal-tab2' role='button'>
                 <span>{{account}}</span>
             </label>
         </li>
     </ul>
-
     <div class='slider'>
         <div class='indicator'></div>
     </div>
