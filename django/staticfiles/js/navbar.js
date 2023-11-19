@@ -45,10 +45,8 @@ $(document).click(function(event) {
     }
 });
 
-$('.sidebar-search').on('keypress', function(e){
-    if(e.which == 13){
-        sidebarSearch($(e.target).parent())
-    }
+$('.sidebar-search').on('keyup', function(e){
+    sidebarSearch($(e.target).parent())
 })
 
 function sidebarSearch(e){
@@ -66,8 +64,13 @@ function sidebarSearch(e){
                 if(!new RegExp(value.toUpperCase(), 'i').test($(this).text().toUpperCase())){
                     $(this).fadeOut('fast')
                 } else {
-                    $(this).parent().find('.item-header .material-symbols-outlined').text('expand_less')
-                    $(this).fadeIn()
+                    if(value == ''){
+                        $(this).find('.item-header .material-symbols-outlined').text('expand_more')
+                        $(this).fadeOut()
+                    } else {
+                        $(this).parent().find('.item-header .material-symbols-outlined').text('expand_less')
+                        $(this).fadeIn()
+                    }
                 }
             })
         }

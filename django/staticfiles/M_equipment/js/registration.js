@@ -17,6 +17,12 @@ $('form').on('submit', function(e){
     e.preventDefault();
 });
 
+$('.search-input').on('keyup', function(e){
+    if (e.which !== 13){
+        filterSearch();
+    }
+})
+
 function filterSearch(){
     var data = $('#search').serializeArray()
     let key = data[0].value
