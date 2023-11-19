@@ -30,6 +30,7 @@ def get_all_rules():
         END as log_type,
         r.ruleName as name,
         r.ruleComment as comment,
+        r.level as level,
         r.on_off as on_off,
         r.ruleType as rule_type
     """
@@ -54,6 +55,12 @@ def get_default_rules(cloud):
     END as type,
     r.ruleName as name,
     r.ruleComment as comment,
+    CASE
+        WHEN r.level = 1 THEN ['LOW', 'success']
+        WHEN r.level = 2 THEN ['MID', 'warning']
+        WHEN r.level = 3 THEN ['HIGH', 'caution']
+        ELSE ['CRITICAL', 'danger']
+    END AS level,
     r.on_off as on_off
     """
     results = graph.run(cypher)
@@ -77,6 +84,12 @@ def get_custom_rules(cloud):
     END as type,
     r.ruleName as name,
     r.ruleComment as comment,
+    CASE
+        WHEN r.level = 1 THEN ['LOW', 'success']
+        WHEN r.level = 2 THEN ['MID', 'warning']
+        WHEN r.level = 3 THEN ['HIGH', 'caution']
+        ELSE ['CRITICAL', 'danger']
+    END AS level,
     r.on_off as on_off
     """
     results = graph.run(cypher)

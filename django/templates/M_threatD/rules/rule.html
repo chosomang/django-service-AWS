@@ -15,16 +15,16 @@
         <p class="h6 mb-4 ml-2">Configure {{cloud|upper}} Rule Sets In Detail</p>
     </div>
     <div class="tabs">
-        <input type="radio" id="tab1" name="tab-control-modal" checked>
-        <input type="radio" id="tab2" name="tab-control-modal">
+        <input type="radio" id="modal-tab1" name="tab-control-modal" checked>
+        <input type="radio" id="modal-tab2" name="tab-control-modal">
         <ul class='ul'>
-            <li title="사용자 설정 Rule">
-                <label for="tab1" role="button">
+            <li title="Custom Rule">
+                <label for="modal-tab1" role="button">
                     <span>Custom Rule</span>
                 </label>
             </li>
-            <li title="기본 설정 Rule">
-                <label for="tab2" role="button">
+            <li title="Teiren Default Rule">
+                <label for="modal-tab2" role="button">
                     <span>Teiren Default Rule</span>
                 </label>
             </li>
@@ -33,10 +33,10 @@
             <div class="indicator"></div>
         </div>
         <div class="content">
-            <section id='custom'>
+            <section>
                 {% include './custom.html' %}
             </section>
-            <section id='default'>
+            <section>
                 {% include './default.html' %}
             </section>
         </div>
@@ -53,7 +53,7 @@
             <div class="modal-body justify-content-center" id='detail_body'>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-teiren" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-md btn-teiren" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -110,8 +110,8 @@
             <div class="modal-footer" id="modal_footer">
                 <form>
                     <div id='del_form' method='post'></div>
-                    <input type='button' class="btn btn-outline-teiren" value="Delete" onclick='deleteRuleAction(this.parentNode)'>
-                    <input type='button' class="btn btn-outline-danger" value="Cancel" data-dismiss='modal' data-toggle='modal' data-target='#detail-modal'>
+                    <input type='button' class="btn btn-md btn-outline-teiren" value="Delete" onclick='deleteRuleAction(this.parentNode)'>
+                    <input type='button' class="btn btn-md btn-outline-danger" value="Cancel" data-dismiss='modal' data-toggle='modal' data-target='#detail-modal'>
                 </form>
             </div>
             </form>
@@ -122,36 +122,4 @@
 {% block script %}
 <script src="{% static '/M_threatD/js/rule.js' %}"></script>
 <script src="{% static '/M_threatD/js/addRule/ruleSection.js' %}"></script>
-<script type="text/javascript">
-    $(function() {
-        $("#dataTable").DataTable({
-            destroy: false,
-            // 표시 건수기능 숨기기
-            lengthChange: true,
-            // 검색 기능 숨기기
-            searching: false,
-            // 정렬 기능 숨기기
-            ordering: false,
-            // 정보 표시 숨기기
-            info: true,
-            // 페이징 기능 숨기기
-            paging: true
-        });
-    });
-    $(function() {
-        $("#dataTable2").DataTable({
-            destroy: false,
-            // 표시 건수기능 숨기기
-            lengthChange: true,
-            // 검색 기능 숨기기
-            searching: false,
-            // 정렬 기능 숨기기
-            ordering: false,
-            // 정보 표시 숨기기
-            info: true,
-            // 페이징 기능 숨기기
-            paging: true
-        });
-    });
-</script>
 {% endblock %}
