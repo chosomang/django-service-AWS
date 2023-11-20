@@ -1,6 +1,5 @@
 $('.topbar .nav-link').on('click',function(){
     $('.topbar .collapse').removeClass('open')
-    console.log($(this).parent().find('.collapse')[0])
     $($(this).parent().find('.collapse')[0]).addClass('open')
 })
 
