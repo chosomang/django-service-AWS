@@ -30,10 +30,10 @@
         <div class="card-header py-3 ">
             <h6 class="m-0 font-weight-bold text-teiren ">User Graph Analysis</h6>
         </div>
-        <div class="card-body" style="font-size:12px">
-            <div class="table-responsive" style="overflow:hidden;">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0" style="text-align:center;">
-                    <thead class="h6">
+        <div class="card-body">
+            <div class="table-responsive" style="overflow:hidden;font-size:15px;">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0" style="text-align:center;font-size:15px;">
+                    <thead>
                         <th>Resource</th>
                         <th>Account</th>
                         <th>Detection Count</th>
@@ -58,14 +58,14 @@
                             {% for key, value in account.items %}
                             {% if  key == 'account_real' %}
                             {% else %}
-                            <td class="h6">{{value}}</td>
+                            <td>{{value}}</td>
                             {% endif %}
                             {% endfor %}
                             <td>
                                 {% if 'account_real' in account %}
-                                <button type=button class='btn btn-outline-teiren btn-md m-3' data-cloud="{{account.cloud}}" data-total="{{account.total}}" onclick='details(this); return false;' value="{{account.account_real}}" data-toggle='modal' data-target='#account_modal'>Graph Details</button>
+                                <button type=button class='btn btn-outline-teiren btn-md' data-cloud="{{account.cloud}}" data-total="{{account.total}}" onclick='details(this); return false;' value="{{account.account_real}}" data-toggle='modal' data-target='#account_modal'>Graph Details</button>
                                 {% else %}
-                                <button type=button class='btn btn-outline-teiren btn-md m-3' data-cloud="{{account.cloud}}" data-total="{{account.total}}" onclick='details(this); return false;' value={{account.account}} data-toggle='modal' data-target='#account_modal'>Graph Details</button>
+                                <button type=button class='btn btn-outline-teiren btn-md' data-cloud="{{account.cloud}}" data-total="{{account.total}}" onclick='details(this); return false;' value={{account.account}} data-toggle='modal' data-target='#account_modal'>Graph Details</button>
                                 {% endif %}
                             </td>
                         </tr>

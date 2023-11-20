@@ -17,7 +17,7 @@ function getCookie(name = 'csrftoken') {
 $(function () {
     $('.grid-stack').append(
         `<div id="temp" class="d-flex justify-content-center align-items-center" style="width:100%; height:50vh;">
-            <button class="btn btn-lg btn-teiren" onclick="toggleLayoutSidebar()">Select Layout</button>
+            <button class="h1 btn btn-teiren" onclick="toggleLayoutSidebar()">Select Layout</button>
         </div>`
     )
 
@@ -148,8 +148,8 @@ $.ajax({
     for (i in data) {
         layout = $('<div>', { class: "layoutList row" })
         layout.append($('<span>', { class: "d-flex align-items-center" }).text(data[i]))
-        layout.append($('<button>', { class: "btn btn-sm btn-danger ml-auto delbox", onclick: "deleteLayout(this)" }).text('Delete'))
-        layout.append($('<button>', { class: "btn btn-sm btn-teiren ml-2", onclick: "loadLayout(this)" }).text('Load Layout'))
+        layout.append($('<button>', { class: "btn btn-md btn-danger ml-auto delbox", onclick: "deleteLayout(this)" }).text('Delete'))
+        layout.append($('<button>', { class: "btn btn-md btn-teiren ml-2", onclick: "loadLayout(this)" }).text('Load Layout'))
         $('#layoutList').append(layout)
     }
 })
