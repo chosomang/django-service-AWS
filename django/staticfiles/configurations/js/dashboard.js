@@ -107,7 +107,6 @@ function addItem(type) {
         },
         type: 'post'
     }).done(function (data) {
-        console.log(type)
         grid.addWidget(data)
         var scripts = $(data.content).filter('script:not([src])');
         if (scripts.length >= 1) {
@@ -161,12 +160,14 @@ function editLayout() {
             var $this = $(this);
             if ($this.css('opacity') === '0') {
                 $this.css({
-                    'opacity': '1'
+                    'opacity': '1',
+                    'pointer-events': 'auto'
                 })
             }
             else {
                 $this.css({
-                    'opacity': '0'
+                    'opacity': '0',
+                    'pointer-events': 'none'
                 })
             }
         })
@@ -191,7 +192,7 @@ function newLayout() {
         },
         type: 'post'
     }).done(function (data) {
-        if (data !== '정상적으로 저장되었습니다.') {
+        if (data !== 'Saved Successfully') {
             alert(data)
         }
         else {
@@ -218,8 +219,6 @@ function newLayout() {
 function saveLayout() {
     var name = $('#layoutName').text()
     var isDefault = $('#defaultCheckbox').hasClass('active')? 1:0
-    console.log(isDefault)
-    console.log('dfdfdff')
     if (name) {
         var serializedData = grid.save()
         for (i in serializedData) {
@@ -318,7 +317,7 @@ function deleteLayout(e) {
         type: 'post'
     }).done(function (data) {
         alert(data)
-        if (data !== '저장되지 않은 레이아웃입니다.') {
+        if (data !== 'Not Saved Layout') {
             layout.slideUp('normal', function () { $(this).remove() })
         }
     })
