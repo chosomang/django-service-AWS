@@ -65,11 +65,52 @@ $.ajax({
             $.getScript(scriptSrc)
         }
     }
-}).fail(function() {
-    $('#loader').fadeOut()
-    $('#temp').remove()
-    $('#no_data').show()
-    grid.removeAll()
+}).fail(function(xhr, textStatus, error) {
+    if (xhr.status == 400){    
+        $.ajax({
+            url:'grid/default/',
+            headers: {
+                'X-CSRFToken': getCookie()
+            },
+            data: {
+                layout: JSON.stringify(default_layout)
+            },
+            type: 'post'
+        }).done(function(response){
+            $('#loader').fadeOut()
+            $('#temp').remove()
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            var response = JSON.parse(response)
+            grid.removeAll()
+            grid.load(response)
+            for (i in response) {
+                if (response[i].id === 'graphitem') {
+                    continue
+                }
+                var scripts = $(response[i].content).filter('script:not([src])');
+                if (scripts.length >= 1) {
+                    $.each(scripts, function (idx, script) {
+                        var jsvar = JSON.parse(script.text)
+                        for (var key in jsvar) {
+                            window[key] = jsvar[key]
+                        }
+                    })
+                }
+                var scriptSrc = $(response[i].content).filter('script').attr('src')
+                if (scriptSrc) {
+                    $.getScript(scriptSrc)
+                }
+            }
+        }).fail(function(xhr, textStatus, error){
+            if (xhr.status == 400){
+                $('#loader').fadeOut()
+                $('#temp').remove()
+                $('#no_data').css({'display': 'flex'})
+            }
+        });
+    }
 });
 
 $('#dashboard_side').addClass('active')

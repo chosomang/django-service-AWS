@@ -16,24 +16,24 @@ def save_layout(request):
         GridLayout(name='default', data=request.POST['data'], isDefault=request.POST['isDefault']).save()
     layouts = GridLayout.objects.filter(name=request.POST['name'])
     if len(layouts) == 1:
-        result = '정상적으로 저장되었습니다.'
+        result = 'Saved Successfully'
     else:
-        result = '오류가 발생했습니다. 다시 시도해주세요.'
+        result = 'Failed To Save. Please Try Again'
     return HttpResponse(result)
 
 def new_layout(request):
     from dashboard.src.models import GridLayout
     try:
         if len(GridLayout.objects.filter(name=request.POST['name'])) > 0:
-            return HttpResponse('이미 저장된 이름입니다.')
+            return HttpResponse('Already Existing Name')
     finally:
         layout = GridLayout(name=request.POST['name'], data=request.POST['data'])
         layout.save()
         layouts = GridLayout.objects.filter(name=request.POST['name'])
         if len(layouts) == 1:
-            result = '정상적으로 저장되었습니다.'
+            result = 'Saved Successfully'
         else:
-            result = '오류가 발생했습니다. 다시 시도해주세요.'
+            result = 'Failed To Save. Please Try Again'
         return HttpResponse(result)
 
 def load_layout(request):
@@ -54,10 +54,10 @@ def delete_layout(request):
     from dashboard.src.models import GridLayout
     layouts = GridLayout.objects.filter(name=request.POST['name'])
     if len(layouts) < 1:
-        return HttpResponse('저장되지 않은 레이아웃입니다.')
+        return HttpResponse('Not Saved Layout')
     for layout in layouts:
         layout.delete()
-    return HttpResponse('정상적으로 삭제되었습니다.')
+    return HttpResponse('Deleted Successfully')
 
 def list_layouts(request):
     from dashboard.src.models import GridLayout
@@ -80,3 +80,15 @@ def list_items(request):
                     items.append(name)
         response = {'items': items}
         return JsonResponse(response)
+
+def default_layout(request):
+    if request.method == 'POST':
+        items = json.loads(dict(request.POST.items())['layout'])
+        try:
+            for item in items:
+                request_test = {'request': request}
+                item['content'] = getattr(gitems, item['id'])(request_test)
+            response = json.dumps(items)
+        except Exception:
+            return JsonResponse({}, status=400)
+        return HttpResponse(response)
