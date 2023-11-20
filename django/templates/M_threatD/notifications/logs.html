@@ -14,10 +14,10 @@
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-teiren">Threat Alert List</h6>
         </div>
-        <div class="card-body" style="font-size:12px;">
+        <div class="card-body" style="font-size:15px;">
             <div class="table-responsive" style="overflow:hidden;">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
-                    style="text-align:center;overflow:scroll;">
+                    style="text-align:center;overflow:scroll;font-size:15px !important;">
                     <thead>
                         <tr>
                             <th>Status</th>
@@ -72,7 +72,7 @@
                             {% endif %}
                             {% endif %}
                             {% endfor %}
-                            <td width="400">
+                            <td width="300">
                                 <form method="POST" action="/threat/notifications/details/">
                                     {% csrf_token %}
                                     {% for key, value in result.form.items %}

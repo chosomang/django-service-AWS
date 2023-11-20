@@ -17,8 +17,7 @@ nav>a {
     max-width: 500px;
     min-width: 200px;
     color: #12536B;
-    font-family: NanumSquare;
-    font-size: 26px;
+    font-size: 30px;
     font-style: normal;
     font-weight: 800;
     line-height: normal;
@@ -28,8 +27,8 @@ nav>a {
 
 .topbar-logo-img {
     width: 15%;
-    margin-right: 5px;
     margin-left: -13px;
+    padding: 9px;
 }
 
 .topbar .navbar-icon {
@@ -379,7 +378,7 @@ nav>a {
     width: 99%;
     height: 35px;
     color: #94A2B3;
-    font-size: 13px;
+    font-size: 15px;
     border-bottom: 1px solid #94a2b329;
     margin-bottom: 20px;
 }
