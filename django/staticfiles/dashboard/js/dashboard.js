@@ -68,7 +68,7 @@ $.ajax({
 }).fail(function(xhr, textStatus, error) {
     if (xhr.status == 400){    
         $.ajax({
-            url:'grid/default/',
+            url:'/grid/default/',
             headers: {
                 'X-CSRFToken': getCookie()
             },
