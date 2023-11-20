@@ -5,18 +5,13 @@
 </head>
 <body class="bg-auth">
     <div class="auth-container">
-        <div class="card border-0 auth-shadow w-100 h-100">
+        <div class="card border-0 auth-shadow w-50 h-100">
             <div class="card-body d-flex justify-content-center align-items-center">
-                <div class="row w-100">
-                    <div class="col-6">
-                        <div class="auth-img">
-                            <img src="{% static '/img/teiren_icon.png' %}" class="w-100">
-                        </div>
-                    </div>
-                    <div class="col-6 py-3 auth-input">
+                <div class="row w-100 p-0">
+                    <div class="col-12 py-3 auth-input">
                         <div class="auth-text">
-                            <h5 class="text-teiren mb-2"> Visualize The Invisible</h5>
-                            <h1 class="text-teiren font-weight-bold mb-4"> TEIREN CLOUD</h1>
+                            <h5> Visualize The Invisible</h5>
+                            <span class="text-teiren font-weight-bold">TEIREN CLOUD</span>
                         </div>
                         <form id='login_form' class="user" method=post>
                             {% csrf_token %}

@@ -8,8 +8,7 @@
         <!-- Card Body -->
         <div class="card-body p-3" style="overflow-y:scroll;">
             <div class="table-responsive">
-                <table class="table m-0" id="dataTable"
-                    style="text-align:center;overflow:scroll;font-size:0.6rem;">
+                <table class="table m-0" id="dataTable" style="text-align:center;overflow:scroll;">
                     <thead>
                         <tr>
                             <th>Status</th>
@@ -36,9 +35,9 @@
                             <td><i class="text-{{value}} fa-solid fa-circle"></i></td>
                             {% elif key == 'alert' %}
                                 {% if value == 1 %}
-                                <td style="font-weight:900; font-size:0.9rem;"><i class="text-teiren fa-solid fa-circle-check"></i></td>
+                                <td style="font-weight:900; font-size:1rem;"><i class="text-teiren fa-solid fa-circle-check"></i></td>
                                 {% else %}
-                                <td style="font-weight:900; font-size:0.9rem;"><i class="text-danger fa-solid fa-eye-slash fa-bounce"></i></td>
+                                <td style="font-weight:900; font-size:1rem;"><i class="text-danger fa-solid fa-eye-slash fa-bounce"></i></td>
                                 {% endif %}
                             {% else %}
                             <td>

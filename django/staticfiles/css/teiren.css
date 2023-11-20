@@ -27,7 +27,7 @@
   --breakpoint-md: 768px;
   --breakpoint-lg: 992px;
   --breakpoint-xl: 1200px;
-  --font-family-sans-serif: 'NanumSquareNeoVariable';
+  --font-family-sans-serif: 'Cairo';
   /* "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; */
   --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
@@ -60,7 +60,7 @@ section {
 
 body {
   margin: 0;
-  font-family: 'NanumSquareNeoVariable', 'NanumSquareNeoLight', 'NanumSquareNeoBold', 'NanumSquareNeoExtraBold', 'NanumSquareNeoHeavy', 'NanumSquareNeo';
+  font-family: 'Cairo', 'NanumSquareNeo','NanumSquareNeoLight', 'NanumSquareNeoBold', 'NanumSquareNeoExtraBold', 'NanumSquareNeoHeavy';
   /* "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; */
   font-size: 0.5rem;
   font-weight: 400;
@@ -126,7 +126,7 @@ h5,
 
 h6,
 .h6 {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .h7 {

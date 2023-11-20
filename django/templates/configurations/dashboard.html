@@ -43,8 +43,10 @@
 <div id="layoutSidebar">        
     <div class="row mb-2">
         <h3>Layout</h3>
-        <button class="btn btn-sm btn-outline-teiren ml-2" onclick="editLayout()">setting</button>
-        <button class="btn closebtn btn-danger" onclick="closeSidebar(this)">X</button>
+        <button class="btn btn-md btn-outline-teiren ml-2" onclick="editLayout()">Setting</button>
+        <button class="closebtn text-danger" onclick="closeSidebar(this)">
+            <i class="fa-solid fa-circle-xmark"></i>
+        </button>
     </div>
     <!-- Add more content here -->
     <div id='layoutList'></div>
@@ -52,8 +54,10 @@
 </div>
 <div id="itemSidebar">        
     <div class="row mb-2">
-        <h2>위젯</h2>
-        <button class="btn closebtn btn-danger" onclick="closeSidebar(this)">X</button>
+        <h2>Widget</h2>
+        <button class="closebtn text-danger" onclick="closeSidebar(this)">
+            <i class="fa-solid fa-circle-xmark"></i>
+        </button>
     </div>
     <!-- Add more content here -->
     <div id='itemList'></div>
@@ -74,8 +78,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-teiren" data-dismiss="modal" onclick="newLayout()">Save</button>
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-md btn-teiren" data-dismiss="modal" onclick="newLayout()">Save</button>
+                <button type="button" class="btn btn-md btn-danger" data-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>

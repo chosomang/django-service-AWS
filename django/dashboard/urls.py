@@ -21,6 +21,7 @@ urlpatterns += [
     path('grid/layouts/', gridstack.list_layouts),
     path('grid/items/<type>/', gridstack.add_item),
     path('grid/items/', gridstack.list_items),
+    path('grid/default/', gridstack.default_layout),
 ]
 
 # /status

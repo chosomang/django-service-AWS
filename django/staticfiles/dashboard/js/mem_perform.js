@@ -1,4 +1,4 @@
-Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+Chart.defaults.global.defaultFontFamily = 'Cairo';
 Chart.defaults.global.defaultFontColor = '#858796';
 
 function getCookie(name = 'csrftoken') {

@@ -24,17 +24,18 @@
     flex-direction: column;
     align-items: center;
     width: 150px;
-    height: 200px;
+    height: 190px;
     border: 1px solid #eaeaea;
     border-radius: 10px;
     margin-bottom: 30px;
     margin-right: 25px;
-    padding: 20px 0;
+    padding: 30px 0;
     color: #57626F;
-    font-size: 12px;
+    font-size: 15px;
     text-decoration: none;
     cursor: pointer;
 }
+
 .registration .regi-body .regi-item.disabled,
 .registration .regi-body .regi-item.disabled *{
     pointer-events: none;
@@ -52,7 +53,6 @@
 .registration .regi-body .regi-item.disabled img{
     filter: grayscale(80%); opacity: 0.5;
 }
-
 
 /* Searchbar */
 .searchcard {
@@ -128,4 +128,4 @@
     background-color: #f2fefe;
 }
 
-/* searchbar */
+/* End searchbar */

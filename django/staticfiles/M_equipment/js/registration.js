@@ -37,17 +37,19 @@ function filterSearch(){
             if (!new RegExp(value.toUpperCase(), 'i').test($(this).text().toUpperCase())){
                 $(this).fadeOut('fast')
             } else {
-                $(this).fadeIn()
-                $(this).find('a').each(function(){
-                    $(this).find('span').each(function(){
-                        if (!new RegExp(value.toUpperCase(), 'i').test($(this).text().toUpperCase())){
-                            $(this).parent().fadeOut('fast')
-                        } else {
-                            $(this).parent().fadeIn()
-                            return false
-                        }
+                $(this).fadeIn()                
+                if (!new RegExp(value.toUpperCase(), 'i').test($(this).find('.regi-header h6').text().toUpperCase())){
+                    $(this).find('a').each(function(){
+                        $(this).find('span').each(function(){
+                            if (!new RegExp(value.toUpperCase(), 'i').test($(this).text().toUpperCase())){
+                                $(this).parent().fadeOut('fast')
+                            } else {
+                                $(this).parent().fadeIn()
+                                return false
+                            }
+                        })
                     })
-                })
+                }
             }
         })
     } else {
