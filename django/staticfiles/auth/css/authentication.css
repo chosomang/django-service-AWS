@@ -37,6 +37,7 @@
 }
 
 .auth-text{
+    font-size: 50px;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
