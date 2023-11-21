@@ -6,13 +6,13 @@
 {% endblock %}
 {% block content %}
 <div class="locationbar ml-2">
-    <span>Threat Management &nbsp;&nbsp;>&nbsp;&nbsp;Rule configuration &nbsp;&nbsp;>&nbsp;&nbsp; </span>
-    <span class="current">{{cloud|upper}} Rules<span>
+    <span>Threat Management &nbsp;&nbsp;>&nbsp;&nbsp;Rule configuration &nbsp;&nbsp;>&nbsp;&nbsp;{{resourceType|title}} &nbsp;&nbsp;>&nbsp;&nbsp;</span>
+    <span class="current">{{logType}} Rules<span>
 </div>
 <div>
     <div>
-        <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{cloud|upper}} Rules</h6>
-        <p class="h6 mb-4 ml-2">Configure {{cloud|upper}} Rule Sets In Detail</p>
+        <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{logType}} Rules</h6>
+        <p class="h6 mb-4 ml-2">Configure {{logType}} Rule Sets In Detail</p>
     </div>
     <div class="tabs">
         <input type="radio" id="modal-tab1" name="tab-control-modal" checked>
