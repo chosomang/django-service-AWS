@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Begin Page Content -->
+{{test_string}}<br>
+
+<div class="card-body" style="font-size:15px;">
+    <div class="table-responsive" style="overflow:hidden;">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+               style="table-layout:fixed;text-align:center;font-size:15px;">
+            <thead>
+            <tr>
+                <th>name</th>
+            </tr>
+            </thead>
+            <tfoot>
+            <tr>
+                <th>name</th>
+            </tr>
+            </tfoot>
+
+            <tbody>
+                {% for t in test_list %}
+                <tr>
+                    <td>{{t.name}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% endblock %}
+
