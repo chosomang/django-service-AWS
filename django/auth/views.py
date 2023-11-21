@@ -19,6 +19,10 @@ def login_view(request):
         data = dict(request.POST.items())
         username, password = authentication.login_account(data)
         if username == 'fail':
+            data['error'] = password
+            return render(request, 'auth/login.html', data)
+        elif password == 'fail':
+            data['error'] = f"Failed To Login. Please Try Again ({username} out of 5)"
             return render(request, 'auth/login.html', data)
         else:
             user = authenticate(request, username=username, password=password)
@@ -28,14 +32,15 @@ def login_view(request):
                 test.save()
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            # User credentials are valid, log the user in
             login(request, user)
             next_url = request.GET.get('next')
             if next_url is not None:
-                # Redirect to a success page
                 return redirect(next_url)
             else:
                 return redirect('/')
+        else:
+            data['error'] = "Failed To Login. Please Try Again"
+            return render(request, 'auth/login.html', data)
     return render(request, 'auth/login.html')
 
 def logout_view(request):
