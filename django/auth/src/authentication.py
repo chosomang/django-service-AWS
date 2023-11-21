@@ -50,16 +50,18 @@ def login_success(userid):
     WITH a, value.d as d
     OPTIONAL MATCH (a)-[c:CURRENT]->(b:Log:Teiren)
     WHERE split(b.eventTime,'T')[0] = d.date
+    WITH a, b, d
+    OPTIONAL MATCH (a)-[c:CURRENT]->()
     DELETE c
     WITH a, b, d
     CALL apoc.do.when(
         b IS NULL,
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{eventName:'Login', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})
             MERGE (d)->[:ACTED]->(l)
             RETURN l",
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{eventName:'Login', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})<-[:ACTED]-(b)
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})<-[:ACTED]-(b)
             RETURN l
         ",
         {{a:a, b:b, d:d}}
@@ -86,17 +88,19 @@ def login_fail(userid):
     WITH a, value.d as d
     OPTIONAL MATCH (a)-[c:CURRENT]->(b:Log:Teiren)
     WHERE split(b.eventTime,'T')[0] = d.date
+    WITH a, b, d
+    OPTIONAL MATCH (a)-[c:CURRENT]->()
     DELETE c
     WITH a, b, d
     CALL apoc.do.when(
         b IS NULL,
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{eventName:'Login', eventResult: 'Fail', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Fail', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})
             MERGE (d)-[:ACTED]->(l)
             RETURN a
         ",
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{eventName:'Login', eventResult: 'Fail', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})<-[:ACTED]-(b)
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Fail', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})<-[:ACTED]-(b)
             RETURN a
         ",
         {{a:a, b:b, d:d}}
@@ -123,16 +127,18 @@ def logout_success(sender, user, request, **kwargs):
     WITH a, value.d as d
     OPTIONAL MATCH (a)-[c:CURRENT]->(b:Log:Teiren)
     WHERE split(b.eventTime,'T')[0] = d.date
+    WITH a, b, d
+    OPTIONAL MATCH (a)-[c:CURRENT]->()
     DELETE c
     WITH a, b, d
     CALL apoc.do.when(
         b IS NULL,
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{eventName:'Logout', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Logout', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})
             MERGE (d)-[:ACTED]->(l)
             RETURN a",
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{eventName:'Logout', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})<-[:ACTED]-(b)
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Logout', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})<-[:ACTED]-(b)
             RETURN a
         ",
         {{a:a, b:b, d:d}}

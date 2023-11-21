@@ -8,17 +8,23 @@
 {% block content %}
 <!-- Begin Page Content -->
 <div class="locationbar ml-2">
-    <span>Log Management &nbsp;&nbsp;>&nbsp;&nbsp;Cloud Logs &nbsp;&nbsp;>&nbsp;&nbsp;</span>
-    <span class="current">{{cloud|upper}} <span>
+    <span>Log Management &nbsp;&nbsp;>&nbsp;&nbsp;{{resource|title}} Logs &nbsp;&nbsp;>&nbsp;&nbsp;</span>
+    <span class="current">{{logType}} <span>
 </div>
 <div>
     <!-- Page Heading -->
-    <h6 class="h3 font-weight-bold mb-2 text-gray-800 ml-2">{{cloud|upper}} Log</h6>
-    <p class="h6 mb-4 ml-2">{{cloud|upper}} Integrated Logs</p>    
+    <h6 class="h3 font-weight-bold mb-2 text-gray-800 ml-2">{{logType}} Log</h6>
+    <p class="h6 mb-4 ml-2">{{logType}} Integrated Logs</p>    
     {% include "./searchcard.html" %}
     <div class="card shadow mb-4" id="log_table">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-teiren">Log List ({{current_log.0}}~{{current_log.1}} out of {{total_log}})
+            <h6 class="m-0 font-weight-bold text-teiren">Log List 
+                {% if current_log %}
+                    ( {{current_log.0}}~{{current_log.1}} out of {{total_log}} )
+                {% else %}
+                    ( 0 out of 0 )
+                {% endif %}
+                
             </h6>
         </div>
 
@@ -55,25 +61,32 @@
                     </tr>
                     </tfoot>
                     <tbody>
-                    {%for log in page_obj.log_list%}
-                    <tr>
-                        {% for key, value in log.items %}
-                            {% if key != 'id' and key != 'cloud' %}
-                                {% if value is None %}
-                                    <td>-</td>
-                                {% else %}
-                                    <td>{{value}}</td>
+                    {% if page_obj.log_list %}
+                        {%for log in page_obj.log_list%}
+                        <tr>
+                            {% for key, value in log.items %}
+                                {% if key != 'id' and key != 'cloud' %}
+                                    {% if value is None %}
+                                        <td>-</td>
+                                    {% else %}
+                                        <td>{{value}}</td>
+                                    {% endif %}
                                 {% endif %}
-                            {% endif %}
+                            {% endfor %}
+                            <td>
+                                <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#detail-modal"
+                                    data-id={{log.id}} data-logtype={{log.cloud}}>
+                                    Details
+                                </button>
+                            </td>
+                        </tr>
                         {% endfor %}
-                        <td>
-                            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#detail-modal"
-                                data-id={{log.id}} data-cloud={{log.cloud}} style="font-size:0.7vw">
-                                Details
-                            </button>
-                        </td>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" style="font-size:30px">No Data</td>
                     </tr>
-                    {% endfor %}
+                    {% endif %}
+                    
                     </tbody>
                 </table>
 
@@ -155,7 +168,10 @@
 </div>
 {% endblock %}
 {% block script %}
-<script> var cloud = '{{cloud}}' </script>
+<script>
+    var logType = '{{logType}}'
+    var resourceType = '{{resource}}'
+</script>
 <script src="{% static '/M_logs/js/filter_select.js' %}"></script>
 <script src="{% static '/M_logs/js/log.js' %}"></script>
 {% endblock %}
