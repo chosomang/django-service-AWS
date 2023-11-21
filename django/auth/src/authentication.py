@@ -11,7 +11,7 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
-def login_account(request):
+def login_account(request, ip):
     cypher = f"""
     MATCH (a:Teiren:Account{{
         userId: '{request['user_id']}'
@@ -22,17 +22,17 @@ def login_account(request):
             if 5 <= graph.evaluate(f"{cypher} RETURN a.failCount"):
                 return 'fail', 'User Id Forbidden. Please Contact Administrator'
             if 1 == graph.evaluate(f"{cypher} WHERE a.userPassword = '{request['user_password']}' RETURN COUNT(a)"):
-                login_success(request['user_id'])
+                login_success(request['user_id'], ip)
                 userName = graph.evaluate(f"{cypher} RETURN a.userName")
                 return userName, request['user_password']
             else:
-                return login_fail(request['user_id']), 'fail'
+                return login_fail(request['user_id'], ip), 'fail'
         else:
             raise Exception
     except Exception:
         return 'fail', 'Failed To Login. Please Register'
 
-def login_success(userid):
+def login_success(userid, ip):
     graph.run(f"""
     MATCH (a:Account:Teiren{{
         userId: '{userid}'
@@ -57,11 +57,11 @@ def login_success(userid):
     CALL apoc.do.when(
         b IS NULL,
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}', sourceIp:'{ip}'}})
             MERGE (d)->[:ACTED]->(l)
             RETURN l",
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})<-[:ACTED]-(b)
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}',sourceIp:'{ip}'}})<-[:ACTED]-(b)
             RETURN l
         ",
         {{a:a, b:b, d:d}}
@@ -70,7 +70,7 @@ def login_success(userid):
     """)
     return 0
 
-def login_fail(userid):
+def login_fail(userid, ip):
     failCount = graph.evaluate(f"""
     MATCH (a:Account:Teiren{{
         userId: '{userid}'
@@ -95,12 +95,12 @@ def login_fail(userid):
     CALL apoc.do.when(
         b IS NULL,
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Fail', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Fail', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}', sourceIp:'{ip}'}})
             MERGE (d)-[:ACTED]->(l)
             RETURN a
         ",
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Fail', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})<-[:ACTED]-(b)
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Fail', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}', sourceIp:'{ip}'}})<-[:ACTED]-(b)
             RETURN a
         ",
         {{a:a, b:b, d:d}}
@@ -111,6 +111,7 @@ def login_fail(userid):
 
 @receiver(user_logged_out)
 def logout_success(sender, user, request, **kwargs):
+    ip = get_client_ip(request)
     graph.run(f"""
     MATCH (a:Account:Teiren{{
         userName: '{user.username}'
@@ -134,11 +135,11 @@ def logout_success(sender, user, request, **kwargs):
     CALL apoc.do.when(
         b IS NULL,
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Logout', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Logout', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}', sourceIp:'{ip}'}})
             MERGE (d)-[:ACTED]->(l)
             RETURN a",
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Logout', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}'}})<-[:ACTED]-(b)
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Logout', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}', sourceIp:'{ip}'}})<-[:ACTED]-(b)
             RETURN a
         ",
         {{a:a, b:b, d:d}}
@@ -146,3 +147,11 @@ def logout_success(sender, user, request, **kwargs):
     RETURN value
     """)
     return 0
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip

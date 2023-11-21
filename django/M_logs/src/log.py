@@ -145,7 +145,11 @@ def get_log_page(request, logType):
         END AS userName,
         n.awsRegion AS awsRegion,
         split(n.responseElements_assumedRoleUser_arn, '/')[1] AS role,
-        n.sourceIPAddress AS sourceIP,
+        CASE
+            WHEN n.sourceIPAddress IS NOT NULL THEN n.sourceIPAddress
+            WHEN n.sourceIp IS NOT NULL THEN n.sourceIp
+            ELSE '-'
+        END AS sourceIP,
         [label IN LABELS(n) WHERE NOT label IN ['Log', 'Iam', 'Ec2'] AND size(label) = {len(logType)}][0] AS cloud
     """
     log_list = []

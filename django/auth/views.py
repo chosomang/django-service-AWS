@@ -17,7 +17,7 @@ def login_view(request):
         return redirect('/auth/register/')
     if request.method == 'POST':
         data = dict(request.POST.items())
-        username, password = authentication.login_account(data)
+        username, password = authentication.login_account(data, get_client_ip(request))
         if username == 'fail':
             data['error'] = password
             return render(request, 'auth/login.html', data)
@@ -53,7 +53,7 @@ def register_view(request):
         data = dict(request.POST.items())
         message = register.check_account(data)
         if message == 'check':
-            if register.register_account(data) == 'success':
+            if register.register_account(data, get_client_ip(request)) == 'success':
                 context = {'color': 'teiren', 'message': 'Register Success! Please Sign In'}
                 return render(request, 'auth/register.html', context)
             else:
@@ -61,3 +61,12 @@ def register_view(request):
         context = {'color': 'danger', 'message': message}
         context.update(data)
     return render(request, 'auth/register.html', context)
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+    

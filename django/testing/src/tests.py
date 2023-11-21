@@ -32,11 +32,12 @@ STATIC_DIR = BASE_DIR / 'staticfiles'
 
 # Create your tests here.
 def main_test(request):
-    with open(os.path.join(BASE_DIR, 'debug.log'), 'r') as log_file:
-        log_data = log_file.readline()
-    return render(request, 'testing/test.html', {'log_data': log_data})
-    context = {'test': 'test'}
-
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0] # 'X-Forwarded-For' header can contain multiple IP addresses
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    context = {'test': str(type(ip))}
     return render(request, 'testing/test.html', context)
 
 @receiver(user_logged_in)

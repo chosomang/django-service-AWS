@@ -19,7 +19,7 @@ def check_account(request):
             return [f"{key.replace('_',' ').title()} Is Missing.", "Please Try Again"]
     return 'check'
 
-def register_account(request):
+def register_account(request, ip):
     cypher = f"""
     MERGE (super:Super:Teiren {{name:'Teiren'}})
     WITH super
@@ -30,6 +30,7 @@ def register_account(request):
         email: '{request['email_add']}',
         phoneNo: '{request['phone_no']}',
         createdTime: '{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}',
+        ipAddress: '{ip}',
         failCount: 0
     }})
     RETURN COUNT(a)
