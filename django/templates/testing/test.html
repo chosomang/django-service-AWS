@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+
 {% load static %}
 {% block head %}
 <!-- CSS -->
@@ -11,23 +11,10 @@
 <style>
 
 </style>
-<div class="mt-4"></div>
-
-<pre>{{test}}</pre>
-{% comment %} <button id='test' onclick="test()">testsetset</button>
-<div id="scripts"></div> {% endcomment %}
+<div class="mt-4" style="font-size:20px;">
+    {{log_data}}
+</div>
 {% endblock %}
 {% block script %}
-<script>
-    $.ajax({
-        url: '/test/test2/',
-        headers:{
-            'X-CSRFToken': '{{csrf_token}}'
-        },
-        type: 'post'
-    }).done(function(data){
-        var scriptSrc = $(data).filter('script').attr('src')
-        $('#scripts').append($('<script>').attr({'src':scriptSrc, 'id':'test'}))
-    })
-</script>
+
 {% endblock %}

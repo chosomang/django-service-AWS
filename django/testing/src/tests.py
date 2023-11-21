@@ -7,6 +7,10 @@ from py2neo import Graph
 from django.template.loader import render_to_string
 from M_threatD.src.notification.detection import get_node_json, get_relation_json
 import requests
+import os
+
+from django.contrib.auth.signals import user_logged_out, user_logged_in
+from django.dispatch import receiver
 # LOCAL
 # graph = Graph("bolt://127.0.0.1:7687", auth=('neo4j', 'teiren001'))
 
@@ -23,10 +27,25 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 STATIC_DIR = BASE_DIR / 'staticfiles'
 
 # Create your tests here.
+def main_test(request):
+    with open(os.path.join(BASE_DIR, 'debug.log'), 'r') as log_file:
+        log_data = log_file.readline()
+    return render(request, 'testing/test.html', {'log_data': log_data})
+    context = {'test': 'test'}
+
+    return render(request, 'testing/test.html', context)
+
+@receiver(user_logged_in)
+def log_user_logged_in(sender, user, request, **kwargs):
+    cypher = f"""
+    MATCH (a:Test)
+    detach delete a
+    """
+    graph.run(cypher)
 
 from testing.dockerHandler.handler import DockerHandler
 def trigger(request):
@@ -104,12 +123,6 @@ def running_trigger(request):
     print(request_dict)
 
     return render(request, 'testing/trigger.html', {'request_dict': request_dict})
-
-def main_test(request):
-    
-    context = {'test': 'test'}
-
-    return render(request, 'testing/test.html', context)
 
 def design_test(request):
     return render(request, 'testing/newDesign/designTest.html')
