@@ -4,26 +4,29 @@
 {% block content %}
 <!-- Begin Page Content -->
 
+<h2>개요</h2>
 <h3>
-분류: {{title}}<br>
-설명: {{comment}}<br>
-관련 법령: {{mapped_1}} {{mapped_2}}<br>
+    {%for c in category%}
+        분류: {{c.name}}<br>
+        설명: {{c.comment}}<br>
+        관련 법령: 
+            {%for m in c.mapped_1%}
+                {{m}}
+            {% endfor %}
+        <br>
+    {% endfor %}
+</h3>
+
 <br><br>
 
-버전별 상세<br>
-파일명: {{details_list}}
-버전 날짜: {{version_date}}
-
-<br><br>
-{{details_list.f}}
-<br><br>
-
-{%for i in details_list%}
-    {{i}}
-{% endfor %}
-
-<br>
-
+<h2>증적 버전 관리</h2>
+<h3>
+    {%for d in data%}
+        파일명: {{d.name}}<br>
+        세부 설명: {{d.comment}}<br>
+        버전: {{d.version_date}}<br>
+    {% endfor %}
+<h3>
 
 
 {% endblock %}

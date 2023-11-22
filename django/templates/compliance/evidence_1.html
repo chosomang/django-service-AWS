@@ -35,21 +35,25 @@
             </tfoot>
 
             <tbody>
-                <tr>
+                    {% for i in category_list%}
+                    <tr>
+
                     <td>1</td>
                     <td>
-                        {% for i in category_list%}
                         {{ i.name }}
-                        {% endfor %}
                     </td>
-                    <td>{{category_list}}</td>
+                    <td>{{i.comment}}</td>
                     <td>
-                        <a href="/compliance/evidence_3" class="btn btn-md btn-teiren" style="font-size:0.7vw">
-                            바로가기
-                        </a>                    
+                        <form method="POST" action="/compliance/evidence_3/">
+                            {% csrf_token %}
+                            <input type="hidden" name="title" value="{{i.name}}"/>
+                            <input type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw" value="바로가기"/>           
+                        </form>     
                     </td>
                     <td>비고 설명</td>
                 </tr>
+
+                    {% endfor %}
             </tbody>
 
         </table>
