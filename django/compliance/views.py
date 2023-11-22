@@ -20,15 +20,19 @@ def lists_view_2(request):
 
 
 # Compliance evidence - 성연
-def evidence_view(request):
+def evidence_cate(request):
+    if request.method=="POST":
+        add_cate=dict(request.POST.items())
+        evidence.add_cate(add_cate)
+
     context={
         'category_list': evidence.get_category()
     }
-    return render(request, f"compliance/evidence_1.html", context)
+    return render(request, f"compliance/evidence_cate.html", context)
 
 
-# Compliance evidence_2 - 성연
-def evidence_view_2(request):
+# Compliance evidence_cate_add - 성연
+def evidence_cate_add(request):
     law_list=evidence.get_law_list()
     chapter_list=evidence.get_chapter_list()
     section_list=evidence.get_section_list()
@@ -40,28 +44,40 @@ def evidence_view_2(request):
         'article_list': article_list,
     }
 
-    return render(request, f"compliance/evidence_2.html",context)
+    return render(request, f"compliance/evidence_cate_add.html",context)
 
-# Compliance evidence_3 - 성연
-def evidence_view_3(request):
+# Compliance evidence_data - 성연
+def evidence_data(request):
     if request.method=="POST":
-        post_data=request.POST['title']
+        title=request.POST['title']
 
-        category=evidence.get_category(post_data)
-        data=evidence.get_data(post_data)
+        category=evidence.get_category(title)
+        data=evidence.get_data(title)
         
         context={
+            'title':title,
             'category': category,
             'data': data,
         }
-        return render(request, f"compliance/evidence_3.html", context)
+        return render(request, f"compliance/evidence_data.html", context)
     else:
-        return render(request, f"compliance/evidence_3.html")
+        return render(request, f"compliance/evidence_data.html")
 
 
 # Compliance evidence_4 - 성연쓰 테스트 페이지
-def evidence_view_4(request, data=None):
+def evidence_view_4(request):
     if request.method=="POST":
-        data=dict(request.POST.items())
-        evidence.add_evidence(data)
-    return render(request, f"compliance/evidence_4.html", data)
+        context=dict(request.POST.items())
+        evidence.add_data(context)
+    return render(request, f"compliance/evidence_4.html", context)
+
+# Compliance evidence_data_add - 증적 추가 페이지
+def evidence_data_add(request):
+    if request.method=="POST":
+        title=request.POST['title']
+        category=evidence.get_category(title)
+
+        context={
+            'category': category,
+        }
+    return render(request, f"compliance/evidence_data_add.html", context)

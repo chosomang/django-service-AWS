@@ -25,37 +25,38 @@ def test():
 
     return response
 
-def add_evidence(dict):
-    category_name=dict['category_name']
-    category_comment=dict['category_comment']
-    category_mapped_1=dict['category_mapped_1']
-    #category_mapped_ismsp=mapped_ismsp
-
-    data_name=dict['data_name']
-    data_comment=dict['data_comment']
-    data_version_date=datetime.now()
-
+def add_cate(dict):
+    name=dict['name']
+    comment=dict['comment']
+    mapped_1=dict['mapped_1']
 
     cypher= f"""
-        MERGE (e:Compliance:Evidence {{
-            name:'evidence'
+        MATCH (e:Compliance:Evidence{{name:'evidence'}})
+        MERGE (e)-[:CATEGORY]->
+            (c:Category:Compliance:Evidence {{
+            name:'{name}',
+            comment:'{comment}',
+            mapped_1:'{mapped_1}'
         }})
-
-        MERGE (t:Category:Compliance:Evidence {{
-            name:'{category_name}',
-            comment:'{category_comment}',
-            mapped_1:['{category_mapped_1}'],
-        }})
-
-        MERGE (d:Compliance:Data:Evidence {{
-            name:'{data_name}',
-            comment:'{data_comment}',
-            version_date:'{data_version_date}'
-        }})
-
-        MERGE (e)-[:CATEGORY]->(t)-[:DATA]->(d)
     """
     graph.evaluate(cypher)
+
+def add_data(dict):
+    cate_name=dict['cate_name']
+    name=dict['name']
+    comment=dict['comment']
+    version_date=datetime.now()
+
+    cypher= f"""
+        MATCH (c:Category:Compliance:Evidence{{name:'{cate_name}'}})
+        MERGE (c)-[:DATA]->(d:Compliance:Data:Evidence {{
+            name:'{name}',
+            comment:'{comment}',
+            version_date:'{version_date}'
+        }})
+    """
+    graph.evaluate(cypher)
+
 
 def get_category(category=None):
     if category==None:
