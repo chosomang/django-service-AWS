@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from common.risk.v1.notification.alert import check_topbar_alert
 from .src import evidence, lists
+from django.http import HttpResponseRedirect
 
 
 # Compliance
@@ -11,10 +11,6 @@ def compliance_view(request):
 
 # Compliance lists - 현경
 def lists_view(request):
-    '''
-        src/lists.py에 있는 값 가져와서 html한테 넘겨주는 코드
-        lists.test()는 상단에서 import 해줬음
-    '''
     context=lists.test() 
     return render(request, f"compliance/lists.html", context)
 
@@ -25,11 +21,22 @@ def lists_view_2(request):
 
 # Compliance evidence - 성연
 def evidence_view(request):
-    context=evidence.test()
-    return render(request, f"compliance/evidence.html", context)
+    context={
+        'category_list': evidence.get_category()
+    }
+    return render(request, f"compliance/evidence_1.html", context)
 
 
 # Compliance evidence_2 - 성연
 def evidence_view_2(request):
-    context=''
-    return render(request, f"compliance/evidence_2.html", context)
+    if request.method=="POST":
+        evidence.add_evidence(dict(request.POST.items()))
+        return render(request, f"compliance/evidence_1.html")
+    return render(request, f"compliance/evidence_2.html")
+
+# Compliance evidence_3 - 성연
+def evidence_view_3(request):
+    context={
+        'details_list': evidence.get_details()
+    }
+    return render(request, f"compliance/evidence_3.html", context)

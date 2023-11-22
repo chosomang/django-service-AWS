@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Begin Page Content -->
+
+<a href="/compliance/evidence_2" class="btn btn-md btn-teiren" style="font-size:0.7vw">
+    추가
+</a>
+
+{{test_string}}
+
+<div class="card-body" style="font-size:15px;">
+    <div class="table-responsive" style="overflow:hidden;">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+               style="table-layout:fixed;text-align:center;font-size:15px;">
+            <thead>
+            <tr>
+                <th>No</th>
+                <th>분류</th>
+                <th>설명</th>
+                <th>증적</th>
+                <th>비고</th>
+            </tr>
+            </thead>
+
+            <tfoot>
+            <tr>
+                <th>No</th>
+                <th>분류</th>
+                <th>설명</th>
+                <th>증적</th>
+                <th>비고</th>            
+            </tr>
+            </tfoot>
+
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>
+                        {% for i in category_list%}
+                        {{ i.name }}
+                        {% endfor %}
+                    </td>
+                    <td>{{category_list}}</td>
+                    <td>
+                        <a href="/compliance/evidence_3" class="btn btn-md btn-teiren" style="font-size:0.7vw">
+                            바로가기
+                        </a>                    
+                    </td>
+                    <td>비고 설명</td>
+                </tr>
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+
+{% endblock %}
+

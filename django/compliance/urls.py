@@ -8,7 +8,7 @@ urlpatterns = [
     #path('report_month/', views.report_month_view, name='[Teiren] 월간 위협 보고서'),
     path('lists/', views.lists_view),
     path('lists_2/', views.lists_view_2),
-    path('evidence/', views.evidence_view),
+    path('evidence_1/', views.evidence_view),
     path('evidence_2/', views.evidence_view_2),
-
+    path('evidence_3/', views.evidence_view_3),
 ]

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Begin Page Content -->
+
+<h3>
+분류: {{title}}<br>
+설명: {{comment}}<br>
+관련 법령: {{mapped_1}} {{mapped_2}}<br>
+<br><br>
+
+버전별 상세<br>
+파일명: {{details_list}}
+버전 날짜: {{version_date}}
+
+<br><br>
+{{details_list.f}}
+<br><br>
+
+{%for i in details_list%}
+    {{i}}
+{% endfor %}
+
+<br>
+
+
+
+{% endblock %}
+
