@@ -33,11 +33,11 @@ def login_account(request, ip):
         return 'fail', 'Failed To Login. Please Register'
 
 def login_success(userid, ip):
-    graph.run(f"""
+    graph.evaluate(f"""
     MATCH (a:Account:Teiren{{
         userId: '{userid}'
     }})
-    SET a.failCount = 0
+    SET a.failCount = a.failCount + 1
     WITH a
     OPTIONAL MATCH (a)-[:DATE]-(d:Date {{date:'{str(date.today())}'}})
     WITH a, d
@@ -58,15 +58,16 @@ def login_success(userid, ip):
         b IS NULL,
         "
             MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}', sourceIp:'{ip}'}})
-            MERGE (d)->[:ACTED]->(l)
-            RETURN l",
+            MERGE (d)-[:ACTED]->(l)
+            RETURN a
+        ",
         "
-            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}',sourceIp:'{ip}'}})<-[:ACTED]-(b)
-            RETURN l
+            MERGE (a)-[:CURRENT]->(l:Log:Teiren{{userName: a.userName, eventName:'Login', eventResult: 'Success', eventTime:'{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}', sourceIp:'{ip}'}})<-[:ACTED]-(b)
+            RETURN a
         ",
         {{a:a, b:b, d:d}}
     ) YIELD value
-    RETURN value
+    RETURN value.a.failCount
     """)
     return 0
 
