@@ -42,9 +42,9 @@ def get_all_rules():
     return response
 
 # List Default Rules
-def get_default_rules(cloud):
+def get_default_rules(logType):
     cypher= f"""
-    MATCH (r:Rule:{cloud.capitalize()} {{ruleType: 'default'}})
+    MATCH (r:Rule:{logType.split('_')[0].capitalize()} {{ruleType: 'default'}})
     RETURN
     id(r) as id,
     CASE
@@ -71,9 +71,9 @@ def get_default_rules(cloud):
     return response
 
 # List Custom Rules
-def get_custom_rules(cloud):
+def get_custom_rules(logType):
     cypher= f"""
-    MATCH (r:Rule:{cloud.capitalize()} {{ruleType: 'custom'}})
+    MATCH (r:Rule:{logType.split('_')[0].capitalize()} {{ruleType: 'custom'}})
     RETURN
     id(r) as id,
     CASE
@@ -101,11 +101,11 @@ def get_custom_rules(cloud):
 
 # Rule On Off
 def rule_on_off(request):
-    cloud = request['cloud']
+    logType = request['log_type'].split(' ')[0].capitalize()
     rule_name = request['rule_name']
     on_off = request['on_off']
     cypher = f"""
-    MATCH (r:Rule:{cloud} {{ruleName:'{rule_name}'}})
+    MATCH (r:Rule:{logType} {{ruleName:'{rule_name}'}})
     SET r.on_off = {abs(int(on_off)-1)}
     RETURN r
     """
@@ -113,15 +113,15 @@ def rule_on_off(request):
         graph.evaluate(cypher)
         return abs(int(on_off)-1)
     except ClientError as e:
-        return '실패'
+        return int(2)
 
 ## Rule Detail Modal
 # List Rule Details
 def get_rule_details(request, ruleType):
-    cloud = request['cloud']
+    logType = request['log_type'].split(' ')[0].capitalize()
     rule_name = request['rule_name']
     cypher = f"""
-    MATCH (r:Rule:{cloud} {{ruleName:'{rule_name}', ruleType:'{ruleType}'}})
+    MATCH (r:Rule:{logType} {{ruleName:'{rule_name}', ruleType:'{ruleType}'}})
     RETURN
         id(r) as id,
         CASE
@@ -149,21 +149,21 @@ def get_rule_details(request, ruleType):
             details.update({key.capitalize():value})
     details = dict(sorted(details.items(), key=lambda x: x[0], reverse=False))
     response.update({'details': details})
-    response['cloud'] = cloud
+    response['logType'] = logType
     if response['type'] == 'Dynamic':
-        response.update(get_related_flow(cloud, rule_name, rule_id))
+        response.update(get_related_flow(logType, rule_name, rule_id))
     return response
 
 # Check And List Related Flow
-def get_related_flow(cloud, ruleName, rule_id):
+def get_related_flow(logType, ruleName, rule_id):
     cypher = f"""
-        MATCH (rule:Rule:{cloud} {{ruleName: '{ruleName}'}})
+        MATCH (rule:Rule:{logType} {{ruleName: '{ruleName}'}})
         WHERE ID(rule) = {rule_id}
         UNWIND KEYS(rule) as key
         WITH DISTINCT(key) as key, rule
         WHERE key =~ 'flow.*'
         WITH rule[key] as flowName
-        MATCH (flow:FLOW_TEST{{flowName:flowName}})
+        MATCH (flow:FLOW{{flowName:flowName}})
         RETURN COLLECT(flow) as flows
     """
     results = graph.run(cypher)

@@ -33,10 +33,10 @@ def static_edit_rule_page(request):
     rule_type = request['ruleClass']
     og_rule_name = request['rule_name']
     rule_id = request['rule_id']
-    cloud = request['cloud']
+    logType = request['log_type']
     response ={}
     cypher = f"""
-    MATCH (rule:Rule:{cloud} {{ruleName:'{og_rule_name}', ruleClass:'static'{f", eventSource:'{rule_type}.amazonaws.com'" if rule_type != 'All' else ""}}})
+    MATCH (rule:Rule:{logType} {{ruleName:'{og_rule_name}', ruleClass:'static'{f", eventSource:'{rule_type}.amazonaws.com'" if rule_type != 'All' else ""}}})
     WHERE ID(rule) = {rule_id}
     UNWIND KEYS(rule) as key
     WITH key, rule
@@ -71,10 +71,10 @@ def static_edit_rule_page(request):
 def dynamic_edit_rule_page(request):
     og_rule_name = request['rule_name']
     rule_id = request['rule_id']
-    cloud = request['cloud']
+    logType = request['log_type']
     response ={}
     cypher = f"""
-    MATCH (rule:Rule:{cloud} {{ruleName:'{og_rule_name}', ruleClass:'dynamic'}})
+    MATCH (rule:Rule:{logType} {{ruleName:'{og_rule_name}', ruleClass:'dynamic'}})
     WHERE ID(rule) = {rule_id}
     UNWIND KEYS(rule) as keys
     WITH rule, keys
@@ -136,12 +136,12 @@ def edit_static_rule(request):
     request['count'] = 1
     ruleName = request['ruleName']
     og_ruleName = request['og_rule_name']
-    cloud = request['cloud']
+    logType = request['log_type']
     if ruleName != og_ruleName and graph.evaluate(f"""
-    MATCH (rule:Rule:{cloud} {{ruleName: '{ruleName}'}})
+    MATCH (rule:Rule:{logType} {{ruleName: '{ruleName}'}})
     RETURN COUNT(rule)
     """) > 0:
-        return f"'{ruleName}'이라는 이름의 정책이 이미 존재합니다. 다른 이름으로 정책을 설정해주세요."
+        return f"'{ruleName}' Already Existing Rule Name"
     request['check'] = 1
     if isinstance(add_check:=add_static_rule(request), str):
         return add_check
@@ -153,12 +153,12 @@ def edit_static_rule(request):
 def edit_dynamic_rule(request):
     ruleName = request['ruleName']
     og_ruleName = request['og_rule_name']
-    cloud = request['cloud']
+    logType = request['log_type']
     if ruleName != og_ruleName and graph.evaluate(f"""
-    MATCH (rule:Rule:{cloud} {{ruleName: '{ruleName}'}})
+    MATCH (rule:Rule:{logType} {{ruleName: '{ruleName}'}})
     RETURN COUNT(rule)
     """) > 0:
-        return f"'{ruleName}'이라는 이름의 정책이 이미 존재합니다. 다른 이름으로 정책을 설정해주세요."
+        return f"'{ruleName}' Already Existing Rule Name"
     request['check'] = 1
     if isinstance(add_check:=add_dynamic_rule(request), str):
         return add_check

@@ -22,10 +22,15 @@ def notification_view(request, threat):
 
 # Rules
 @login_required
-def rules_view(request, cloud):
-    context = default.get_custom_rules(cloud)
-    context.update(default.get_default_rules(cloud))
-    context.update({'cloud': cloud.capitalize()})
+def rules_view(request, resourceType, logType):
+    context = default.get_custom_rules(logType)
+    context.update(default.get_default_rules(logType))
+    if resourceType == 'cloud':
+        logType = (' ').join(logType.split('_')).upper()
+    else:
+        logType = (' ').join(logType.split('_')).title()
+    context.update({'logType': logType})
+    context.update({'resourceType': resourceType})
     return render(request, f"M_threatD/rules/rule.html", context)
 
 

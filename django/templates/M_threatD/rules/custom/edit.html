@@ -7,7 +7,7 @@
             <h2 class="mb-3 font-weight-bold text-center text-teiren">{{static.ruleName}} Edit</h2>
             <input type='hidden' id='type' value="{{static.request.log_type}}">
         </div>
-        <div class="card-body shadow" style="border-radius:20px;">
+        <div class="card-body shadow" style="border-radius:20px; font-size:13px;">
             <form id='edit_form'>
                 <input type="hidden" name="ruleClass" value="static"/>
                 <div class="content">
@@ -92,7 +92,7 @@
                                     <input type="text-area" class="form-control form-control-user" name="property_val_{{forloop.counter}}" value="{{property.ruleValues}}" placeholder="Rule Value {{forloop.counter}}">
                                 </div>
                                 <div class="col-1 d-flex align-items-center justify-content-center px-0">
-                                    <button type="button" class="btn btn-teiren btn-sm" style="border-radius:40px" onclick="addProperty('{{cloud}}')">+</button>
+                                    <button type="button" class="btn btn-teiren btn-sm" style="border-radius:40px" onclick="addProperty('{{log_type}}')">+</button>
                                     {% if forloop.counter != 1 %}
                                     <button type="button" class="btn btn-danger btn-sm ml-2" style="border-radius:40px" onclick="deleteProperty(this)">-</button>
                                     {% endif %}
@@ -123,8 +123,8 @@
                 <div>
                     <input type=hidden name="og_rule_name" value="{{static.ruleName}}">
                     <input type=hidden name="rule_id" value="{{rule_id}}">
-                    <input type=hidden name="cloud" value="{{cloud}}">
-                    <input type="button" value="정책 수정" class="btn btn-teiren btn-block" onclick='ruleEditAction()'>
+                    <input type=hidden name="log_type" value="{{log_type}}">
+                    <input type="button" value="Edit Rule" class="btn btn-teiren btn-block" onclick='ruleEditAction()'>
                 </div>
             </form>
         </div>
@@ -137,7 +137,7 @@
         <div class="text-center">
             <h2 class="m-0 font-weight-bold text-center text-teiren">{{dynamic.ruleName}} Edit</h2>
         </div>
-        <div class="card-body shadow mt-3" style="border-radius:20px;">
+        <div class="card-body shadow mt-3" style="border-radius:20px; font-size:13px;">
             <form id="edit_form">
                 <input type="hidden" name="ruleClass" value="dynamic"/>
                 <div id="rule_0" class="rule">
@@ -270,7 +270,7 @@
                 </div>
                 <div>
                     <input type=hidden name="og_rule_name" value="{{dynamic.ruleName}}">
-                    <input type=hidden name="cloud" value="{{cloud}}">
+                    <input type=hidden name="log_type" value="{{log_type}}">
                     <input type=hidden name="rule_id" value="{{rule_id}}">
                 </div>
             </form>
@@ -279,7 +279,7 @@
 </div>
 <script>
     var wheres = '{{dynamic.wheres|safe}}'
-    var cloud = '{{cloud}}'
+    var logType = '{{log_type}}'
 </script>
 <script src="{% static '/M_threatD/js/editRule/dynamic.js' %}"></script>
 {% endif %}

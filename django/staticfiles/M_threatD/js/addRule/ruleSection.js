@@ -13,7 +13,7 @@ function getCookie(name = 'csrftoken') {
     return cookieValue;
 }
 
-function addSection(cloud, ruleClass){
+function addSection(logType, ruleClass){
     $.ajax({
         url: `/threat/custom/add/${ruleClass}/`,
         headers:{
@@ -21,7 +21,7 @@ function addSection(cloud, ruleClass){
         },
         type: 'post',
         data:{
-            cloud: cloud,
+            log_type: logType,
         }
     }).done(function(data){
         $('#new_rules').append(data)

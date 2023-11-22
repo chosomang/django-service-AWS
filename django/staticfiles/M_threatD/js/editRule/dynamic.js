@@ -14,7 +14,7 @@ function getCookie(name = 'csrftoken') {
 }
 
 function addNewDynamicRule(){
-    $('#count').val($('.rule').length-1)
+    $('#count').val($('#dynamic_rules .rule').length)
     var data = $('#edit_form').serialize()
     var modal = $('#edit .card-body.shadow')[0]
     $(modal).prepend(`
@@ -33,7 +33,7 @@ function addNewDynamicRule(){
         $('#temp').remove()
         $('#loader').remove()
         alert(response)
-        if(response == '정책 추가 완료'){
+        if(response == 'Added Rule Successfully'){
             window.location.reload()
         }
     })
@@ -50,7 +50,7 @@ function addDynamicSlot(){
         type: 'post',
         data:{
             count: count,
-            cloud: cloud
+            log_type: logType
         }
     }).done(function(data){
         $('#dynamic_rules').append(data)
@@ -75,7 +75,7 @@ function addDynamicProperty(flow_num){
             'X-CSRFToken': getCookie()
         },
         data:{
-            cloud: cloud,
+            log_type: logType,
             flow_num: flow_num,
             prop_num: prop_num
         },
@@ -105,7 +105,7 @@ function dynamicFlow(){
             'X-CSRFToken': getCookie()
         },
         data: {
-            cloud: cloud,
+            log_type: logType,
             rules: $('#dynamic_rules input').serialize(),
             rule_count: $('#dynamic_rules .rule').length,
             wheres: wheres
@@ -140,7 +140,7 @@ function addFlow(){
             'X-CSRFToken': getCookie()
         },
         data: {
-            cloud: cloud,
+            log_type: logType,
             rules: $('#dynamic_rules input').serialize(),
             rule_count: $('#dynamic_rules .rule').length,
             flow_count: count

@@ -7,10 +7,10 @@
             <option value='Property'></option>
             <option value='New Property'></option>
             {% for property in log_properties %}
-            {% if property == "eventSource" %}
-            {% else %}
-            <option value={{property}}></option>
-            {% endif %}
+                {% if property == "eventSource" %}
+                {% else %}
+                    <option value={{property}}></option>
+                {% endif %}
             {% endfor%}
         </datalist>
     </div>
