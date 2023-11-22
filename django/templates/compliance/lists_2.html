@@ -3,6 +3,80 @@
 
 {% block content %}
 <!-- Begin Page Content -->
-<h2>요기는 언니를 위한 두번째 페이지입니다. 혹시 몰라서~
+<h2> {{no}} {{name}}
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                   style="font-size:15px;">
+                <thead>
+                <tr>
+                    <th class="text-center">항목</th>
+                    <th>{{no}} {{name}}</th>
+                </tr>
+                </thead>
+                <tfoot></tfoot>
+    
+                <tbody>
+                    <!--for 문으로 리스트 출력: 파이썬 코드를 쓸 때는 % % 안에 담아서 사용-->
+                    {% for a in article_list %}
+                    <tr>
+                        <td align="center">인증 기준</td>
+                        <td>{{a.comment}}</td>
+                    </tr>
+                    <tr>
+                        <td align="center" width="200px">주요 확인사항</td>
+                        <td>{{a.checklist}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+<h3> 증적 리스트
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                   style="text-align:center; font-size:15px;">
+                <thead>
+                <tr>
+                    <th>evidence</th>
+                    <th>comment</th>
+                    <th>version</th>
+                    <th>미리보기</th>
+                    <th>수정</th>
+                    <th>삭제</th>
+                </tr>
+                </thead>
+                <tfoot></tfoot>
+    
+                <tbody>
+                    <!--for 문으로 리스트 출력: 파이썬 코드를 쓸 때는 % % 안에 담아서 사용-->
+                    {% for a in evidence_list %}
+                    <tr>
+                        <td>{{a.name}}</td>
+                        <td>{{a.comment}}</td>
+                        <td>{{a.version}}</td>
+                        <td>
+                            <button class="btn btn-md btn-teiren" style="font-size:0.7vw">
+                                미리보기
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-md btn-teiren" style="font-size:0.7vw">
+                                modify
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-md btn-teiren" style="font-size:0.7vw">
+                                delete
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 {% endblock %}
 

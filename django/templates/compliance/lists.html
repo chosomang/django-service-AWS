@@ -3,40 +3,108 @@
 
 {% block content %}
 <!-- Begin Page Content -->
-<a href="/compliance/lists_2"><h1>임시사용가능한 제2의 페이지</h1></a>
+<a href="/compliance/lists_2"><h1>ISMS-P</h1></a>
 
 <br>
 <!--단일 변수 출력-->
 <h2>{{test_string}}</h2>
 <br>
 
+<div class="d-flex text-center mb-2">
+    <div>
+        <span>Cloud</span>
+        <br>
+        <select id="com_cloud" name="com_cloud" class="btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5; width:100%;">
+            <option value="1">AWS</option>
+            <option value="2">NCP</option>
+            <option value="3">Azure</option>
+        </select>
+    </div>
+    <div>
+        <span>Version</span>
+        <br>
+        <select id="com_version" name="com_version" class="btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5; width:100%;">
+            <option value="1">2023-10-31</option>
+            <option value="2">2023-04-22</option>
+            <option value="3">2019-01-01</option>
+        </select>
+    </div>
+    <div>
+        <button class="btn btn-md btn-teiren" style="font-size:0.7vw">
+            Select
+        </button>
+    </div>
+</div>
+
 <div class="card-body" style="font-size:15px;">
     <div class="table-responsive" style="overflow:hidden;">
         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
-               style="table-layout:fixed;text-align:center;font-size:15px;">
+               style="text-align:center;font-size:15px;">
             <thead>
             <tr>
-                <th>name</th>
+                <th>no</th>
+                <th>Article</th>
+                <th>Comment</th>
+                <th>준수 여부</th>
+                <th>사내 정책</th>
+                <th>운영 현황</th>
+                <th>Details</th>
             </tr>
             </thead>
             <tfoot>
             <tr>
-                <th>name</th>
+                <th>no</th>
+                <th>Article</th>
+                <th>Comment</th>
+                <th>준수 여부</th>
+                <th>사내 정책</th>
+                <th>운영 현황</th>
+                <th>Details</th>
             </tr>
             </tfoot>
 
             <tbody>
                 <!--for 문으로 리스트 출력: 파이썬 코드를 쓸 때는 % % 안에 담아서 사용-->
-                {% for t in test_list %}
+                {% for a in article_list %}
                 <tr>
-                    <td>{{t.name}}</td>
+                    <td>{{a.no}}</td>
+                    <td>{{a.name}}</td>
+                    <td align="left" width="800px">{{a.comment}}</td>
+                    <td>냐</td>
+                    <td>냐</td>
+                    <td>냐</td>
+                    <td>
+                        <form  method="POST" action="/compliance/lists_2/">
+                            {% csrf_token %}
+                            <input type="hidden" name="no" value="{{a.no}}"/>
+                            <input type="hidden" name="name" value="{{a.name}}"/>
+                            <button class="btn btn-md btn-teiren" style="font-size:0.7vw">
+                                Details
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
+                
             </tbody>
         </table>
     </div>
 </div>
 
+<script>
+    $.ajax({
+        url:'/compliance/ajax_test/',
+        headers:{
+            'X-CSRFToken': '{{csrf_token}}'
+        },
+        data:{
+            ajaxTest: 'test'
+        },
+        type: 'post'
+    }).done(function(response){
+        console.log(response)
+    })
+</script>
 
 {% endblock %}
 

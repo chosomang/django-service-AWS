@@ -1,7 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from common.risk.v1.notification.alert import check_topbar_alert
-from .src import evidence, lists
+from .src import evidence, lists, lists_2
 
 
 # Compliance
@@ -20,8 +20,13 @@ def lists_view(request):
 
 # Compliance lists_2 - 현경
 def lists_view_2(request):
-    return render(request, f"compliance/lists_2.html")
+    if request.method == "POST":
+        data = dict(request.POST.items())
+        data.update(lists_2.test(data))
+        return render(request, f"compliance/lists_2.html", data)
 
+def ajax_test(request):
+    return HttpResponse(str(request.POST['ajaxTest']))
 
 # Compliance evidence - 성연
 def evidence_view(request):

@@ -10,5 +10,5 @@ urlpatterns = [
     path('lists_2/', views.lists_view_2),
     path('evidence/', views.evidence_view),
     path('evidence_2/', views.evidence_view_2),
-
+    path('ajax_test/', views.ajax_test),
 ]
