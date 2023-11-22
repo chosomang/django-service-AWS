@@ -39,13 +39,36 @@ Promise.all([
       elements: dataArray[1],
       layout: { name: 'circle' },
     });
+    // var params = {
+    //   name: 'euler',
+    //   nodeSpacing: 25,
+    //   edgeLengthVal: 150,
+    //   animate: true,
+    //   randomize: false,
+    //   maxSimulationTime: 1500
+    // };
+    var cur_edgeLength = {
+      cur: 100,
+      max: 200
+    }
+    var gravity = {
+      cur: -500,
+      max: -100,
+      min: -900,
+    }
     var params = {
-      name: 'cola',
-      nodeSpacing: 25,
-      edgeLengthVal: 150,
-      animate: true,
+      name: 'euler',
       randomize: false,
-      maxSimulationTime: 1500
+      fit: true,
+      animate: 'end',
+      animationDuration: 600,
+      gravity: gravity['cur'],
+      springLength: cur_edgeLength['cur'],
+      // maxSimulationTime: maxsim,
+      springCoeff: 0.0002,
+      mass: function() { return 1; },
+      pull: 0.001,
+      iterations: 2500
     };
     var layout = makeLayout();
 
@@ -59,22 +82,36 @@ Promise.all([
 
     $config.appendChild( $btnParam );
 
+    // var sliders = [
+    //   {
+    //     label: 'Edge length',
+    //     param: 'edgeLengthVal',
+    //     min: 100,
+    //     max: 200
+    //   },
+
+    //   {
+    //     label: 'Node spacing',
+    //     param: 'nodeSpacing',
+    //     min: 1,
+    //     max: 50
+    //   }
+    // ];
     var sliders = [
       {
         label: 'Edge length',
-        param: 'edgeLengthVal',
-        min: 100,
-        max: 200
+        param: 'springLength',
+        min: 0,
+        max: cur_edgeLength['max']
       },
-
       {
         label: 'Node spacing',
-        param: 'nodeSpacing',
-        min: 1,
-        max: 50
-      }
+        param: 'gravity',
+        min: gravity['min'],
+        max: gravity['max']
+      },
     ];
-
+    
     var buttons = [
       {
         label: h('span', { 'class': 'fa fa-refresh' }, []),
