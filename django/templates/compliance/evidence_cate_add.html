@@ -5,23 +5,19 @@
     <!-- Begin Page Content -->
 
     <h3>
-    <form method="POST" action="/compliance/evidence_4/">
+    <form method="POST" action="/compliance/evidence_cate/">
         {% csrf_token %}
+        
+        <input class="btn btn-md btn-teiren" type="submit" vaule="제출"/><br><br>
+
         분류:
-        <input name="category_name" type="text"><br><br>
+        <input name="name" type="text"><br><br>
 
         설명:
-        <input name="category_comment" type="text"><br><br>
-
-        파일명:
-        <input name="data_name" type="text"><br><br>
-
-        파일 세부 설명:
-        <input name="data_comment" type="text"><br><br>
-
+        <input name="comment" type="text"><br><br>
 
         매핑:
-        <select id="category_mapped_1" name="category_mapped_1" class="btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5;">
+        <select id="mapped_1" name="mapped_1" class="btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5;">
             <option value="isms-p">ISMS-P</option>
             <option value="GDRR">GDRR</option>
             <option value="CSAP">CSAP</option>
@@ -39,12 +35,11 @@
             <tr>
                 <td>{{a.no}}</td>
                 <td>{{a.name}}</td>
-                <td><label class="btn btn-md btn-teiren"><input type="checkbox" name="category_mapped_ismsp" value="{{a.no}}"/></td>
+                <td><label class="btn btn-md btn-teiren"><input type="checkbox" name="mapped_ismsp" value="{{a.no}}"/></td>
             </tr>
         {% endfor %}
     </table>
 
-    <input class="btn btn-md btn-teiren" type="submit" vaule="제출"/>
 </form>
 
  

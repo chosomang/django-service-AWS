@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+  <!-- Begin Page Content -->
+
+
+  <h3>
+    <form method="POST" action="/compliance/evidence_4/">
+        {% csrf_token %}
+        분류: 
+        {{category}}<br><br>
+        <input name="cate_name" value="test" type="hidden"/>
+
+        설명:
+        {{category}}<br><br>
+
+        파일명:
+        <input name="name" type="text"><br><br>
+
+        파일 세부 설명:
+        <input name="comment" type="text"><br><br>
+
+        버전(날짜):
+        <input name="version_date" type="text"><br><br>
+
+        파일 업로드:
+        <h5>image 파일 전체, pdf, 엑셀(xlsx, xls, csv), 한글파일(hwp, hwpx), 파워포인트(ppt, pptx), 워드(docx, doc) 형식만 업로드 가능합니다.</h5>
+        <input name="file" type="file" accept="image/*, .pdf, .xlsx, .xls, .hwp, .hwpx, .ppt, .pptx, .csv, .docx, .doc"><br><br>
+
+    <input class="btn btn-md btn-teiren" type="submit" vaule="제출"/>
+</form>
+
+{% endblock %}
+
