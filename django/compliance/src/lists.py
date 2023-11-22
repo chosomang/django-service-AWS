@@ -17,7 +17,7 @@ def test():
     """)
 
     response={
-        'test_string':'그냥 문자열입니다',
+        'test_string':'그냥 문자열입니다냥',
         'test_list': test_list
     }
 
