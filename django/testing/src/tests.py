@@ -36,16 +36,22 @@ def trigger(request):
             access_key = data.get('access_key')
             secret_key = data.get('secret_key')
             region_name = data.get('region_name')
-        
+            log_type = data.get('log_type') # cloudtrail, dns, elb ...
+            group_name = data.get('group_name')
+            image_name = f'{log_type}-image'
+            
             # 위 3가지 속성에 해당하는 노드의 "isRunning" 속성을 py2neo를 이용해서 가져오기
             pass
         
             # isRunning을 통해, 현재 로그 수집기가 동작중인지 확인
-            integration_node = graph.nodes.match("Integration",
-                                     accessKey=access_key,
-                                     secretKey=secret_key,
-                                     regionName=region_name
-                                     ).first()
+            integration_node = graph.nodes.match("Integration", 
+                                    accessKey=access_key, 
+                                    secretKey=secret_key, 
+                                    regionName=region_name,
+                                    logType=log_type,
+                                    groupName=group_name,
+                                    imageName=image_name
+                                    ).first()
             is_running = integration_node["isRunning"]
             if is_running:
                 result = {'message': '로그 수집기가 이미 동작중입니다.'}
@@ -54,7 +60,7 @@ def trigger(request):
                 # docker hub에 main 브랜치의 이미지를 빌드시마다 항상 가져오기.
                 # 현재는 고정값으로 넣어둠
                 client = DockerHandler()
-                logcollector_image_name = 'aws_logcollector_image_v_1.0'
+                logcollector_image_name = image_name
                 environment = {
                     'AWS_ACCESS_KEY_ID': access_key,
                     'AWS_SECRET_ACCESS_KEY': secret_key,
@@ -67,6 +73,12 @@ def trigger(request):
                 graph.push(integration_node)
                 
                 result = {'message': f'인스턴스가 성공적으로 저장되었습니다. 인스턴스 id: {container.id}'}
+                print(f"access_key: {access_key}")
+                print(f"secret_key: {secret_key}")
+                print(f"region_name: {region_name}")
+                print(f"log_type: {log_type}")
+                print(f"group_name: {group_name}")
+                print(f"image_name: {image_name}")
                 return JsonResponse(result)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
@@ -87,7 +99,6 @@ def trigger(request):
     #     detach=True,
     #     environment=environment,
     # )
-    
 
 def running_trigger(request):
     """Running trigger for python script
