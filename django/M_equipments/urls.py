@@ -3,9 +3,10 @@ from . import views
 
 urlpatterns = [
     # Integration
-    path('', views.integration_view),
-    path('<equipment>/', views.integration_page),
-    path("<equipment>/check/", views.integration_check_ajax),
-    path("<equipment>/insert/", views.integration_insert_ajax),
-    path("<equipment>/collection/", views.integration_collection_ajax),
+    path('<pageType>/', views.integration_view),
+    path('<equipment>/<logType>/', views.registration_page),
+    path("<equipment>/<logType>/check/", views.integration_check_ajax),
+    path("<equipment>/<logType>/insert/", views.integration_insert_ajax),
+    path("<equipment>/<logType>/collection/", views.integration_collection_ajax),
+    path('configuration/delete/<actionType>/', views.integration_delete_ajax),
 ]
