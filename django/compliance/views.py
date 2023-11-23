@@ -24,7 +24,7 @@ def evidence_cate(request):
     if request.method=="POST":
         add_cate=dict(request.POST.items())
         evidence.add_cate(add_cate)
-
+        return HttpResponseRedirect('/compliance/evidence_cate')
     context={
         'category_list': evidence.get_category()
     }
@@ -47,7 +47,7 @@ def evidence_cate_add(request):
     return render(request, f"compliance/evidence_cate_add.html",context)
 
 # Compliance evidence_data - 성연
-def evidence_data(request):
+def evidence_data(request, at):
     if request.method=="POST":
         title=request.POST['title']
 

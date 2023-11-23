@@ -12,6 +12,6 @@ urlpatterns = [
     path('evidence_cate_add/', views.evidence_cate_add),
     path('evidence_data/', views.evidence_data),
     path('evidence_4/', views.evidence_view_4),
-    path('evidence_data_add/', views.evidence_data_add),
+    path('<at>/evidence_data_add/', views.evidence_data_add),
 
 ]
