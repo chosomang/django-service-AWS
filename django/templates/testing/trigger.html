@@ -16,14 +16,16 @@
         <h5>{{ key|title }}: {{ value }}</h5>
     {% endif %}
 {% endfor %}
+
+<button onclick="executePythonFunction()">yoonan_[ap-northeast-2] elb start</button>
+<div id="response"></div>
 {% endblock %}
 
 {% block script %}
 <form id="csrf-form">
     {% csrf_token %}
 </form>
-<button onclick="executePythonFunction()">Run Python Function</button>
-<div id="response"></div>
+
 <script>
 function executePythonFunction() {
     var responseElement = document.getElementById('response');
