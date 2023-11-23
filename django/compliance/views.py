@@ -33,15 +33,10 @@ def evidence_cate(request):
 
 # Compliance evidence_cate_add - 성연
 def evidence_cate_add(request):
-    law_list=evidence.get_law_list()
-    chapter_list=evidence.get_chapter_list()
-    section_list=evidence.get_section_list()
-    article_list=evidence.get_article_list()
+    law_list=evidence.get_law_list('com','isms_p')
+
     context={
         'law_list': law_list,
-        'chapter_list': chapter_list,
-        'section_list': section_list,
-        'article_list': article_list,
     }
 
     return render(request, f"compliance/evidence_cate_add.html",context)
@@ -53,7 +48,7 @@ def evidence_data(request, at=None):
 
         category=evidence.get_category(title)
         data_list=evidence.get_data(title)
-        law_list=evidence.get_law_list(title)
+        law_list=evidence.get_law_list('evi',title)
         
         context={
             'title':title,

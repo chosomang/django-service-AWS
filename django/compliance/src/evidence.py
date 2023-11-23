@@ -59,17 +59,27 @@ def add_data(dict):
 
 
 def get_category(category=None):
+    response=[]
     if category==None:
-        response=graph.evaluate(f"""
+        cypher=f"""
             MATCH (c:Category:Compliance:Evidence)
-            RETURN COLLECT(c)
-        """)
+            RETURN c AS cate
+        """
+
+        results = graph.run(cypher)
+        for result in results:
+            response.append(result)
+            
     else:
-        response=graph.evaluate(f"""
+        cypher=f"""
             MATCH (c:Category:Compliance:Evidence)
             WHERE c.name='{category}'
-            RETURN COLLECT(c)
-        """)
+            RETURN c AS cate
+        """
+        results = graph.run(cypher)
+        for result in results:
+            response.append(result)
+
     return response
 
 def get_data(category=None):
@@ -84,45 +94,8 @@ def get_data(category=None):
 
     return data
 
-def get_law_list():
-    law_list=graph.evaluate(f"""
-            MATCH 
-                (i:Isms_p:Compliance:Version)-[:CHAPTER]->(c:Chapter)-[:SECTION]->(s:Section)-[:ARTICLE]->(a:Article)
-            RETURN DISTINCT COLLECT(i)
-        """)
 
-    return law_list
-
-def get_chapter_list():
-    chapter_list=graph.evaluate(f"""
-            MATCH 
-                (i:Isms_p:Compliance:Version)-[:CHAPTER]->(c:Chapter)-[:SECTION]->(s:Section)-[:ARTICLE]->(a:Article)
-            RETURN COLLECT(c)
-        """)
-
-    return chapter_list
-
-def get_section_list():
-    section_list=graph.evaluate(f"""
-            MATCH 
-                (i:Isms_p:Compliance:Version)-[:CHAPTER]->(c:Chapter)-[:SECTION]->(s:Section)-[:ARTICLE]->(a:Article)
-            RETURN COLLECT(s)
-        """)
-
-    return section_list
-
-def get_article_list():
-    article_list=graph.evaluate(f"""
-            MATCH 
-                (i:Isms_p:Compliance:Version)-[:CHAPTER]->(c:Chapter)-[:SECTION]->(s:Section)-[:ARTICLE]->(a:Article)
-            WITH a
-            ORDER BY a.no
-            RETURN COLLECT(a)
-        """)
-
-    return article_list
-
-def get_law_list(evidence_cate=None):
+def get_law_list(search_cate=None, search_content=None):
     '''
         MATCH (l:Law:Compliance)-[:CHAPTER]->(c:Chapter:Law:Compliance)-[:SECTION]->(s:Section)-[:MAPPED]->(a:Article:Compliance:Isms_p)<-[:EVIDENCE]-(e:Evidence:Category)
         WHERE e.name='{evidence_cate}'
@@ -130,11 +103,19 @@ def get_law_list(evidence_cate=None):
     '''
     response=[]
     
-    cypher=f"""
-        MATCH (com:Compliance)-[:VERSION]->(v:Version)-[:CHAPTER]->(c:Chapter)-[:SECTION]->(s:Section)-[:ARTICLE]->(a:Article)<-[:EVIDENCE]-(e:Evidence)
-        WHERE e.name="{evidence_cate}"
-        RETURN com, v, c, s, a, e
-    """
+    if search_cate=="com":
+        cypher=f"""
+            MATCH (com:Compliance)-[:VERSION]->(ver:Version)-[:CHAPTER]->(chap:Chapter)-[:SECTION]->(sec:Section)-[:ARTICLE]->(arti:Article)
+            WHERE {search_cate}.name="{search_content}"
+            RETURN com, ver, chap, sec, arti ORDER BY arti.no
+        """
+    elif search_cate=="evi":
+        cypher=f"""
+            MATCH (com:Compliance)-[:VERSION]->(ver:Version)-[:CHAPTER]->(chap:Chapter)-[:SECTION]->(sec:Section)-[:ARTICLE]->(arti:Article)<-[:EVIDENCE]-(evi:Evidence)
+            WHERE {search_cate}.name="{search_content}"
+            RETURN com, ver, chap, sec, arti ORDER BY arti.no
+        """
+
     results = graph.run(cypher)
     for result in results:
      response.append(result)

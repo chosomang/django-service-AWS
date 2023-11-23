@@ -26,33 +26,23 @@
                     {%for c in category%}
                     <tr>
                         <th>분류</th>
-                        <td>{{c.name}}</td>
+                        <td>{{c.cate.name}}</td>
                     </tr>
 
                     <tr>
                         <th>설명</th>
-                        <td>{{c.comment}}</td>
-                    </tr>
-
-                    <tr>
-                        <th>관련 법령</th>
-                        <td>{{c.mapped_1}}</td>
-                    </tr>
-
-                    <tr>
-                        <th>증적 예시</th>
-                        <td> 
-                           [준비중입니다.]
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>매핑 항목</th>
-                        <td> 
-                           [준비중입니다.]
-                        </td>
+                        <td>{{c.cate.comment}}</td>
                     </tr>
                     {% endfor %}
+
+                    <tr>
+                        <th>매핑 항목 요약</th>
+                        <td>
+                            {%for l in law_list%}
+                            {{l.com.name}},
+                            {% endfor %}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -87,6 +77,7 @@
                         <th>세부설명</th>
                         <th>버전</th>
                         <th>파일</th>
+                        <th>작성자</th>
                         <th>작업</th>
                     </tr>
                 </thead>
@@ -97,6 +88,7 @@
                             <td>{{d.name}}</td>
                             <td>{{d.comment}}</td>
                             <td>{{d.version_date}}</td>
+                            <td> - </td>
                             <td> - </td>
                             <td>
                                 <a href="/compliance/evidence_2" class="btn btn-md btn-danger" style="font-size:0.7vw">
@@ -136,11 +128,11 @@
                     {%for l in law_list%}
                         <td>1</td>
                         <td>{{l.com.name}}</td>
-                        <td>{{l.v.date}}</td>
+                        <td>{{l.ver.date}}</td>
                         <td>
-                            {{l.c.no}}. {{l.c.name}} >
-                            {{l.s.no}}. {{l.s.name}} >
-                            {{l.a.no}}. {{l.a.name}}
+                            {{l.chap.no}}. {{l.chap.name}} ><br>
+                            {{l.sec.no}}. {{l.sec.name}} ><br>
+                            {{l.arti.no}}. {{l.arti.name}}
                         </td>
                         <td>
                             <a href="#" class="btn btn-md btn-teiren" style="font-size:0.7vw">

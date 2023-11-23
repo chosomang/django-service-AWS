@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block content %}
-    <!-- Begin Page Content -->
 
+<!-- Begin Page Content -->
     <h3>
     <form method="POST" action="/compliance/evidence_cate/">
         {% csrf_token %}
@@ -31,18 +30,25 @@
             <td colspan='3'>ISMS-P</td>
         </tr>
 
-        {% for a in article_list%}
+        
+        {% for l in law_list %}
             <tr>
-                <td>{{a.no}}</td>
-                <td>{{a.name}}</td>
-                <td><label class="btn btn-md btn-teiren"><input type="checkbox" name="mapped_ismsp" value="{{a.no}}"/></td>
+                <td>{{l.com.name}}</td>
+                <td>{{l.ver.date}}</td>
+                <td>{{l.chap.no}} {{l.chap.name}}</td>
+                <td>{{l.sec.no}} {{l.sec.name}}</td>
+                <td>{{l.arti.no}} {{l.arti.name}}</td>
             </tr>
         {% endfor %}
     </table>
 
 </form>
 
- 
-
 {% endblock %}
 
+
+
+
+function show_eng(){
+    
+} 
