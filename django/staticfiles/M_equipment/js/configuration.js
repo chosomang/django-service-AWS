@@ -13,38 +13,44 @@ function getCookie(name = 'csrftoken') {
     return cookieValue;
 }
 
-$('#delete_modal').on('show.bs.modal', function(event) {
-    var button = $(event.relatedTarget);
-    document.getElementById('cloud_name').value = button.data('cloud');
-    document.getElementById('main_key').value = button.data('main');
-    document.getElementById('sub_key').value = button.data('sub');
-    $('#result').text('Will You Delete Registered Information?');
-});
-
-$('#delete_accept').on('click', function(event) {
-    var cloud = $('#cloud_name').val();
-    var main = $('#main_key').val();
-    var sub = $('#sub_key').val();
+function deleteModal(e){
+    var data = $(e.parentNode).serialize()
     $.ajax({
-        url: 'delete/',
+        url:'delete/modal/',
         headers: {
             'X-CSRFToken': getCookie()
         },
-        data: {
-            cloud: cloud,
-            main: main,
-            sub: sub
-        },
+        data: data,
         type: 'post'
-    }).done(function(data) {
-        $('#result').text(data);
-        if (data == 'Deleted Registered Information') {
-            $('#result').attr('class', 'text-primary');
-            $('#delete_check').remove();
-            document.getElementById('delete_complete').type = 'button';
+    }).done(function(response){
+        $('#delete_form').html(response)
+        $('#delete_modal').modal('show')
+    })
+}
+
+$('#delete_accept').on('click', function() {
+    var data = $('#delete_form').serialize()
+    $.ajax({
+        url: 'delete/action/',
+        headers: {
+            'X-CSRFToken': getCookie()
+        },
+        data: data,
+        type: 'post'
+    }).done(function(response) {
+        if(response.startsWith('error')){
+            alert(response.slice(6))
+            return 0
         }
-    }).fail(function(data) {
-        document.getElementById('success').remove();
+        $('#result').text(response);
+        if (response == 'Deleted Registered Information') {
+            $('#result').addclass('text-teiren');
+            $('#delete_check').remove();
+            $('#delete_complete').attr('type','button');
+        }
+    }).fail(function() {
+        $('#result').addclass('text-danger');
+        $('#result').text('Failed to Delete Information');
     })
 });
 
@@ -52,8 +58,7 @@ $('#delete_complete').on('click', function(event) {
     location.reload();
 });
 
-function container_trigger(e, type, access_key, secret_key, region_name){
-    console.log(access_key, secret_key, region_name)
+function container_trigger(e, type, access_key, region_name, log_type){
     var on_off = 0
     var input = $(e.parentNode).find('input.on_off')[0]
     if (input.value != 1){
@@ -69,7 +74,8 @@ function container_trigger(e, type, access_key, secret_key, region_name){
             access_key: access_key,
             secret_key: secret_key,
             region_name: region_name,
-            isRunning: on_off
+            log_type: log_type,
+            isRunning: on_off,
         },
         type:'post',
         datatype: 'json'
@@ -91,5 +97,21 @@ function container_trigger(e, type, access_key, secret_key, region_name){
         }
     })
 }
+
+$(function(){
+    $("#dataTable").DataTable({
+        destroy: false,
+        // 표시 건수기능 숨기기
+        lengthChange: true,
+        // 검색 기능 숨기기
+        searching: true,
+        // 정렬 기능 숨기기
+        ordering: true,
+        // 정보 표시 숨기기
+        info: true,
+        // 페이징 기능 숨기기
+        paging: true
+    });
+});
 
 $('#integration_side').addClass('active');
