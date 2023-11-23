@@ -131,16 +131,24 @@ def container_trigger(request, equipment):
         request (bool): Return message successfully running or fail
     """
     try:
-        access_key = request.get('access_key')
-        secret_key = request.get('secret_key')
-        region_name = request.get('region_name')
+        data = json.loads(request.body)
+        access_key = data.get('access_key')
+        secret_key = data.get('secret_key')
+        region_name = data.get('region_name')
+        integration_type = data.get('integration_type')
+        log_type = data.get('log_type') # log type (ex: cloudtrail, dns, elb ...)
+        group_name = data.get('group_name')
+        image_name = f'{log_type}-image'
         
-        # isRunning을 통해, 현재 로그 수집기가 동작중인지 확인
-        integration_node = graph.nodes.match("Integration",
-                                    accessKey=access_key,
-                                    secretKey=secret_key,
-                                    regionName=region_name
-                                    ).first()
+        # isRunning을 통해, 현재 log type의 group name을 수집하는 로그 수집기가 동작중인지 확인
+        integration_node = graph.nodes.match("Integration", 
+                                accessKey=access_key, 
+                                secretKey=secret_key, 
+                                regionName=region_name,
+                                integrationType=integration_type,
+                                logType=log_type,
+                                groupName=group_name
+                                ).first()
         is_running = integration_node["isRunning"]
         if is_running:
             result = {
@@ -153,7 +161,7 @@ def container_trigger(request, equipment):
             # docker hub에 main 브랜치의 이미지를 빌드시마다 항상 가져오기.
             # 현재는 고정값으로 넣어둠
             client = DockerHandler()
-            logcollector_image_name = 'aws_logcollector_image'
+            logcollector_image_name = image_name
             environment = {
                 'AWS_ACCESS_KEY_ID': access_key,
                 'AWS_SECRET_ACCESS_KEY': secret_key,
@@ -166,11 +174,11 @@ def container_trigger(request, equipment):
             integration_node['container_id'] = container.id
             graph.push(integration_node)
             
-            result = {
-                'isRunning': 1,
-                'isCreate': 1,
-                'containerId': container.id
-                }
+            result = { 
+                      'isRunning': 1, 
+                      'isCreate': 1, 
+                      'containerId': container.id 
+                      }
             return result
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)

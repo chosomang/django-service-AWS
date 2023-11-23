@@ -106,9 +106,12 @@ def running_trigger(request):
     return render(request, 'testing/trigger.html', {'request_dict': request_dict})
 
 def main_test(request):
-    
-    context = {'test': 'test'}
-
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0] # 'X-Forwarded-For' header can contain multiple IP addresses
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    context = {'test': ip}
     return render(request, 'testing/test.html', context)
 
 def design_test(request):
