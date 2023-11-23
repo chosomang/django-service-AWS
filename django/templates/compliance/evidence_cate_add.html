@@ -3,52 +3,47 @@
 {% block content %}
 
 <!-- Begin Page Content -->
-    <h3>
-    <form method="POST" action="/compliance/evidence_cate/">
-        {% csrf_token %}
-        
-        <input class="btn btn-md btn-teiren" type="submit" vaule="제출"/><br><br>
 
-        분류:
-        <input name="name" type="text"><br><br>
+    분류: <input name="name" type="text"><br><br>
+    설명: <input name="comment" type="text"><br><br>
+    매핑 리스트
+    <button type="button" class="btn btn-md btn-teiren" onclick="add_cate()">저장</button>
 
-        설명:
-        <input name="comment" type="text"><br><br>
+<script>
+    function add_cate(){
+        var name=document.querySelector('input[name="name"]');
+        var comment=document.querySelector('input[name="comment"]');
+        console.log(name.value);
+        console.log(comment.value);
+    
 
-        매핑:
-        <select id="mapped_1" name="mapped_1" class="btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5;">
-            <option value="isms-p">ISMS-P</option>
-            <option value="GDRR">GDRR</option>
-            <option value="CSAP">CSAP</option>
-            <option value="iso27001">iso27001</option>
-        </select><br><br>
-
-
-    매핑 법령 세부 항목<br>
-    <table class="table table-bordered">
-        <tr>
-            <td colspan='3'>ISMS-P</td>
-        </tr>
-
-        
-        {% for l in law_list %}
-            <tr>
-                <td>{{l.com.name}}</td>
-                <td>{{l.ver.date}}</td>
-                <td>{{l.chap.no}} {{l.chap.name}}</td>
-                <td>{{l.sec.no}} {{l.sec.name}}</td>
-                <td>{{l.arti.no}} {{l.arti.name}}</td>
-            </tr>
-        {% endfor %}
-    </table>
-
-</form>
+        $.ajax({
+            url: '/compliance/evidence_cate_add/',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: {
+                'name': name.value,
+                'comment': comment.value
+            },
+            success: function(response){
+                if(response.startsWith('\n<meta')){
+                    location.reload()
+                }
+                if(response === 'success'){
+                    alert('Saved Successfully')
+                    window.location.href= '/compliance/evidence_cate/'
+                } else {
+                    alert('Failed To Save. Please Try Again')
+                }
+            },
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); 
+            }
+        })
+    }
+</script>
 
 {% endblock %}
 
-
-
-
-function show_eng(){
-    
-} 

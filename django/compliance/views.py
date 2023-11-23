@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .src import evidence, lists
-from django.http import HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 
 
 # Compliance
@@ -21,10 +21,12 @@ def lists_view_2(request):
 
 # Compliance evidence - 성연
 def evidence_cate(request):
+    '''
     if request.method=="POST":
         add_cate=dict(request.POST.items())
         evidence.add_cate(add_cate)
         return HttpResponseRedirect('/compliance/evidence_cate')
+    '''
     context={
         'category_list': evidence.get_category()
     }
@@ -33,12 +35,15 @@ def evidence_cate(request):
 
 # Compliance evidence_cate_add - 성연
 def evidence_cate_add(request):
+    if request.method=="POST":
+        add_cate=dict(request.POST.items())
+        return HttpResponse(evidence.add_cate(add_cate))
+        
+    
     law_list=evidence.get_law_list('com','isms_p')
-
     context={
         'law_list': law_list,
     }
-
     return render(request, f"compliance/evidence_cate_add.html",context)
 
 # Compliance evidence_data - 성연

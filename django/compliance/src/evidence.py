@@ -27,19 +27,26 @@ def test():
 
 def add_cate(dict):
     name=dict['name']
+    if name == '':
+        return 'fail'
     comment=dict['comment']
-    mapped_1=dict['mapped_1']
 
     cypher= f"""
         MATCH (e:Compliance:Evidence{{name:'evidence'}})
         MERGE (e)-[:CATEGORY]->
             (c:Category:Compliance:Evidence {{
             name:'{name}',
-            comment:'{comment}',
-            mapped_1:'{mapped_1}'
+            comment:'{comment}'
         }})
+        RETURN COUNT(c)
     """
-    graph.evaluate(cypher)
+    try:
+        if 1 == graph.evaluate(cypher):
+            return 'success'
+        else:
+            raise Exception
+    except Exception:
+        return 'fail'
 
 def add_data(dict):
     cate_name=dict['cate_name']
