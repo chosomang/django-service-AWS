@@ -4,6 +4,7 @@
 {% block content %}
 
 <!-- Begin Page Content -->
+
 <div class="locationbar ml-2">
     <span>Compliance &nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;증적관리&nbsp;&nbsp;>&nbsp;&nbsp;</span>
     <span class="current">{{title}} <span>
@@ -90,7 +91,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {%for d in data%}
+                    {%for d in data_list%}
                         <tr>
                             <td>1</td>
                             <td>{{d.name}}</td>
@@ -125,20 +126,28 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>분류</th>
-                        <th>항목번호</th>
-                        <th>항목</th>
+                        <th>인증/법령</th>
                         <th>버전</th>
+                        <th>항목</th>
                         <th>바로가기</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <td>1</td>
-                    <td>분류</td>
-                    <td>1.1.1</td>
-                    <td>내용</td>
-                    <td>버전</td>
-                    <td>버튼</td>
+                    {%for l in law_list%}
+                        <td>1</td>
+                        <td>{{l.com.name}}</td>
+                        <td>{{l.v.date}}</td>
+                        <td>
+                            {{l.c.no}}. {{l.c.name}} >
+                            {{l.s.no}}. {{l.s.name}} >
+                            {{l.a.no}}. {{l.a.name}}
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-md btn-teiren" style="font-size:0.7vw">
+                                바로가기
+                            </a>
+                        </td>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

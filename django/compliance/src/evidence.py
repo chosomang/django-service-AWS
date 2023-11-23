@@ -122,6 +122,24 @@ def get_article_list():
 
     return article_list
 
+def get_law_list(evidence_cate=None):
+    '''
+        MATCH (l:Law:Compliance)-[:CHAPTER]->(c:Chapter:Law:Compliance)-[:SECTION]->(s:Section)-[:MAPPED]->(a:Article:Compliance:Isms_p)<-[:EVIDENCE]-(e:Evidence:Category)
+        WHERE e.name='{evidence_cate}'
+        RETURN l AS law, c AS chapter, a AS article, s AS section
+    '''
+    response=[]
+    
+    cypher=f"""
+        MATCH (com:Compliance)-[:VERSION]->(v:Version)-[:CHAPTER]->(c:Chapter)-[:SECTION]->(s:Section)-[:ARTICLE]->(a:Article)<-[:EVIDENCE]-(e:Evidence)
+        WHERE e.name="{evidence_cate}"
+        RETURN com, v, c, s, a, e
+    """
+    results = graph.run(cypher)
+    for result in results:
+     response.append(result)
+
+    return response
 
 
 

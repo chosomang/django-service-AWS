@@ -47,17 +47,19 @@ def evidence_cate_add(request):
     return render(request, f"compliance/evidence_cate_add.html",context)
 
 # Compliance evidence_data - 성연
-def evidence_data(request, at):
+def evidence_data(request, at=None):
     if request.method=="POST":
         title=request.POST['title']
 
         category=evidence.get_category(title)
-        data=evidence.get_data(title)
+        data_list=evidence.get_data(title)
+        law_list=evidence.get_law_list(title)
         
         context={
             'title':title,
             'category': category,
-            'data': data,
+            'data_list': data_list,
+            'law_list':law_list
         }
         return render(request, f"compliance/evidence_data.html", context)
     else:
