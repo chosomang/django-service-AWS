@@ -1,8 +1,8 @@
-from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse
 from py2neo import Graph
 from django.conf import settings
 import json
+from .aws import aws_check, aws_insert
 
 # AWS
 host = settings.NEO4J['HOST']
@@ -16,115 +16,52 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 def list_integration():
     cypher = f"""
     MATCH (i:Integration)
-    WITH i.integrationType as type, {{ACCESS_KEY: i.accessKey, SECRET_KEY: i.secretKey, REGION_NAME: i.regionName, isRunning: i.isRunning}} as keys
-    WITH apoc.map.fromLists([type], [keys]) as Integration
-    RETURN Integration
+    RETURN
+        i.integrationType as integrationType,
+        i.accessKey as accessKey,
+        i.secretKey as secretKey,
+        i.regionName as regionName,
+        i.logType as logType,
+        i.groupName as groupName,
+        i.isRunning as isRunning
     """
     results = graph.run(cypher)
-    data = {}
-    for num, result in enumerate (results, start=1):
-        data[num] = result['Integration']
-    return {'list': data}
+    data = []
+    for result in results:
+        data.append(dict(result.items()))
+    return {'integrations': data}
 
 ## Integration delete
 def delete_integration(request):
-    cloud = request['cloud']
-    main = request['main']
-    sub = request['sub']
+    if request['secret_key'] == '':
+        return 'error Please Enter Secret Key'
     cypher = f"""
-    MATCH (i:Integration {{integrationType:'{cloud}', accessKey:'{main}', secretKey:'{sub}'}})
+    MATCH (i:Integration {{
+            integrationType:'{request['integration_type']}',
+            accessKey:'{request['access_key']}',
+            secretKey:'{request['secret_key']}',
+            regionName: '{request['region_name']}',
+            groupName: '{request['group_name']}',
+            logType: '{request['log_type']}'
+        }})
     DETACH DELETE i
     RETURN COUNT(i)
     """
     if  graph.evaluate(cypher) > 0:
         return 'Deleted Registered Information'
     else:
-        return 'Failed to Delete Information'
-## AWS CLOUD
-def integration_check(request):
-    import boto3
-    if request.method == 'POST':
-        data = {}
-        access_key = request.POST['access_key'].encode('utf-8').decode('iso-8859-1')  # 한글 입력 시 에러 발생 방지
-        if access_key == '':
-            data['class'] = 'btn btn-danger'
-            data['value'] = 'Insert ACCESS KEY'
-            return data
-        secret_key = request.POST['secret_key'].encode('utf-8').decode('iso-8859-1')  # 한글 입력 시 에러 발생 방지
-        if secret_key == '':
-            data['class'] = 'btn btn-danger'
-            data['value'] = 'Insert SECRET KEY'
-            return data
-        region_name = request.POST['region_name'].encode('utf-8').decode('iso-8859-1')
-        bucket_name = request.POST['bucket_name'].encode('utf-8').decode('iso-8859-1')
-        cypher = f"""
-        MATCH (i:Integration)
-        WHERE i.integrationType = 'Aws'
-            AND i.accessKey = '{access_key}'
-            AND i.secretKey = '{secret_key}'
-        RETURN count(i)
-        """
-        if graph.evaluate(cypher) > 0 :
-            data['class'] = 'btn btn-warning'
-            data['value'] = 'Already Registered Information'
-        else:
-            session = boto3.Session(
-                aws_access_key_id = access_key,
-                aws_secret_access_key = secret_key
-            )
-            try:
-                s3_client = session.client('s3')
-                s3_client.list_buckets()
-                data['class'] = 'btn btn-success'
-                data['value'] = ' ✓ Authenticated!'
-                data['modal'] = {}
-                data['modal']['access_key'] = access_key
-                data['modal']['secret_key'] = secret_key
-                data['modal']['region_name'] = region_name
-                data['modal']['bucket_name'] = bucket_name
-            except Exception:
-                data['class'] = 'btn btn-danger'
-                data['value'] = 'Failed To Authenticate (Try Again)'
-            finally:
-                return data
-        return data
-    data = {}
-    data['class'] = 'btn btn-danger'
-    data['value'] = 'Failed To Authenticate (Try Again)'
-    return data
+        return 'error Failed to Delete Information. Please Check Secret Key'
+        
+def integration_check(request, equipment, logType):
+    functionName = globals()[f'{equipment.lower()}_check']
+    return functionName(request, logType)
 
-def integration_insert(request):
-    if request.method == 'POST':
-        access_key = request.POST['modal_access_key'].encode('utf-8').decode('iso-8859-1')
-        secret_key = request.POST['modal_secret_key'].encode('utf-8').decode('iso-8859-1')
-        region_name = request.POST['modal_region_name'].encode('utf-8').decode('iso-8859-1')
-        bucket_name = request.POST['modal_bucket_name'].encode('utf-8').decode('iso-8859-1')
-        cypher = f"""
-        CREATE (i:Integration 
-            {{
-                integrationType:'Aws',
-                accessKey:'{access_key}', 
-                secretKey:'{secret_key}',
-                regionName: '{region_name}',
-                bucketName: '{bucket_name}',
-                isRunning: 0,
-                container_id: 'None'
-            }})
-        RETURN COUNT(i)
-        """
-        try:
-            if graph.evaluate(cypher) == 1:
-                data = "<span class='text-primary'>Successfully Registered </span>"
-            else:
-                raise Exception
-        except Exception:
-            data = "Failed To Register"
-        finally:
-            return data
-
-from common.dockerHandler.handler import DockerHandler
+def integration_insert(request, equipment):
+    functionName = globals()[f'{equipment.lower()}_insert']
+    return functionName(request)
 
 def container_trigger(request, equipment):
+    from common.dockerHandler.handler import DockerHandler
     """Running trigger for python script
 
     Args:
@@ -227,71 +164,8 @@ def container_trigger(request, equipment):
 #     data['value'] = '인증 실패 (재시도)'
 #     return JsonResponse(data)
 
-# def insert_NCP(request):
-#     if request.method == 'POST':
-#         access_key = request.POST['modal_access_key'].encode('utf-8').decode('iso-8859-1')
-#         secret_key = request.POST['modal_secret_key'].encode('utf-8').decode('iso-8859-1')
-#         folder_name = request.POST['modal_folder_name'].encode('utf-8').decode('iso-8859-1')
-#         bucket_name = request.POST['modal_bucket_name'].encode('utf-8').decode('iso-8859-1')
-#         global collection
-#         doc = {"NCP_API": {
-#             "ACCESS_KEY": access_key,
-#             "SECRET_KEY": secret_key,
-#             "FOLDER_NAME": folder_name,
-#             "BUCKET_NAME": bucket_name
-#         }}
-#         try:
-#             collection.insert_one(doc)
-#             data = "<span class='text-primary'>로그 수집/통합 설정 완료 </span>"
-#         except:
-#             data = "등록 실패"
-#         finally:
-#             return HttpResponse(data)
 
-# ## NHN CLOUD
-# def integration_NHN(request):
-#     if request.method == 'POST':
-#         data = {}
-#         access_key = request.POST['access_key'].encode('utf-8').decode('iso-8859-1')
-#         if access_key == '':
-#             data['class'] = 'btn btn-danger'
-#             data['value'] = 'NHN Cloud 회원 정보를 입력해주세요'
-#             return JsonResponse(data)
-#         secret_key = request.POST['secret_key'].encode('utf-8').decode('iso-8859-1')
-#         if secret_key == '':
-#             data['class'] = 'btn btn-danger'
-#             data['value'] = 'APP KEY를 입력해주세요'
-#             return JsonResponse(data)
-#         doc = {
-#             'NHN_API.ACCESS_KEY': access_key,
-#             'NHN_API.SECRET_KEY': secret_key
-#         }
-#         global collection
-#         result = collection.find_one(doc)
-#         if result:
-#             data['class'] = 'btn btn-warning'
-#             data['value'] = '이미 등록된 정보입니다.'
-#         else:
-#             return False
-#     return False
 
-# def insert_NHN(request):
-#     if request.method == 'POST':
-#         access_key = request.POST['modal_access_key'].encode('utf-8').decode('iso-8859-1')
-#         secret_key = request.POST['modal_secret_key'].encode('utf-8').decode('iso-8859-1')
-#         global collection
-#         doc = {"NHN_API": {
-#             "ACCESS_KEY": access_key,
-#             "SECRET_KEY": secret_key
-#         }}
-#         try:
-#             collection.insert_one(doc)
-#             data = "<span class='text-primary'>로그 수집/통합 설정 완료 </span>"
-#         except:
-#             data = "등록 실패"
-#         finally:
-#             return HttpResponse(data)
-#     return False
 
 # ## Azure Cloud
 # def integration_Azure(request):
@@ -362,24 +236,3 @@ def container_trigger(request, equipment):
 #     data['class'] = 'btn btn-danger'
 #     data['value'] = '인증 실패 (재시도)'
 #     return JsonResponse(data)
-
-# def insert_Azure(request):
-#     if request.method == 'POST':
-#         access_key = request.POST['modal_access_key'].encode('utf-8').decode('iso-8859-1')
-#         tenant_id = request.POST['modal_tenant_id'].encode('utf-8').decode('iso-8859-1')
-#         client_id = request.POST['modal_client_id'].encode('utf-8').decode('iso-8859-1')
-#         secret_key = request.POST['modal_secret_key'].encode('utf-8').decode('iso-8859-1')
-#         global collection
-#         doc = {'Azure_API': {
-#             'ACCESS_KEY': access_key,
-#             'SECRET_KEY': secret_key,
-#             'TENANT_ID': tenant_id,
-#             'CLIENT_ID': client_id
-#         }}
-#         try:
-#             collection.insert_one(doc)
-#             data = "<span class='text-primary'>로그 수집/통합 설정 완료 </span>"
-#         except:
-#             data = "등록 실패"
-#         finally:
-#             return HttpResponse(data)

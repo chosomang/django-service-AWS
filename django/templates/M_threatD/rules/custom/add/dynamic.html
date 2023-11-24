@@ -152,7 +152,9 @@
         </div>
         <button type="button" class="btn btn-block btn-teiren mt-3" onclick="addNewDynamicRule()">Add Dynamic Rule</button>
     </div>
-    <script> var cloud = '{{cloud}}' </script>
+    <script>
+        var logType = '{{log_type}}'
+    </script>
     <script src="{% static '/M_threatD/js/addRule/dynamic.js' %}"></script>
 </div>
 

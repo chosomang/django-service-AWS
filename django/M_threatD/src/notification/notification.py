@@ -28,7 +28,7 @@ def get_alert_logs():
     WHERE
         d.alert = 1 AND d.alert IS NOT NULL
     RETURN
-        HEAD([label IN labels(r) WHERE label <> 'Rule']) AS cloud,
+        HEAD([label IN labels(r) WHERE label <> 'Rule']) AS logType,
         l.eventTime as eventTime,
         l.eventTime AS eventTime_format,
         r.ruleComment as detectedAction,
@@ -39,7 +39,11 @@ def get_alert_logs():
             WHEN r.level = 3 THEN ['HIGH', 'caution']
             ELSE ['CRITICAL', 'danger']
         END AS level,
-        l.sourceIPAddress as sourceIp,
+        CASE
+            WHEN l.sourceIPAddress IS NOT NULL THEN l.sourceIPAddress
+            WHEN l.sourceIp IS NOT NULL THEN l.sourceIp
+            ELSE '-'
+        END AS sourceIp,
         r.ruleName as detected_rule,
         r.ruleClass as rule_class,
         r.ruleName+'#'+id(d) AS rule_name,
@@ -48,12 +52,12 @@ def get_alert_logs():
     '''
     results = graph.run(cypher)
     data = check_alert_logs()
-    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'id', 'rule_class']
+    filter = ['logType', 'detected_rule', 'eventTime', 'rule_name', 'id', 'rule_class']
     for result in results:
         detail = dict(result.items())
         form = {}
         for key in filter:
-            if key != 'cloud' and key != 'rule_name':
+            if key != 'logType' and key != 'rule_name':
                 value = detail.pop(key)
             else:
                 value = detail[key]
@@ -70,7 +74,7 @@ def check_alert_logs():
     WHERE
         d.alert <> 1
     RETURN
-    HEAD([label IN labels(r) WHERE label <> 'Rule']) AS cloud,
+    HEAD([label IN labels(r) WHERE label <> 'Rule']) AS logType,
         l.eventTime as eventTime,
         l.eventTime AS eventTime_format,
         r.ruleComment as detectedAction,
@@ -81,7 +85,11 @@ def check_alert_logs():
             WHEN r.level = 3 THEN ['HIGH', 'caution']
             ELSE ['CRITICAL', 'danger']
         END AS level,
-        l.sourceIPAddress as sourceIp,
+        CASE
+            WHEN l.sourceIPAddress IS NOT NULL THEN l.sourceIPAddress
+            WHEN l.sourceIp IS NOT NULL THEN l.sourceIp
+            ELSE '-'
+        END AS sourceIp,
         r.ruleName as detected_rule,
         r.ruleClass as rule_class,
         r.ruleName+'#'+id(d) AS rule_name,
@@ -91,12 +99,12 @@ def check_alert_logs():
     """
     results = graph.run(cypher)
     data = []
-    filter = ['cloud', 'detected_rule', 'eventTime', 'rule_name', 'alert', 'id', 'rule_class']
+    filter = ['logType', 'detected_rule', 'eventTime', 'rule_name', 'alert', 'id', 'rule_class']
     for result in results:
         detail = dict(result.items())
         form = {}
         for key in filter:
-            if key != 'cloud' and key != 'rule_name' and key != 'alert':
+            if key != 'logType' and key != 'rule_name' and key != 'alert':
                 value = detail.pop(key)
             else:
                 value = detail[key]
@@ -167,19 +175,18 @@ def send_alert_mail(rule, log, rel_id):
 def alert_off(request):
     if 'alert' in request:
         detected_rule = request['detected_rule']
-        cloud = request['cloud']
+        logType = request['logType']
         eventTime = request['eventTime']
         id = request['id']
-        if cloud == 'Aws':
-            cypher = f"""
-            MATCH (r:Rule:{cloud} {{ruleName:'{detected_rule}'}})<-[d:DETECTED|FLOW_DETECTED]-(l:Log:{cloud} {{eventTime:'{eventTime}'}})
-            WHERE
-                d.alert IS NOT NULL AND
-                d.alert = 0 AND
-                ID(d) = {id}
-            SET d.alert = 1
-            RETURN count(d.alert)
-            """
+        cypher = f"""
+        MATCH (r:Rule:{logType} {{ruleName:'{detected_rule}'}})<-[d:DETECTED|FLOW_DETECTED]-(l:Log:{logType} {{eventTime:'{eventTime}'}})
+        WHERE
+            d.alert IS NOT NULL AND
+            d.alert = 0 AND
+            ID(d) = {id}
+        SET d.alert = 1
+        RETURN count(d.alert)
+        """
         graph.evaluate(cypher)
     return request
 

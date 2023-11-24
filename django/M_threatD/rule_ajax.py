@@ -3,17 +3,16 @@ from django.http import JsonResponse
 from .src.rule import add, default, delete, edit
 # Risk Management
 ## Rule Details Modal
-def rule_details(request, ruleType):
+def rule_details(request, resourceType, logType, ruleType):
     if request.method == 'POST':
-        if request.POST['cloud'] == 'Aws':
-            context = {ruleType: default.get_rule_details(dict(request.POST.items()), ruleType)}
+        context = {ruleType: default.get_rule_details(dict(request.POST.items()), ruleType)}
         return render(request, f"M_threatD/rules/{ruleType}/details.html", context)
 
 # #############################################
 
 ### Rule Edit
 ## Rule Edit Modal
-def rule_edit_modal(request, cloud):
+def rule_edit_modal(request, resourceType, logType):
     if request.method == 'POST':
         context = dict(request.POST.items())
         context.update(edit.get_edit_rule_page(context))
@@ -32,15 +31,14 @@ def edit_rule(request):
 ## Rule Delete Action
 def delete_rule(request):
     if request.method == 'POST':
-        if request.POST['cloud'] == 'Aws':
-            context = delete.delete_rule(dict(request.POST.items()))
+        context = delete.delete_rule(dict(request.POST.items()))
         return HttpResponse(context)
 
 # #############################################
 
 ### Rule Add
 ## Rule Add Modal
-def rule_add_modal(request, cloud):
+def rule_add_modal(request, resourceType, logType):
     if request.method == 'POST':
         context = dict(request.POST.items())
         return render(request, 'M_threatD/rules/custom/add.html', context)
@@ -68,17 +66,15 @@ def add_rule_section(request, section):
 ## Rule Add Action
 def add_rule(request):
     if request.method == 'POST':
-        if request.POST['cloud'] == 'Aws':
-            context = add.add_rule(dict(request.POST.items()))
+        context = add.add_rule(dict(request.POST.items()))
         return HttpResponse(context)
 
 # #############################################
 
 ## Rule On_off
-def on_off(request, cloud):
+def on_off(request, resourceType, logType):
     if request.method == 'POST':
-        if request.POST['cloud'] == 'Aws':
-            context = default.rule_on_off(dict(request.POST.items()))
+        context = default.rule_on_off(dict(request.POST.items()))
         return HttpResponse(context)
 
 # #############################################

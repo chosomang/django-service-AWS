@@ -15,7 +15,7 @@ function getCookie(name = 'csrftoken') {
 
 
 function addNewDynamicRule(){
-    $('#count').val($('.rule').length-1)
+    $('#count').val($('#dynamic_rules .rule').length)
     var data = $('#new_rules').serialize()
     var modal = $('#rule-modal .card-body.shadow')[0]
     $(modal).prepend(`
@@ -34,10 +34,9 @@ function addNewDynamicRule(){
         $('#temp').remove()
         $('#loader').remove()
         alert(response)
-        if(response == '정책 추가 완료'){
+        if(response == 'Added Rule Successfully'){
             window.location.reload()
         }
-        console.log(response)
     })
 }
 
@@ -52,7 +51,7 @@ function addDynamicSlot(){
         type: 'post',
         data:{
             count: count,
-            cloud: cloud
+            log_type: logType
         }
     }).done(function(data){
         $('#dynamic_rules').append(data)
@@ -77,7 +76,7 @@ function addDynamicProperty(flow_num){
             'X-CSRFToken': getCookie()
         },
         data:{
-            cloud: cloud,
+            log_type: logType,
             flow_num: flow_num,
             prop_num: prop_num
         },
@@ -107,7 +106,7 @@ function dynamicFlow(){
             'X-CSRFToken': getCookie()
         },
         data: {
-            cloud: cloud,
+            log_type: logType,
             rules: $('#dynamic_rules input').serialize(),
             rule_count: $('#dynamic_rules .rule').length,
             flow_count: 1
@@ -142,7 +141,7 @@ function addFlow(){
             'X-CSRFToken': getCookie()
         },
         data: {
-            cloud: cloud,
+            log_type: logType,
             rules: $('#dynamic_rules input').serialize(),
             rule_count: $('#dynamic_rules .rule').length,
             flow_count: count
@@ -197,8 +196,7 @@ function resetPropertyNumbers(num){
 }
 
 function resetRuleNumbers(num){
-    var rule = $('.rule')
-    rule.each(function(i){
+    $('.rule').each(function(i){
         if (i == 0){ return true }
         this.id = `${this.id.slice(0,-1)}${i}`
         $(this).find('.row h5').text(`Flow Detection ${i}`)
@@ -206,13 +204,17 @@ function resetRuleNumbers(num){
         input.each(function(){
             this.name = `${this.name.slice(0,-3)}${i}_1`
         })
+        $(this).find('button.mr-auto').each(function(){
+            if($(this).text() == '+'){
+                $(this).attr('onclick', `addDynamicProperty(${i})`)
+            }
+        })
         resetPropertyNumbers(i)
     })
 }
 
 function resetFlowNumbers(num){
-    var flow = $('.flow')
-    flow.each(function(i){
+    $('.flow').each(function(i){
         this.id = `${this.id.slice(0,-1)}${i+1}`
         $(this).find('.row h6').text(`Dynamic Detection ${i+1}`)
         var select = $(this).find('select')

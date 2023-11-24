@@ -25,14 +25,18 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 def get_user_visuals():
     cypher = f"""
     MATCH p = (r:Rule)<-[d:DETECTED|FLOW_DETECTED]-(l:Log)<-[:ACTED|DATE*]-(a:Account)
-    WITH DISTINCT(a.name) as account, count(d) as count, COLLECT(r)[-1] as rule, COLLECT(l)[-1] as log
+    WITH DISTINCT(a), count(d) as count, COLLECT(r)[-1] as rule, COLLECT(l)[-1] as log
     RETURN
-        HEAD([label IN LABELS(rule) WHERE label <> 'Rule']) AS cloud,
+        HEAD([label IN LABELS(rule) WHERE label <> 'Rule']) AS logType,
         CASE
-            WHEN account CONTAINS 'cgid' THEN SPLIT(account, '_')[0]
-            ELSE account
+            WHEN a.userName IS NOT NULL THEN a.userName
+            WHEN a.name CONTAINS 'cgid' THEN SPLIT(a.name, '_')[0]
+            ELSE a.name
         END AS account,
-        account AS account_real,
+        CASE
+            WHEN a.name CONTAINS 'cgid' THEN a.name
+            ELSE '-'
+        END AS account_real,
         count AS total,
         rule.ruleName AS recent_detection,
         log.eventName AS recent_action,
@@ -57,9 +61,10 @@ def user_graph(request):
 
 def get_user_static_data(request):
     account = request['account']
-    cloud = request['cloud']
+    logType = request['logType']
     cypher = f"""
-    MATCH (account:Account {{name:'{account}'}})-[:DATE|ACTED*]->(log:Log)-[detected:DETECTED]->(rule:Rule:{cloud})
+    MATCH (account:Account)-[:DATE|ACTED*]->(log:Log)-[detected:DETECTED]->(rule:Rule:{logType})
+    WHERE account.name = '{account}' or account.userName = '{account}'
     WITH rule, account, detected, log
     MATCH (log)<-[:ACTED*]-(date:Date)<-[date_rel:DATE]-(account)
     WITH log,date,
@@ -114,16 +119,17 @@ def get_user_static_data(request):
     for result in results:
         data = dict(result)
         for node in data['nodes']:
-            response.append(get_node_json(node, cloud))
+            response.append(get_node_json(node, logType))
         for relation in data['relations']:
             response.append(get_relation_json(relation))
     return response
 
 def get_user_dynamic_data(request):
     account = request['account']
-    cloud = request['cloud']
+    logType = request['logType']
     cypher = f"""
-    MATCH (account:Account {{name:'{account}'}})-[:DATE|ACTED*]->(log:Log)-[detected:FLOW_DETECTED]->(rule:Rule:{cloud})
+    MATCH (account:Account)-[:DATE|ACTED*]->(log:Log)-[detected:FLOW_DETECTED]->(rule:Rule:{logType})
+    WHERE account.name = '{account}' OR account.userName = '{account}'
     WITH [rule, account] AS nodes, detected, log, account
     OPTIONAL MATCH (log)-[assumed:ASSUMED]->(role:Role)
     WITH log, detected.path AS path, account,
@@ -138,7 +144,7 @@ def get_user_dynamic_data(request):
     OPTIONAL MATCH (check:Flow)<-[check_rel:CHECK {{path:path}}]-(log)
     WITH log, path, nodes, relations, check, check_rel, account
     OPTIONAL MATCH (log)<-[flow_rels:FLOW* {{path: path}}]-(flow)
-    WHERE flow.userIdentity_arn = log.userIdentity_arn
+    WHERE flow.userIdentity_arn = log.userIdentity_arn OR log.userName = log.userName
     WITH nodes, log, relations, flow, flow_rels[-1] AS flow_rel, check, check_rel, path, account
     OPTIONAL MATCH (flow)-[check_rels:CHECK {{path: path}}]->(checks:Flow)
     WITH nodes, relations, check, check_rel, flow_rel, account, log,
@@ -182,7 +188,7 @@ def get_user_dynamic_data(request):
         {{log:log, mid_c:mid_c, date:date}}
     ) YIELD value
     WITH nodes + value.nodes AS nodes, relations + value.relations AS relations
-     UNWIND nodes AS node
+    UNWIND nodes AS node
     UNWIND relations AS relation
     WITH COLLECT(DISTINCT(node)) AS nodes, COLLECT(DISTINCT(relation)) AS relations
     UNWIND relations AS relation
@@ -201,23 +207,23 @@ def get_user_dynamic_data(request):
     for result in results:
         data = dict(result)
         for node in data['nodes']:
-            response.append(get_node_json(node, cloud))
+            response.append(get_node_json(node, logType))
         for relation in data['relations']:
             response.append(get_relation_json(relation))
     return response
 
 def get_user_table(request):
     account = request['account']
-    global graph
     cypher = f"""
-    MATCH p=(r:Rule)<-[d:DETECTED|FLOW_DETECTED]-(l:Log)<-[:ACTED|DATE*]-(a:Account {{name:'{account}'}})
+    MATCH p=(r:Rule)<-[d:DETECTED|FLOW_DETECTED]-(l:Log)<-[:ACTED|DATE*]-(a:Account)
+    WHERE a.name = '{account}' or a.userName = '{account}'
     RETURN
         DISTINCT(ID(d)) AS id,
         r.ruleName AS detected_rule,
         l.eventTime AS eventTime,
         apoc.date.format(apoc.date.parse(l.eventTime, "ms", "yyyy-MM-dd'T'HH:mm:ssX"), "ms", "yyyy-MM-dd HH:mm:ss") AS detected_time,
         r.ruleClass AS rule_class,
-        [label IN LABELS(r) WHERE label <> 'Rule'][0] AS cloud,
+        [label IN LABELS(r) WHERE label <> 'Rule'][0] AS logType,
         CASE
             WHEN r.level = 1 THEN ['LOW', 'success']
             WHEN r.level = 2 THEN ['MID', 'warning']

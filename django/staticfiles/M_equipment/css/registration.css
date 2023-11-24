@@ -47,13 +47,20 @@
     max-width: 250px;
     height: 70px;
     padding: 10px 0;
-    margin-bottom: 10px;
 }
 
 .registration .regi-body .regi-item.disabled img{
     filter: grayscale(80%); opacity: 0.5;
 }
 
+.registration .regi-body .regi-item .span{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 75%;
+    text-align: center;
+}
 /* Searchbar */
 .searchcard {
     position: relative;

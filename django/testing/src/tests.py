@@ -7,6 +7,10 @@ from py2neo import Graph
 from django.template.loader import render_to_string
 from M_threatD.src.notification.detection import get_node_json, get_relation_json
 import requests
+import os
+
+from django.contrib.auth.signals import user_logged_out, user_logged_in
+from django.dispatch import receiver
 # LOCAL
 # graph = Graph("bolt://127.0.0.1:7687", auth=('neo4j', 'teiren001'))
 
@@ -23,10 +27,20 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 STATIC_DIR = BASE_DIR / 'staticfiles'
 
 # Create your tests here.
+def main_test(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0] # 'X-Forwarded-For' header can contain multiple IP addresses
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    context = {'test': str(type(ip))}
+    return render(request, 'testing/test.html', context)
+
+
 
 from testing.dockerHandler.handler import DockerHandler
 def trigger(request):
@@ -116,6 +130,7 @@ def running_trigger(request):
 
     return render(request, 'testing/trigger.html', {'request_dict': request_dict})
 
+<<<<<<< HEAD
 def main_test(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
@@ -125,6 +140,8 @@ def main_test(request):
     context = {'test': ip}
     return render(request, 'testing/test.html', context)
 
+=======
+>>>>>>> feature/integration-002
 def design_test(request):
     return render(request, 'testing/newDesign/designTest.html')
 

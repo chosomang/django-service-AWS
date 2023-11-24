@@ -21,7 +21,7 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
-def get_log_page(request, cloud):
+def get_log_page(request, logType):
     #페이징
     try:
         if 'page' in request:
@@ -34,9 +34,9 @@ def get_log_page(request, cloud):
         now_page = 1
     # return {'error': str(request)}
     filter_check = 0
-    if cloud == 'filter':
+    if logType == 'filter':
         filter_check = 1
-        cloud = request.pop('cloud')
+        logType = request.pop('logType').split(' ')[0]
     # return {'error': str(request)}
     table_filter = {}
     for key in request:
@@ -125,7 +125,7 @@ def get_log_page(request, cloud):
     #페이지당 보여줄 로그 개수
     limit = 10
     cypher = f"""
-    MATCH (n:Log:{cloud.capitalize()})
+    MATCH (n:Log:{logType.capitalize()})
     {where_cypher if len(where_cypher) > 6 else ''}
     WITH n
     ORDER BY n.eventTime DESC
@@ -139,13 +139,18 @@ def get_log_page(request, cloud):
         n.userIdentity_arn AS userarn,
         n.userIdentity_type AS userType,
         CASE
+            WHEN n.userName IS NOT NULL THEN n.userName
             WHEN n.userIdentity_type <> 'IAMUser' THEN n.userIdentity_type
             ELSE n.userIdentity_userName
         END AS userName,
         n.awsRegion AS awsRegion,
         split(n.responseElements_assumedRoleUser_arn, '/')[1] AS role,
-        n.sourceIPAddress AS sourceIP,
-        [label IN LABELS(n) WHERE NOT label IN ['Log', 'Iam', 'Ec2'] AND size(label) = 3][0] AS cloud
+        CASE
+            WHEN n.sourceIPAddress IS NOT NULL THEN n.sourceIPAddress
+            WHEN n.sourceIp IS NOT NULL THEN n.sourceIp
+            ELSE '-'
+        END AS sourceIP,
+        [label IN LABELS(n) WHERE NOT label IN ['Log', 'Iam', 'Ec2'] AND size(label) = {len(logType)}][0] AS cloud
     """
     log_list = []
     try:
@@ -163,7 +168,7 @@ def get_log_page(request, cloud):
     page_obj['test'] = cypher
     #총 로그 개수
     total_log = graph.evaluate(f"""
-        MATCH (n:Log:{cloud.capitalize()})
+        MATCH (n:Log:{logType.capitalize()})
         {where_cypher if len(where_cypher) > 6 else ''}
         RETURN COUNT(n)
     """)
@@ -192,7 +197,7 @@ def get_log_page(request, cloud):
     
     #상품 검색
     eventSource_list= graph.evaluate(f"""
-    MATCH (n:Log:{cloud.capitalize()})
+    MATCH (n:Log:{logType.capitalize()})
     WHERE n.eventSource IS NOT NULL
     WITH DISTINCT(split(n.eventSource, '.')[0]) AS eventSource
     ORDER BY eventSource
@@ -201,7 +206,7 @@ def get_log_page(request, cloud):
     
     #유저 검색
     user_list=graph.evaluate(f"""
-    MATCH (n:Log:{cloud.capitalize()})
+    MATCH (n:Log:{logType.capitalize()})
     WHERE n.userIdentity_type IS NOT NULL
     WITH
         CASE
@@ -215,7 +220,7 @@ def get_log_page(request, cloud):
 
     #sourceIP 검색
     sourceIPAddress_list = graph.evaluate(f"""
-    MATCH (n:Log:{cloud.capitalize()})
+    MATCH (n:Log:{logType.capitalize()})
     WHERE n.sourceIPAddress IS NOT NULL
     WITH DISTINCT(n.sourceIPAddress) AS sourceIPAddress
     ORDER BY sourceIPAddress
@@ -224,7 +229,7 @@ def get_log_page(request, cloud):
 
     # awsregion 검색
     region_list = graph.evaluate(f"""
-    MATCH (n:Log:{cloud.capitalize()})
+    MATCH (n:Log:{logType.capitalize()})
     WHERE n.awsRegion IS NOT NULL
     WITH DISTINCT(n.awsRegion) AS awsRegion
     ORDER BY awsRegion
@@ -233,7 +238,7 @@ def get_log_page(request, cloud):
 
     # eventName 검색
     eventName_list = graph.evaluate(f"""
-    MATCH (n:Log:{cloud.capitalize()})
+    MATCH (n:Log:{logType.capitalize()})
     WHERE n.eventName IS NOT NULL
     WITH DISTINCT(n.eventName) AS eventName
     ORDER BY eventName
@@ -256,9 +261,9 @@ def get_log_page(request, cloud):
 # 로그 디테일 모달
 def get_log_detail_modal(request):
     id = request['id']
-    cloud = request['cloud']
+    logType = request['logType']
     cypher = f"""
-    MATCH (l:Log:{cloud})
+    MATCH (l:Log:{logType})
     WHERE ID(l) = {id}
     WITH ID(l) as id, PROPERTIES(l) as details
     RETURN id, details

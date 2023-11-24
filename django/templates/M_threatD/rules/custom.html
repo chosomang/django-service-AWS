@@ -33,7 +33,7 @@
                         <form>
                             <input type="hidden" name="rule_name" value="{{ rule.name }}">
                             <input type="hidden" name="rule_type" value="{{ rule.type }}">
-                            <input type='hidden' name='cloud' value='{{cloud}}'>
+                            <input type='hidden' name='log_type' value='{{logType}}'>
                             <input type="hidden" name="on_off" value="{{ rule.on_off }}">
                             {% if rule.on_off == 1 %}
                             <input type="button" value="  On  " class="btn btn-teiren btn-md text-center"
@@ -47,11 +47,11 @@
                     </td>
                     <td style="width: 7%">
                         <form>
-                            <input type='hidden' name='address' value="/threat/rules/custom/details/">
+                            <input type='hidden' name='address' value="custom/details/">
                             <input type='hidden' name='rule_name' value="{{ rule.name }}">
                             <input type='hidden' name='rule_type' value="{{ rule.type }}">
                             <input type='hidden' name='rule_id' value="{{ rule.id }}">
-                            <input type='hidden' name='cloud' value='{{cloud}}'>
+                            <input type='hidden' name='log_type' value="{{logType}}">
                             <input type='hidden' name='on_off' value="{{ rule.on_off }}">
                             <input type='button' onclick="ruleDetails(this.parentNode)"
                                 class="btn btn-teiren btn-md" style="overflow:hidden;"
@@ -64,7 +64,7 @@
         </tbody>
     </table>
 </div>
-<button onclick='addRuleModal("{{cloud}}")' class='btn btn-teiren btn-md btn-block'>Add Rule</button>
+<button onclick='addRuleModal("{{logType}}")' class='btn btn-teiren btn-md btn-block'>Add Rule</button>
 <script type="text/javascript">
     $(function() {
         $.fn.dataTable.ext.type.order['threat-level-pre'] = function(data) {

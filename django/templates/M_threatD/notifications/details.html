@@ -77,15 +77,16 @@
     $('#detail-modal').on('show.bs.modal', function(event) {
         var button = $(event.relatedTarget);
         var id = button.data('id')
-        var cloud = button.data('cloud')
+        var logType = button.data('logtype')
+        var resourceType = button.data('resourcetype')
         $.ajax({
-            url: '/logs/modal/details/',
+            url: `/logs/${resourceType}/modal/details/`,
             headers:{
                 'X-CSRFToken': '{{ csrf_token }}'
             },
             data: {
                 id: id,
-                cloud: cloud
+                logType: logType
             },
             type: 'post'
         }).done(function(data) {

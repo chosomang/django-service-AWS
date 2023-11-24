@@ -1,5 +1,6 @@
 from django.conf import settings
 from py2neo import Graph
+from datetime import datetime
 
 # AWS
 host = settings.NEO4J['HOST']
@@ -18,14 +19,19 @@ def check_account(request):
             return [f"{key.replace('_',' ').title()} Is Missing.", "Please Try Again"]
     return 'check'
 
-def register_account(request):
+def register_account(request, ip):
     cypher = f"""
-    MERGE (a:Teiren:Account {{
+    MERGE (super:Super:Teiren {{name:'Teiren'}})
+    WITH super
+    MERGE (super)-[:SUB]->(a:Teiren:Account {{
         userName: '{request['user_name']}',
         userId: '{request['user_id']}',
         userPassword: '{request['user_password']}',
         email: '{request['email_add']}',
-        phoneNo: '{request['phone_no']}'
+        phoneNo: '{request['phone_no']}',
+        createdTime: '{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}',
+        ipAddress: '{ip}',
+        failCount: 0
     }})
     RETURN COUNT(a)
     """

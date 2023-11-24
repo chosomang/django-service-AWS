@@ -30,7 +30,7 @@ def get_log_color(collection_name):
     if collection_name in color:
         response = color[collection_name]
     else:
-        return False
+        response = '#24B6D4'
     return response
 
 # 로그 총 개수
@@ -104,6 +104,7 @@ def threatUser(request):
         CASE
             WHEN l.userIdentity_type = 'Root' THEN l.userIdentity_type
             WHEN l.userIdentity_userName IS NOT NULL THEN l.userIdentity_userName
+            WHEN l.userName IS NOT NULL THEN l.userName
             ELSE SPLIT(l.userIdentity_arn, '/')[-1]
         END as name
         ORDER BY count DESC
@@ -401,8 +402,12 @@ def recentDetection(request):
             WHEN r.level = 3 THEN 'caution'
             ELSE 'danger'
         END AS level,
-        head([label IN labels(r) WHERE label <> 'Rule']) AS cloud,
-        head([label IN labels(r) WHERE label <> 'Rule'])+'/'+l.sourceIPAddress AS system,
+        head([label IN labels(r) WHERE label <> 'Rule']) AS logType,
+        CASE
+            WHEN l.sourceIPAddress IS NOT NULL THEN head([label IN labels(r) WHERE label <> 'Rule'])+'/'+l.sourceIPAddress
+            WHEN l.sourceIp IS NOT NULL THEN head([label IN labels(r) WHERE label <> 'Rule'])+'/'+l.sourceIp
+            ELSE head([label IN labels(r) WHERE label <> 'Rule'])+'/-'
+        END AS system,
         r.ruleName AS detected_rule,
         r.ruleName+'#'+id(d) AS rule_name,
         l.eventName AS action,
@@ -415,7 +420,7 @@ def recentDetection(request):
     '''
     results = graph.run(cypher)
     data_list = []
-    filter = ['cloud', 'detected_rule', 'rule_name', 'eventTime', 'id', 'rule_class']
+    filter = ['logType', 'detected_rule', 'rule_name', 'eventTime', 'id', 'rule_class']
     for result in results:
         # Change to type dictionary
         data = dict(result.items())
