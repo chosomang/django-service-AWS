@@ -130,7 +130,6 @@ def running_trigger(request):
 
     return render(request, 'testing/trigger.html', {'request_dict': request_dict})
 
-<<<<<<< HEAD
 def main_test(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
@@ -140,8 +139,6 @@ def main_test(request):
     context = {'test': ip}
     return render(request, 'testing/test.html', context)
 
-=======
->>>>>>> feature/integration-002
 def design_test(request):
     return render(request, 'testing/newDesign/designTest.html')
 
