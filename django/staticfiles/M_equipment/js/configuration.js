@@ -68,14 +68,14 @@ function container_trigger(e, type, access_key, secret_key, region_name, log_typ
     $.ajax({
         url:`${type}/collection/`,
         headers:{
-            'X-CSRFToken': '{{csrf_token}}'
+            'X-CSRFToken': getCookie()
         },
         data:{
             access_key: access_key,
             secret_key: secret_key,
             region_name: region_name,
             log_type: log_type,
-            group_name: gruop_name,
+            group_name: group_name,
             isRunning: on_off,
         },
         type:'post',

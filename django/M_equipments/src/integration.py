@@ -3,6 +3,7 @@ from py2neo import Graph
 from django.conf import settings
 import json
 from .aws import aws_check, aws_insert
+from common.dockerHandler.handler import DockerHandler
 
 # AWS
 host = settings.NEO4J['HOST']
@@ -11,13 +12,12 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
-
 ## Integration List
 def list_integration():
     cypher = f"""
     MATCH (i:Integration)
     RETURN
-        i.integrationType as integrationType,
+        toLower(i.integrationType) as integrationType,
         i.accessKey as accessKey,
         i.secretKey as secretKey,
         i.regionName as regionName,
@@ -61,20 +61,17 @@ def integration_insert(request, equipment):
     return functionName(request)
 
 def container_trigger(request, equipment):
-    from common.dockerHandler.handler import DockerHandler
     """Running trigger for python script
 
     Args:
         request (bool): Return message successfully running or fail
     """
     try:
-        data = json.loads(request.body)
-        access_key = data.get('access_key')
-        secret_key = data.get('secret_key')
-        region_name = data.get('region_name')
-        integration_type = data.get('integration_type')
-        log_type = data.get('log_type') # log type (ex: cloudtrail, dns, elb ...)
-        group_name = data.get('group_name')
+        access_key = request.get('access_key')
+        secret_key = request.get('secret_key')
+        region_name = request.get('region_name')
+        log_type = request.get('log_type') # log type (ex: cloudtrail, dns, elb ...)
+        group_name = request.get('group_name')
         image_name = f'{log_type}-image'
         
         # isRunning을 통해, 현재 log type의 group name을 수집하는 로그 수집기가 동작중인지 확인
@@ -82,11 +79,11 @@ def container_trigger(request, equipment):
                                 accessKey=access_key, 
                                 secretKey=secret_key, 
                                 regionName=region_name,
-                                integrationType=integration_type,
                                 logType=log_type,
                                 groupName=group_name
                                 ).first()
         is_running = integration_node["isRunning"]
+        print(f"is_running: {is_running}")
         if is_running:
             result = {
                 'isRunning': 1,
