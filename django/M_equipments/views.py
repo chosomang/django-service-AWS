@@ -23,7 +23,7 @@ def integration_check_ajax(request, equipment, logType):
 
 def integration_insert_ajax(request, equipment, logType):
     if request.method == 'POST':
-        context = integration.integration_insert(request)
+        context = integration.integration_insert(request, equipment)
         return HttpResponse(context)
 
 def integration_collection_ajax(request, equipment, logType):

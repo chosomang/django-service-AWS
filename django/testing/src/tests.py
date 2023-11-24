@@ -40,13 +40,7 @@ def main_test(request):
     context = {'test': str(type(ip))}
     return render(request, 'testing/test.html', context)
 
-@receiver(user_logged_in)
-def log_user_logged_in(sender, user, request, **kwargs):
-    cypher = f"""
-    MATCH (a:Test)
-    detach delete a
-    """
-    graph.run(cypher)
+
 
 from testing.dockerHandler.handler import DockerHandler
 def trigger(request):

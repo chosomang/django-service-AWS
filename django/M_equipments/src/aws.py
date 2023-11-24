@@ -81,3 +81,36 @@ def cloudwatch_check(client, group_name):
         logGroupName= group_name,
         limit = 1
     )
+
+def aws_insert(request):
+    if request.method == 'POST':
+        integration_type = request.POST['modal_integration_type'].encode('utf-8').decode('iso-8859-1')
+        access_key = request.POST['modal_access_key'].encode('utf-8').decode('iso-8859-1')
+        secret_key = request.POST['modal_secret_key'].encode('utf-8').decode('iso-8859-1')
+        region_name = request.POST['modal_region_name'].encode('utf-8').decode('iso-8859-1')
+        log_type = request.POST['modal_log_type'].encode('utf-8').decode('iso-8859-1')
+        group_name = request.POST['modal_group_name'].encode('utf-8').decode('iso-8859-1')
+        cypher = f"""
+        CREATE (i:Integration 
+            {{
+                integrationType:'{integration_type}',
+                accessKey:'{access_key}', 
+                secretKey:'{secret_key}',
+                regionName: '{region_name}',
+                logType: '{log_type}',
+                groupName: '{group_name}',
+                imageName: '{log_type.lower()}-image',
+                isRunning: 0,
+                container_id: 'None'
+            }})
+        RETURN COUNT(i)
+        """
+        try:
+            if graph.evaluate(cypher) == 1:
+                data = "Successfully Registered"
+            else:
+                raise Exception
+        except Exception:
+            data = "Failed To Register"
+        finally:
+            return data

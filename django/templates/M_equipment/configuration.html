@@ -63,9 +63,9 @@
                                 <td>
                                     <input type="hidden" class="on_off" value="{{integration.isRunning}}" />
                                     {% if integration.isRunning == 0 %}
-                                        <button class="btn btn-md btn-outline-teiren" onclick="container_trigger(this, '{{integration.integrationType}}','{{ integration.accessKey }}','{{ integration.regionName }}','{{ integration.logType }}','{{ integration.groupName }}')">
+                                        <button class="btn btn-md btn-outline-teiren" onclick="container_trigger(this, '{{integration.integrationType}}','{{ integration.accessKey }}','{{ integration.secretKey }}','{{ integration.regionName }}','{{ integration.logType }}','{{ integration.groupName }}')">
                                     {% else %}
-                                        <button class="btn btn-md btn-teiren" onclick="container_trigger(this, '{{integration.integrationType}}','{{ integration.accessKey }}','{{ integration.regionName }}','{{ integration.logType }}','{{ integration.groupName }}')">
+                                        <button class="btn btn-md btn-teiren" onclick="container_trigger(this, '{{integration.integrationType}}','{{ integration.accessKey }}','{{ integration.secretKey }}','{{ integration.regionName }}','{{ integration.logType }}','{{ integration.groupName }}')">
                                     {% endif %}
                                             <i class="fa-solid fa-power-off"></i>
                                         </button>

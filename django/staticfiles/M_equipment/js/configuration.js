@@ -58,7 +58,7 @@ $('#delete_complete').on('click', function(event) {
     location.reload();
 });
 
-function container_trigger(e, type, access_key, region_name, log_type){
+function container_trigger(e, type, access_key, secret_key, region_name, log_type, group_name){
     var on_off = 0
     var input = $(e.parentNode).find('input.on_off')[0]
     if (input.value != 1){
@@ -75,6 +75,7 @@ function container_trigger(e, type, access_key, region_name, log_type){
             secret_key: secret_key,
             region_name: region_name,
             log_type: log_type,
+            group_name: gruop_name,
             isRunning: on_off,
         },
         type:'post',

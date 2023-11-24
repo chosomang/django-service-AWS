@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from py2neo import Graph
 from django.conf import settings
 import json
-from .aws import aws_check
+from .aws import aws_check, aws_insert
 
 # AWS
 host = settings.NEO4J['HOST']
@@ -56,38 +56,9 @@ def integration_check(request, equipment, logType):
     functionName = globals()[f'{equipment.lower()}_check']
     return functionName(request, logType)
 
-def integration_insert(request):
-    if request.method == 'POST':
-        integration_type = request.POST['modal_integration_type'].encode('utf-8').decode('iso-8859-1')
-        access_key = request.POST['modal_access_key'].encode('utf-8').decode('iso-8859-1')
-        secret_key = request.POST['modal_secret_key'].encode('utf-8').decode('iso-8859-1')
-        region_name = request.POST['modal_region_name'].encode('utf-8').decode('iso-8859-1')
-        log_type = request.POST['modal_log_type'].encode('utf-8').decode('iso-8859-1')
-        group_name = request.POST['modal_group_name'].encode('utf-8').decode('iso-8859-1')
-        cypher = f"""
-        CREATE (i:Integration 
-            {{
-                integrationType:'{integration_type}',
-                accessKey:'{access_key}', 
-                secretKey:'{secret_key}',
-                regionName: '{region_name}',
-                logType: '{log_type}',
-                groupName: '{group_name}',
-                imageName: '{log_type.lower()}-image',
-                isRunning: 0,
-                container_id: 'None'
-            }})
-        RETURN COUNT(i)
-        """
-        try:
-            if graph.evaluate(cypher) == 1:
-                data = "Successfully Registered"
-            else:
-                raise Exception
-        except Exception:
-            data = "Failed To Register"
-        finally:
-            return data
+def integration_insert(request, equipment):
+    functionName = globals()[f'{equipment.lower()}_insert']
+    return functionName(request)
 
 def container_trigger(request, equipment):
     from common.dockerHandler.handler import DockerHandler
