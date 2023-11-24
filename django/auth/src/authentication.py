@@ -37,7 +37,7 @@ def login_success(userid, ip):
     MATCH (a:Account:Teiren{{
         userId: '{userid}'
     }})
-    SET a.failCount = a.failCount + 1
+    SET a.failCount = 0
     WITH a
     OPTIONAL MATCH (a)-[:DATE]-(d:Date {{date:'{str(date.today())}'}})
     WITH a, d
