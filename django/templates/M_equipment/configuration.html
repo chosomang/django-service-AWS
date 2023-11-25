@@ -19,7 +19,7 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0" style="table-layout:fixed;text-align:center;">
                     <thead>
                         <tr>
-                            <th>No</th>
+                            <th>Status</th>
                             <th>Resource Type</th>
                             <th>Log Type</th>
                             <th>Log Group Name</th>
@@ -30,7 +30,7 @@
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>No</th>
+                            <th>Status</th>
                             <th>Resource Type</th>
                             <th>Log Type</th>
                             <th>Log Group Name</th>
@@ -42,42 +42,47 @@
                     <tbody>
                         {% if integrations %}
                             {% for integration in integrations %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ integration.integrationType }}</td>
-                                <td>{{ integration.logType }}</td>
-                                <td>{{ integration.groupName }}</td>
-                                <td>{{ integration.accessKey }}</td>
-                                <td>
-                                    <form>
-                                        <input type="hidden" name="integration_type" value="{{ integration.integrationType }}">
-                                        <input type="hidden" name="access_key" value="{{ integration.accessKey }}">
-                                        <input type="hidden" name="region_name" value="{{ integration.regionName }}">
-                                        <input type="hidden" name="log_type" value="{{ integration.logType }}">
-                                        <input type="hidden" name="group_name" value="{{ integration.groupName }}">
-                                        <button type="button" class="btn btn-danger btn-md" onClick="deleteModal(this)">
-                                            <i class="fas fa-trash text-gray-200"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                                <td>
-                                    <form>
-                                        <input type="hidden" name="integration_type" value="{{ integration.integrationType }}">
-                                        <input type="hidden" name="access_key" value="{{ integration.accessKey }}">
-                                        <input type="hidden" name="region_name" value="{{ integration.regionName }}">
-                                        <input type="hidden" name="log_type" value="{{ integration.logType }}">
-                                        <input type="hidden" name="group_name" value="{{ integration.groupName }}">
-                                        <input type="hidden" class="on_off" value="{{integration.isRunning}}" />
-                                        {% if integration.isRunning == 0 %}
-                                            <button type="button" class="btn btn-md btn-outline-teiren" onClick="triggerModal(this)">
-                                        {% else %}
-                                            <button type="button" class="btn btn-md btn-teiren" onClick="triggerModal(this)">
-                                        {% endif %}
-                                                <i class="fa-solid fa-power-off"></i>
+                                {% if 'error' in integration %}
+                                <tr class="text-danger">
+                                    <td><i class="fa-solid fa-triangle-exclamation fa-bounce"></i></td>
+                                {% else %}
+                                <tr>
+                                    <td><i class="text-teiren fa-solid fa-circle-check"></i></td>
+                                {% endif %}
+                                    <td>{{ integration.integrationType }}</td>
+                                    <td>{{ integration.logType }}</td>
+                                    <td>{{ integration.groupName }}</td>
+                                    <td>{{ integration.accessKey }}</td>
+                                    <td>
+                                        <form>
+                                            <input type="hidden" name="integration_type" value="{{ integration.integrationType }}">
+                                            <input type="hidden" name="access_key" value="{{ integration.accessKey }}">
+                                            <input type="hidden" name="region_name" value="{{ integration.regionName }}">
+                                            <input type="hidden" name="log_type" value="{{ integration.logType }}">
+                                            <input type="hidden" name="group_name" value="{{ integration.groupName }}">
+                                            <button type="button" class="btn btn-danger btn-md" onClick="checkModal(this, 'delete')">
+                                                <i class="fas fa-trash text-gray-200"></i>
                                             </button>
-                                    </form>
-                                </td>
-                            </tr>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <form>
+                                            <input type="hidden" name="integration_type" value="{{ integration.integrationType }}">
+                                            <input type="hidden" name="access_key" value="{{ integration.accessKey }}">
+                                            <input type="hidden" name="region_name" value="{{ integration.regionName }}">
+                                            <input type="hidden" name="log_type" value="{{ integration.logType }}">
+                                            <input type="hidden" name="group_name" value="{{ integration.groupName }}">
+                                            <input type="hidden" name="on_off" value="{{integration.isRunning}}">
+                                            {% if integration.isRunning == 0 %}
+                                                <button type="button" class="btn btn-md btn-outline-teiren" onClick="checkModal(this, 'trigger')">
+                                            {% else %}
+                                                <button type="button" class="btn btn-md btn-teiren" onClick="checkModal(this, 'trigger')">
+                                            {% endif %}
+                                                    <i class="fa-solid fa-power-off"></i>
+                                                </button>
+                                        </form>
+                                    </td>
+                                </tr>
                             {% endfor %}
                         {% else %}
                         <tr>
@@ -121,7 +126,7 @@
     <div class="modal-dialog">
         <div class="modal-content p-1" style="width:1000px; height:auto">
             <div class="modal-header">
-                <h5 class="m-0 font-weight-bold text-teiren" id="modal_title">Delete Registration</h5>
+                <h5 class="m-0 font-weight-bold text-teiren" id="modal_title">Integration On/Off</h5>
                 <button type="button" class=close data-dismiss="modal" aria-label="Close">x</button>
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
@@ -129,12 +134,12 @@
                 <form id="trigger_form" class="mt-2">
                     
                 </form>
-                <h5 id="trigger_message" class="text-danger"></h5>
+                <h5 id="trigger_message" class="text-danger">Will You Change Collection Status?</h5>
             </div>
             <div class="modal-footer" id="modal_footer">
                 <div id="delete_check">
                     <button type="button" id="trigger_quit" class="btn btn-md btn-outline-danger mr-2" data-dismiss="modal">Cancel</button>
-                    <button type="button" id="trigger_accept" class="btn btn-md btn-outline-teiren">Verify</button>
+                    <button type="button" id="trigger_accept" class="btn btn-md btn-outline-teiren"></button>
                 </div>
                 <button type="button" id="trigger_complete" class="btn btn-md btn-outline-teiren" style="display:none;">Confirm</button>
             </div>
