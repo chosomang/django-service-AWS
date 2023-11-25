@@ -29,8 +29,7 @@ def list_integration():
     response = []
     for result in results:
         data = dict(result.items())
-        if check_process_func(data['no'], data['container_id']) == False:
-            data['error'] = 1
+        data['error'] = check_process_func(data['no'], data['container_id'])        
         response.append(data)
     return {'integrations': response}
 
@@ -61,9 +60,12 @@ def delete_integration(request):
     DETACH DELETE i
     RETURN COUNT(i)
     """
-    if  graph.evaluate(cypher) > 0:
-        return {'result': 'Deleted Registered Information'}
-    else:
+    try:
+        if graph.evaluate(cypher) == 0:
+            return {'result': 'Deleted Registered Information'}
+        else:
+            raise Exception
+    except Exception:
         return {'error': 'Failed to Delete Information. Please Check The Information'}
 
 def container_trigger(request):
@@ -93,7 +95,7 @@ def container_trigger(request):
             }})
             RETURN COUNT(i)
             """):
-                return {'error': 'Wrong Information. Please Check The Information'}        
+                return {'error': 'Wrong Information. Please Check The Information'}     
         # isRunning을 통해, 현재 log type의 group name을 수집하는 로그 수집기가 동작중인지 확인
         integration_node = graph.nodes.match("Integration", 
                                 accessKey=access_key, 

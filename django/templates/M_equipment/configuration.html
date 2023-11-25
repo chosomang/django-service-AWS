@@ -42,15 +42,15 @@
                     <tbody>
                         {% if integrations %}
                             {% for integration in integrations %}
-                                {% if 'error' in integration %}
+                                {% if not integration.error %}
                                 <tr class="text-danger">
                                     <td><i class="fa-solid fa-triangle-exclamation fa-bounce"></i></td>
                                 {% else %}
                                 <tr>
                                     <td><i class="text-teiren fa-solid fa-circle-check"></i></td>
                                 {% endif %}
-                                    <td>{{ integration.integrationType }}</td>
-                                    <td>{{ integration.logType }}</td>
+                                    <td>{{ integration.integrationType|title }}</td>
+                                    <td>{{ integration.logType|title }}</td>
                                     <td>{{ integration.groupName }}</td>
                                     <td>{{ integration.accessKey }}</td>
                                     <td>
