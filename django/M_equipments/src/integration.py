@@ -3,6 +3,7 @@ from py2neo import Graph
 from django.conf import settings
 import json
 from .aws import aws_check, aws_insert
+from common.dockerHandler.handler import DockerHandler
 
 # AWS
 host = settings.NEO4J['HOST']
@@ -10,7 +11,6 @@ port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
-
 
 ## Integration List
 def list_integration():
@@ -60,19 +60,18 @@ def integration_insert(request, equipment):
     functionName = globals()[f'{equipment.lower()}_insert']
     return functionName(request)
 
-def container_trigger(data):
-    from common.dockerHandler.handler import DockerHandler
+def container_trigger(request, equipment):
     """Running trigger for python script
 
     Args:
         request (bool): Return message successfully running or fail
     """
     try:
-        access_key = data.get('access_key')
-        secret_key = data.get('secret_key')
-        region_name = data.get('region_name')
-        log_type = data.get('log_type') # log type (ex: cloudtrail, dns, elb ...)
-        group_name = data.get('group_name')
+        access_key = request.get('access_key')
+        secret_key = request.get('secret_key')
+        region_name = request.get('region_name')
+        log_type = request.get('log_type') # log type (ex: cloudtrail, dns, elb ...)
+        group_name = request.get('group_name')
         image_name = f'{log_type}-image'
         
         # isRunning을 통해, 현재 log type의 group name을 수집하는 로그 수집기가 동작중인지 확인
@@ -84,6 +83,7 @@ def container_trigger(data):
                                 groupName=group_name
                                 ).first()
         is_running = integration_node["isRunning"]
+        print(f"is_running: {is_running}")
         if is_running:
             result = {
                 'isRunning': 1,
