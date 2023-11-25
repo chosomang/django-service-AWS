@@ -82,64 +82,22 @@ $('#trigger_accept').on('click', function() {
             alert(response.error)
             return 0
         } else {
-            alert(response)
+            console.log('status: ' + response.isRunning)
+            console.log('container id: ' + response.containerId)
+
+            if (response.isCreate == 1){
+                alert('Collection Started Successfully \n' + response.containerId)
+            } else if (response.isRunning == 1){
+                alert('Collection Is Already Running!\n' + response.containerId)
+            } else{
+                alert('Failed To Change Collection Status')
+            }
+            location.reload()
         }
-        // if(response.startsWith('error')){
-        //     alert(response.slice(6))
-        //     return 0
-        // }
-        // $('#result').text(response);
-        // if (response == 'triggerd Registered Information') {
-        //     $('#result').addclass('text-teiren');
-        //     $('#delete_check').remove();
-        //     $('#delete_complete').attr('type','button');
-        // }
     }).fail(function() {
-        $('#result').addclass('text-danger');
-        $('#result').text('Failed to Delete Information');
+        alert('Failed To Change Collection Status');
     })
 });
-
-// function container_trigger(e, type, access_key, secret_key, region_name, log_type, group_name){
-//     var on_off = 0
-//     var input = $(e.parentNode).find('input.on_off')[0]
-//     if (input.value != 1){
-//         on_off = 1
-//     }
-//     input.value = on_off
-//     $.ajax({
-//         url:`${type}/collection/`,
-//         headers:{
-//             'X-CSRFToken': getCookie()
-//         },
-//         data:{
-//             access_key: access_key,
-//             secret_key: secret_key,
-//             region_name: region_name,
-//             log_type: log_type,
-//             group_name: group_name,
-//             isRunning: on_off,
-//         },
-//         type:'post',
-//         datatype: 'json'
-//     }).done(function(response){
-//         console.log('status: ' + response.isRunning)
-//         console.log('container id: ' + response.containerId)
-
-//         if (response.isCreate == 1){
-//             alert('Collection Started Successfully \n' + response.containerId)
-//         } else if (response.isRunning == 1){
-//             alert('Collection Is Already Running!\n' + response.containerId)
-//             if (on_off == 1){
-//                 $(e).attr('class', 'btn btn-md btn-teiren')
-//             } else {
-//                 $(e).attr('class', 'btn btn-md btn-outline-teiren')
-//             }
-//         } else{
-//             alert('Unknown Alert')
-//         }
-//     })
-// }
 
 $(function(){
     $("#dataTable").DataTable({
