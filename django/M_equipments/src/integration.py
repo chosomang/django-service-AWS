@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from py2neo import Graph
 from django.conf import settings
 import json
-from .aws import aws_check, aws_insert
+from .resource.aws import aws_check, aws_insert
 from common.dockerHandler.handler import DockerHandler
 
 # AWS
@@ -14,27 +14,41 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
 ## Integration List
 def list_integration():
-    cypher = f"""
+    results = graph.run(f"""
     MATCH (i:Integration)
     RETURN
-        toLower(i.integrationType) as integrationType,
-        i.accessKey as accessKey,
-        i.secretKey as secretKey,
-        i.regionName as regionName,
-        i.logType as logType,
-        i.groupName as groupName,
-        i.isRunning as isRunning
-    """
-    results = graph.run(cypher)
-    data = []
+        toLower(i.integrationType) AS integrationType,
+        i.accessKey AS accessKey,
+        i.regionName AS regionName,
+        i.logType AS logType,
+        i.groupName AS groupName,
+        i.isRunning AS isRunning,
+        i.container_id as container_id,
+        id(i) as no
+    """)
+    response = []
     for result in results:
-        data.append(dict(result.items()))
-    return {'integrations': data}
+        data = dict(result.items())
+        if check_process_func(data['no'], data['container_id']) == False:
+            data['error'] = 1
+        response.append(data)
+    return {'integrations': response}
+
+def check_process_func(no, container_id):
+    return False
+
+def integration_check(request, equipment, logType):
+    functionName = globals()[f'{equipment.lower()}_check']
+    return functionName(request, logType)
+
+def integration_insert(request, equipment):
+    functionName = globals()[f'{equipment.lower()}_insert']
+    return functionName(request)
 
 ## Integration delete
 def delete_integration(request):
     if request['secret_key'] == '':
-        return 'error Please Enter Secret Key'
+        return {'error': 'Please Enter Secret Key'}
     cypher = f"""
     MATCH (i:Integration {{
             integrationType:'{request['integration_type']}',
@@ -48,32 +62,38 @@ def delete_integration(request):
     RETURN COUNT(i)
     """
     if  graph.evaluate(cypher) > 0:
-        return 'Deleted Registered Information'
+        return {'result': 'Deleted Registered Information'}
     else:
-        return 'error Failed to Delete Information. Please Check Secret Key'
-        
-def integration_check(request, equipment, logType):
-    functionName = globals()[f'{equipment.lower()}_check']
-    return functionName(request, logType)
+        return {'error': 'Failed to Delete Information. Please Check The Information'}
 
-def integration_insert(request, equipment):
-    functionName = globals()[f'{equipment.lower()}_insert']
-    return functionName(request)
-
-def container_trigger(request, equipment):
+def container_trigger(request):
     """Running trigger for python script
 
     Args:
         request (bool): Return message successfully running or fail
     """
     try:
-        access_key = request.get('access_key')
         secret_key = request.get('secret_key')
-        region_name = request.get('region_name')
-        log_type = request.get('log_type') # log type (ex: cloudtrail, dns, elb ...)
-        group_name = request.get('group_name')
-        image_name = f'{log_type}-image'
-        
+        if secret_key == '':
+            return {'error': 'Please Enter Secret Key'}
+        else:
+            access_key = request.get('access_key')
+            region_name = request.get('region_name')
+            log_type = request.get('log_type') # log type (ex: cloudtrail, dns, elb ...)
+            group_name = request.get('group_name')
+            image_name = f'{log_type}-image'
+            if 1 != graph.evaluate(f"""
+            MATCH (i:Integration{{
+                accessKey: '{access_key}',
+                secretKey: '{secret_key}',
+                regionName: '{region_name}',
+                groupName: '{group_name}',
+                imageName: '{image_name}',
+                logType: '{log_type}'
+            }})
+            RETURN COUNT(i)
+            """):
+                return {'error': 'Wrong Information. Please Check The Information'}        
         # isRunning을 통해, 현재 log type의 group name을 수집하는 로그 수집기가 동작중인지 확인
         integration_node = graph.nodes.match("Integration", 
                                 accessKey=access_key, 
@@ -83,7 +103,6 @@ def container_trigger(request, equipment):
                                 groupName=group_name
                                 ).first()
         is_running = integration_node["isRunning"]
-        print(f"is_running: {is_running}")
         if is_running:
             result = {
                 'isRunning': 1,
