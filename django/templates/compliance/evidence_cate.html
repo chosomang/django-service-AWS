@@ -52,13 +52,8 @@
                             </td>
                             <td> - </td>
                             <td>
-                                <a href="/compliance/evidence_2" class="btn btn-md btn-teiren" style="font-size:0.7vw">
-                                    항목 수정
-                                </a>
-
-                                <a href="/compliance/evidence_2" class="btn btn-md btn-danger" style="font-size:0.7vw">
-                                    항목 삭제
-                                </a>
+                                <button type="button" class="btn btn-md btn-teiren" onclick="mod_cate('{{c.cate.name}}')">수정</button>
+                                <button type="button" class="btn btn-md btn-danger" onclick="del_cate('{{c.cate.name}}')">삭제</button>
                             </td>
                         </tr>
 
@@ -69,5 +64,42 @@
     </div>
 </div>
 
+
+
+<script>
+function mod_cate(mod_cate_name){
+    console.log(mod_cate_name);
+}
+
+function del_cate(del_cate_name){
+    console.log(del_cate_name);
+    del_cate_name=del_cate_name
+
+    $.ajax({
+        url: '/compliance/evidence_cate_del/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'name': del_cate_name,
+        },
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Saved Successfully')
+                window.location.href= '/compliance/evidence_cate/'
+            } else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+}
+</script>
 {% endblock %}
 

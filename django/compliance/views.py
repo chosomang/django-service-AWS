@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from .src import evidence, lists
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 
+import json
 
 # Compliance
 def compliance_view(request):
@@ -21,16 +22,23 @@ def lists_view_2(request):
 
 # Compliance evidence - 성연
 def evidence_cate(request):
-    '''
-    if request.method=="POST":
-        add_cate=dict(request.POST.items())
-        evidence.add_cate(add_cate)
-        return HttpResponseRedirect('/compliance/evidence_cate')
-    '''
     context={
         'category_list': evidence.get_category()
     }
     return render(request, f"compliance/evidence_cate.html", context)
+
+def evidence_get_compliance(request):
+    if request.method == "POST":
+        compliance_list = evidence.get_compliance()
+        json_data = json.dumps({"compliance_list" :compliance_list})    
+        return HttpResponse(json_data, content_type='application/json')
+
+def evidence_get_compliance_articles(request):
+    if request.method == "POST":
+        compliance_selected=dict(request.POST.items())
+        article_list = evidence.get_compliance_articles(compliance_selected)
+        json_data = json.dumps({"article_list" :article_list})  
+        return HttpResponse(json_data, content_type='application/json')
 
 
 # Compliance evidence_cate_add - 성연
@@ -39,12 +47,12 @@ def evidence_cate_add(request):
         add_cate=dict(request.POST.items())
         return HttpResponse(evidence.add_cate(add_cate))
         
-    
-    law_list=evidence.get_law_list('com','isms_p')
-    context={
-        'law_list': law_list,
-    }
-    return render(request, f"compliance/evidence_cate_add.html",context)
+    return render(request, f"compliance/evidence_cate_add.html")
+
+def evidence_cate_del(request):
+    if request.method=="POST":
+        del_cate=dict(request.POST.items())
+        return HttpResponse(evidence.del_cate(del_cate))
 
 # Compliance evidence_data - 성연
 def evidence_data(request, at=None):
@@ -83,3 +91,17 @@ def evidence_data_add(request):
             'category': category,
         }
     return render(request, f"compliance/evidence_data_add.html", context)
+
+# Compliance evidence_data_add - 증적 추가 페이지
+def evidence_data_add_result(request):
+    if request.method=="POST":
+        add_data=dict(request.POST.items())
+        return HttpResponse(evidence.add_data(add_data))
+        
+    return render(request, f"compliance/evidence_cate_add.html")
+
+def evidence_data_del(request):
+    if request.method=="POST":
+        del_data=dict(request.POST.items())
+        return HttpResponse(evidence.del_data(del_data))
+

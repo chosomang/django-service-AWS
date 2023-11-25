@@ -76,8 +76,8 @@
                         <th>파일명</th>
                         <th>세부설명</th>
                         <th>버전</th>
-                        <th>파일</th>
                         <th>작성자</th>
+                        <th>파일</th>
                         <th>작업</th>
                     </tr>
                 </thead>
@@ -88,15 +88,11 @@
                             <td>{{d.name}}</td>
                             <td>{{d.comment}}</td>
                             <td>{{d.version_date}}</td>
-                            <td> - </td>
+                            <td>{{d.author}}</td>
                             <td> - </td>
                             <td>
-                                <a href="/compliance/evidence_2" class="btn btn-md btn-danger" style="font-size:0.7vw">
-                                    수정
-                                </a>
-                                <a href="/compliance/evidence_2" class="btn btn-md btn-teiren" style="font-size:0.7vw">
-                                    삭제
-                                </a>
+                                <button class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="mod_data()">수정</button>
+                                <button class="btn btn-md btn-teiren" style="font-size:0.7vw" onclick="del_data('{{title}}','{{d.name}}')">삭제</button>
                             </td>
                         </tr>
                     {% endfor %}
@@ -145,6 +141,40 @@
         </div>
     </div>
 </div>
+
+<script>
+  
+function del_data(cate, name){
+    console.log(name);
+
+    $.ajax({
+        url: '/compliance/evidence_data_del/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'cate': cate,
+            'name': name
+        },
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){ 
+                alert('Saved Successfully')
+                location.reload()
+            } else {
+                //alert('Failed To Save. Please Try Again')
+                alert(response)
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+}
+  </script>
 
 {% endblock %}
 
