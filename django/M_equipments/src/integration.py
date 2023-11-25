@@ -17,7 +17,7 @@ def list_integration():
     cypher = f"""
     MATCH (i:Integration)
     RETURN
-        i.integrationType as integrationType,
+        toLower(i.integrationType) as integrationType,
         i.accessKey as accessKey,
         i.secretKey as secretKey,
         i.regionName as regionName,
@@ -60,7 +60,7 @@ def integration_insert(request, equipment):
     functionName = globals()[f'{equipment.lower()}_insert']
     return functionName(request)
 
-def container_trigger(request, equipment):
+def container_trigger(data):
     from common.dockerHandler.handler import DockerHandler
     """Running trigger for python script
 
@@ -68,11 +68,9 @@ def container_trigger(request, equipment):
         request (bool): Return message successfully running or fail
     """
     try:
-        data = json.loads(request.body)
         access_key = data.get('access_key')
         secret_key = data.get('secret_key')
         region_name = data.get('region_name')
-        integration_type = data.get('integration_type')
         log_type = data.get('log_type') # log type (ex: cloudtrail, dns, elb ...)
         group_name = data.get('group_name')
         image_name = f'{log_type}-image'
@@ -82,7 +80,6 @@ def container_trigger(request, equipment):
                                 accessKey=access_key, 
                                 secretKey=secret_key, 
                                 regionName=region_name,
-                                integrationType=integration_type,
                                 logType=log_type,
                                 groupName=group_name
                                 ).first()

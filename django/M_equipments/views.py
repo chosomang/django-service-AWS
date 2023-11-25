@@ -26,12 +26,6 @@ def integration_insert_ajax(request, equipment, logType):
         context = integration.integration_insert(request, equipment)
         return HttpResponse(context)
 
-def integration_collection_ajax(request, equipment, logType):
-    if request.method == 'POST':
-        data = dict(request.POST.items())
-        context = integration.container_trigger(data, equipment)
-        return JsonResponse(context)
-
 def integration_delete_ajax(request, actionType):
     if request.method == 'POST':
         data = dict(request.POST.items())
@@ -39,3 +33,11 @@ def integration_delete_ajax(request, actionType):
             return render(request, 'M_equipment/configuration/delete_modal.html', data)
         context = integration.delete_integration(data)
         return HttpResponse(context)
+
+def integration_trigger_ajax(request, actionType):
+    if request.method == 'POST':
+        data = dict(request.POST.items())
+        if actionType == 'modal':
+            return render(request, 'M_equipment/configuration/trigger_modal.html', data)
+        context = integration.container_trigger(data)
+        return JsonResponse(context)

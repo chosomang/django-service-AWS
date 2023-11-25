@@ -9,4 +9,5 @@ urlpatterns = [
     path("<equipment>/<logType>/insert/", views.integration_insert_ajax),
     path("<equipment>/<logType>/collection/", views.integration_collection_ajax),
     path('configuration/delete/<actionType>/', views.integration_delete_ajax),
+    path('configuration/trigger/<actionType>/', views.integration_trigger_ajax),
 ]
