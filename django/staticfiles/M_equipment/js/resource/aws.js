@@ -33,7 +33,6 @@ $('#form-check').on('click', function () {
         data: data,
         type: 'post'
     }).done(function (data) {
-        console.log(data)
         document.getElementById("form-check").className = data.class;
         document.getElementById("form-check").value = data.value;
         if (data.modal) {
@@ -66,7 +65,7 @@ $('#insert_accept').on('click', function (event) {
             $('#message').addClass('text-teiren')
             $("#message").html(response);
             $('.modal-body').remove();
-            $("#modal_title").text('AWS {{logType|title}} Integrated Successfully');
+            $("#modal_title").text(`AWS ${logType} Integrated Successfully`);
             $('#insert_check').remove();
             $('#insert_complete').attr('type', 'button');
         }

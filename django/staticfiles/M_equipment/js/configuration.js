@@ -55,6 +55,7 @@ $('#delete_accept').on('click', function() {
             $('#delete_message').attr('class', 'text-teiren');
             $('#delete_check').remove();
             $('#delete_complete').attr('type', 'button');
+            location.reload()
         } else {
             alert(response.result)
         }
