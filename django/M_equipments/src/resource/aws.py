@@ -77,6 +77,8 @@ def cloudtrail_check(client, group_name):
     client.lookup_events()
 
 def cloudwatch_check(client, group_name):
+    if group_name == 'elb':
+        return 0
     client.filter_log_events(
         logGroupName= group_name,
         limit = 1
