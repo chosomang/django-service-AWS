@@ -48,20 +48,20 @@ def integration_insert(request, equipment):
 def delete_integration(request):
     if request['secret_key'] == '':
         return {'error': 'Please Enter Secret Key'}
+    # return {'result': str(request)}
     cypher = f"""
     MATCH (i:Integration {{
-            integrationType:'{request['integration_type']}',
+            integrationType:'{request['integration_type'].title()}',
             accessKey:'{request['access_key']}',
             secretKey:'{request['secret_key']}',
             regionName: '{request['region_name']}',
             groupName: '{request['group_name']}',
             logType: '{request['log_type']}'
         }})
-    DETACH DELETE i
-    RETURN COUNT(i)
     """
     try:
-        if graph.evaluate(cypher) == 0:
+        if 1 == graph.evaluate(f"{cypher} RETURN COUNT(i)"):
+            graph.evaluate(f"{cypher} DETACH DELETE i RETURN COUNT(i)")
             return {'result': 'Deleted Registered Information'}
         else:
             raise Exception
