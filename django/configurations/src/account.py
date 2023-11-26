@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.conf import settings
 from py2neo import Graph
 
@@ -31,8 +32,7 @@ def get_account_list():
     MATCH (a:Teiren:Account)
     RETURN
         a.userName as userName,
-        a.email as email,
-        a.phoneNo as phoneNo
+        a.email as email
     ORDER BY id(a) ASC
     """
     response = []
@@ -45,39 +45,12 @@ def get_account_list():
         response.append(data)
     return {'account_list': response}
 
-def add_account(request):
-    if 0 < graph.evaluate(f"MATCH (a:Teiren:Account {{userName:'{request['user_name']}'}}) RETURN COUNT(a)"):
-        return f"[User Name: '{request['user_name']}'] already exists. Please try different name"
-    if 0 < graph.evaluate(f"MATCH (a:Teiren:Account {{userId:'{request['user_id']}'}})RETURN COUNT(a)"):
-        return f"[User ID: '{request['user_id']}'] already exists. Please try different ID"
-    for key, value in request.items():
-        if not value:
-            return f"{key.replace('_',' ').title()} Is Missing. Please Try Again."
-    cypher = f"""
-    MERGE (a:Teiren:Account {{
-        userName:'{request['user_name']}',
-        userId:'{request['user_id']}',
-        userPassword:'{request['user_password']}',
-        email: '{request['email_add']}',
-        phoneNo: '{request['phone_no']}'
-    }})
-    RETURN COUNT(a)
-    """
-    try:
-        if 1 == graph.evaluate(cypher):
-            return f"Created Account Successfully"
-        else:
-            raise Exception
-    except Exception:
-        return "Failed to add account. Please try again."
-
 def verify_account(request):
     userName = request['user_name']
-    userId = request['user_id']
     userPassword = request['user_password']
 
     cypher = f"""
-    MATCH (a:Teiren:Account {{userName:'{userName}', userId: '{userId}'}})
+    MATCH (a:Teiren:Account {{userName:'{userName}'}})
     RETURN
         CASE
             WHEN a.userPassword = '{userPassword}' THEN 'success'
@@ -89,13 +62,11 @@ def verify_account(request):
         response = '[Verification Fail] Unknown Information. Please Try Again.'
     elif result[0]['result'] == 'success':
         cypher = f"""
-        MATCH (a:Teiren:Account {{userName:'{userName}', userId: '{userId}'}})
+        MATCH (a:Teiren:Account {{userName:'{userName}'}})
         RETURN
             a.userName as userName,
-            a.userId as userId,
             a.userPassword as userPassword,
-            a.email as email,
-            a.phoneNo as phoneNo
+            a.email as email
         """
         results = graph.run(cypher)
         for result in results:
@@ -109,20 +80,19 @@ def edit_account(request):
     if request['og_user_name'] != request['user_name']:
         if 0 < graph.evaluate(f"MATCH (a:Teiren:Account {{userName:'{request['user_name']}'}})RETURN COUNT(a)"):
             return f"User Name: {request['user_name']} already exists. Please try different name"
-    if request['og_user_id'] != request['user_id']:
-        if 0 < graph.evaluate(f"MATCH (a:Teiren:Account {{userId:'{request['user_id']}'}})RETURN COUNT(a)"):
-            return f"User ID: {request['user_id']} already exists. Please try different ID"
     cypher = f"""
     MATCH (a:Teiren:Account {{userName:'{request['og_user_name']}'}})
     SET
         a.userName = '{request['user_name']}',
-        a.userId = '{request['user_id']}',
         a.userPassword = '{request['user_password']}',
-        a.email = '{request['email_add']}',
-        a.phoneNo = '{request['phone_no']}'
+        a.email = '{request['email_add']}'
     RETURN count(a)
     """
     try:
+        user = User.objects.get(username=request['og_user_name'])
+        user.username = request['user_name']
+        user.set_password(request['user_password'])
+        user.save()
         if 1 == graph.evaluate(cypher):
             return 'Changed Account Successfully'
         else:
@@ -137,12 +107,19 @@ def delete_account(request):
     cypher = f"""
     MATCH (a:Teiren:Account {{
             userName:'{request['user_name']}',
-            userId:'{request['user_id']}',
             userPassword: '{request['user_password']}'
         }})
     """
     try:
-        graph.evaluate(f"{cypher} DETACH DELETE a")
+        if 1 != graph.evaluate(f"{cypher} RETURN COUNT(a)"):
+            return "Wrong Password. Please Try Again"
+        user = User.objects.get(username=request['user_name'])
+        user.delete()
+        graph.run(f"""{cypher} WITH a
+        OPTIONAL MATCH p = (a)-[:DATE|ACTED|CURRENT*]->()
+        UNWIND NODES(p) AS node
+        DETACH DELETE node
+        """)
         if 0 == graph.evaluate(f"{cypher} RETURN COUNT(a)"):
             return "Deleted Account Successfully"
         else:

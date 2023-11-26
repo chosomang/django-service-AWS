@@ -24,11 +24,9 @@ def account_config(request, config_type):
                 return render(request, f"{HTML_FILE_PATH}/account/edit.html", context)
         elif config_type == 'edit':
             context = account.edit_account(data)
-        elif config_type == 'add':
-            context = account.add_account(data)
         elif config_type == 'delete':
             context = account.delete_account(data)
-            if data['user_name'] == request.user.username:
-                logout(request)
-                return redirect('/auth/login/')
+            if context == 'Deleted Account Successfully':
+                if data['user_name'] == request.user.username:
+                    return HttpResponse('reload')
         return HttpResponse(context)

@@ -14,7 +14,7 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 def login_account(request, ip):
     cypher = f"""
     MATCH (a:Teiren:Account{{
-        userId: '{request['user_id']}'
+        userName: '{request['user_name']}'
     }})    
     """
     try:
@@ -22,20 +22,20 @@ def login_account(request, ip):
             if 5 <= graph.evaluate(f"{cypher} RETURN a.failCount"):
                 return 'fail', 'User Id Forbidden. Please Contact Administrator'
             if 1 == graph.evaluate(f"{cypher} WHERE a.userPassword = '{request['user_password']}' RETURN COUNT(a)"):
-                login_success(request['user_id'], ip)
+                login_success(request['user_name'], ip)
                 userName = graph.evaluate(f"{cypher} RETURN a.userName")
                 return userName, request['user_password']
             else:
-                return login_fail(request['user_id'], ip), 'fail'
+                return login_fail(request['user_name'], ip), 'fail'
         else:
             raise Exception
     except Exception:
         return 'fail', 'Failed To Login. Please Register'
 
-def login_success(userid, ip):
+def login_success(userName, ip):
     graph.evaluate(f"""
     MATCH (a:Account:Teiren{{
-        userId: '{userid}'
+        userName: '{userName}'
     }})
     SET a.failCount = 0
     WITH a
@@ -71,10 +71,10 @@ def login_success(userid, ip):
     """)
     return 0
 
-def login_fail(userid, ip):
+def login_fail(userName, ip):
     failCount = graph.evaluate(f"""
     MATCH (a:Account:Teiren{{
-        userId: '{userid}'
+        userName: '{userName}'
     }})
     SET a.failCount = a.failCount + 1
     WITH a

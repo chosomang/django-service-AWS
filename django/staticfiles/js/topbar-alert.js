@@ -33,5 +33,5 @@ $(function () {
                 $('#topbar_alert').removeClass('text-danger fa-bounce')
             }
         })
-    }, 1000);
+    }, 5000);
 })

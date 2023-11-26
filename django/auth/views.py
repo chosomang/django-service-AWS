@@ -27,9 +27,9 @@ def login_view(request):
         else:
             user = authenticate(request, username=username, password=password)
             if user is None:
-                test = User.objects.create_user(username=username , password=password)
-                test.set_password(password)
-                test.save()
+                new_user = User.objects.create_user(username=username, password=password)
+                new_user.set_password(password)
+                new_user.save()
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
@@ -48,7 +48,7 @@ def logout_view(request):
     return redirect('/auth/login/?next=/')
 
 def register_view(request):
-    context = {'color': 'teiren', 'message': ['Register To Use', 'TEIREN CLOUD']}
+    context = {'color': 'teiren', 'message': ['Create Your Account', 'TEIREN CLOUD']}
     if request.method == "POST":
         data = dict(request.POST.items())
         message = register.check_account(data)
