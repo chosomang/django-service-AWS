@@ -1,5 +1,8 @@
 from django.http import JsonResponse
-from common.src.risk.notification.topbar import check_topbar_alert
+from django.contrib.auth.decorators import login_required
+from .src.topbar import check_topbar_alert
+
+@login_required
 # Topbar Alert
 def topbar_alert(request):
     context = check_topbar_alert()
