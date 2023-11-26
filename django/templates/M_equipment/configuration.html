@@ -51,7 +51,11 @@
                                 {% endif %}
                                     <td>{{ integration.integrationType|title }}</td>
                                     <td>{{ integration.logType|title }}</td>
+                                    {% if integration.logType == integration.groupName %}
+                                    <td>-</td>
+                                    {% else %}
                                     <td>{{ integration.groupName }}</td>
+                                    {% endif %}
                                     <td>{{ integration.accessKey }}</td>
                                     <td>
                                         <form>
@@ -86,7 +90,7 @@
                             {% endfor %}
                         {% else %}
                         <tr>
-                            <td colspan="5" style="font-size:20px">No Data</td>
+                            <td colspan="7" style="font-size:20px">No Data</td>
                         </tr>
                         {% endif %}
                     </tbody>
