@@ -7,10 +7,10 @@
     {% if 'on_off' %}
         {% if 'on_off' == '0' %}
             <p><span>CURRENT STATUS: </span><input type="text" class="form-control" value="On" readonly></p>
-            <input type="hidden" class="form-control" name="on_off" value="1" readonly>
+            <input type="hidden" class="form-control" name="on_off" value="0" readonly>
         {% else %}
             <p><span>COLLECTION STATUS: </span><input type="text" class="form-control" value="Off" readonly></p>
-            <input type="hidden" class="form-control" name="on_off" value="0" readonly>
+            <input type="hidden" class="form-control" name="on_off" value="1" readonly>
         {% endif %}
     {% endif %}
     <input type="hidden" class="form-control" name="log_type" value="{{log_type}}"></p>
