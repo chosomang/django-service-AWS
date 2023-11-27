@@ -3,6 +3,49 @@
 
 {% block content %}
 <!-- Begin Page Content -->
+<style>
+    .ex-text {
+        padding: 0.4rem 0.8rem;
+        font-size : 15px;
+        background-color: #444444;
+        border-radius: 0.3rem;
+        color: #ffffff;
+        position: absolute;
+        opacity: 0;
+        transition: all ease 0.5s;
+    }
+    .ex:hover + .ex-text {
+        opacity: 1;
+    }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .close-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+    }
+</style>
 <h2> {{no}} {{name}}
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
@@ -21,55 +64,110 @@
                     {% for a in article_list %}
                     <tr>
                         <td align="center">인증 기준</td>
-                        <td>{{a.comment}}</td>
+                        <td>{{a.articleComment}}</td>
                     </tr>
                     <tr>
-                        <td align="center" width="200px">주요 확인사항</td>
-                        <td>{{a.checklist}}</td>
+                        <td align="center" width="200px" rowspan=len({{checklist}})>주요 확인사항</td>
+                        <td>{% for i in a.articleChecklist %}{{i|linebreaks}}{% endfor %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-<h3> 증적 리스트
+<h4 class="m-0 font-weight-bold text-teiren"> Related Law
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
                    style="text-align:center; font-size:15px;">
                 <thead>
-                <tr>
-                    <th>evidence</th>
-                    <th>comment</th>
-                    <th>version</th>
-                    <th>미리보기</th>
-                    <th>수정</th>
-                    <th>삭제</th>
-                </tr>
+                    <tr>
+                        <th>Law</th>
+                        <th>Chapter</th>
+                        <th>Section</th>
+                    </tr>
                 </thead>
-                <tfoot></tfoot>
+                <tbody>
+                    <!--for 문으로 리스트 출력: 파이썬 코드를 쓸 때는 % % 안에 담아서 사용-->
+                    {% for i in law %}
+                    <tr>
+                        <td>{{i.lawName}}</td>
+                        <td>{{i.chapterNo}}장 {{i.chapterName}}</td>
+                        <td>{{i.sectionNo}} {{i.sectionName}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+<h4 class="m-0 font-weight-bold text-teiren"> Evidence List
+    <button class="ex btn btn-md" style="font-size:0.7vw">ex</button>
+    <div class="ex-text">{% for a in article_list %}{% for i in a.articleExample %}{{i|linebreaks}}{% endfor %}{% endfor %}</div>
+        <button type="button" class="btn btn-md btn-teiren" onclick="openModal()">add</button>
+    </h4>
+
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-content" style="width:20%">
+            <span class="close-button" onclick="closeModal()" style="font-size:20px">&times;</span>
+            <h2>Input Evidence Information</h2>
+            <form id="evidenceForm" style="font-size:0.7vw">
+                <label for="categoryName">Category:</label>
+                <input type="text" id="categoryName" name="categoryName" required><br>
+                
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br>
     
+                <label for="comment">Comment:</label>
+                <textarea id="comment" name="comment" rows="4" required></textarea><br>
+
+                <label for="file">파일 업로드:</label>
+                <input type="file" id="file" name="file">
+                <input type="hidden" name="art_no" id="art_no" value="{{no}}"/>
+                <button type="button" onclick="addEvidence(this)">Submit</button>
+            </form>
+            
+        </div>
+    </div>
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                   style="text-align:center; font-size:15px;">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Name</th>
+                        <th>Comment</th>
+                        <th>Version</th>
+                        <th>File</th>
+                        <th>Preview</th>
+                        <th>Download</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <!--for 문으로 리스트 출력: 파이썬 코드를 쓸 때는 % % 안에 담아서 사용-->
                     {% for a in evidence_list %}
                     <tr>
-                        <td>{{a.name}}</td>
-                        <td>{{a.comment}}</td>
-                        <td>{{a.version}}</td>
+                        <td>{{a.categoryName}}</td>
+                        <td>{{a.dataName}}</td>
+                        <td>{{a.dataComment}}</td>
+                        <td>{{a.dataVersion}}</td>
+                        <td>{{a.dataFile}}</td>
                         <td>
-                            <button class="btn btn-md btn-teiren" style="font-size:0.7vw">
-                                미리보기
+                            <button class="btn btn-md btn-teiren">
+                                preview
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-md btn-teiren" style="font-size:0.7vw">
-                                modify
+                            <button class="btn btn-md btn-teiren">
+                                download
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-md btn-teiren" style="font-size:0.7vw">
-                                delete
-                            </button>
+                            <form method="post">
+                                <input type="hidden" name="data_name" id="data_name" value="{{a.dataName}}"/>
+                                <button type="button" class="btn btn-md btn-teiren" onclick="deleteEvidence(this)">delete</button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
@@ -78,5 +176,45 @@
         </div>
     </div>
 
-{% endblock %}
+<script>
+    function deleteEvidence(e){
+        var data=$(e).parent().serialize()
+        $.ajax({
+        url:'/compliance/delete/',
+        headers:{
+            'X-CSRFToken': '{{csrf_token}}'
+        },
+        data: data,
+        type: 'post'
+    }).done(function(response){
+        alert(response)
+    })   
+    }
 
+    function addEvidence(e) {
+        var data = $(e).parent().serialize();
+        $.ajax({
+            url: '/compliance/add/',
+            headers: {
+                'X-CSRFToken': '{{csrf_token}}'
+            },
+            data: data,
+            type: 'post'
+        }).done(function (response) {
+            alert(response);
+            closeModal();
+        })
+    }
+
+    function openModal() {
+        // Display the modal overlay
+        document.getElementById('modalOverlay').style.display = 'block';
+    }
+
+    function closeModal() {
+        // Hide the modal overlay
+        document.getElementById('modalOverlay').style.display = 'none';
+    }
+</script>
+
+{% endblock %}

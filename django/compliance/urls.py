@@ -1,6 +1,6 @@
 from django.urls import include, path
 from . import views
-
+from .src import delete, add
 
 urlpatterns = [
     path('index/', views.compliance_view),
@@ -10,5 +10,7 @@ urlpatterns = [
     path('lists_2/', views.lists_view_2),
     path('evidence/', views.evidence_view),
     path('evidence_2/', views.evidence_view_2),
-    path('ajax_test/', views.ajax_test),
+    path('delete/', delete.delete),
+    path('add/', add.add),
+    path ('version_modify/', views.versionModify)
 ]
