@@ -40,6 +40,19 @@ def evidence_get_compliance_articles(request):
         json_data = json.dumps({"article_list" :article_list})  
         return HttpResponse(json_data, content_type='application/json')
 
+def evidence_get_laws(request):
+    if request.method == "POST":
+        law_list = evidence.get_laws()
+        json_data = json.dumps({"law_list" :law_list})    
+        return HttpResponse(json_data, content_type='application/json')
+
+def evidence_get_laws_chapter(request):
+    if request.method == "POST":
+        law_seleted=dict(request.POST.items())
+        chapter_list = evidence.get_law_chapters(law_seleted)
+        json_data = json.dumps({"chapter_list" :chapter_list})  
+        return HttpResponse(json_data, content_type='application/json')
+
 
 # Compliance evidence_cate_add - 성연
 def evidence_cate_add(request):

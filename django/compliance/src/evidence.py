@@ -38,6 +38,34 @@ def get_compliance_articles(dict):
     
     return response
 
+def get_laws():
+    response=[]
+    cypher=f"""
+        MATCH (c:Compliance:Law)-[:CHAPTER]->(:Chapter:Law)
+        RETURN DISTINCT c.name 
+    """
+
+    results = graph.run(cypher)
+    for result in results:
+        response.append(result)
+    
+    return response
+
+def get_law_chapters(dict):
+    #만약 chapter까지만 있으면 거기까지만, section까지 있으면 section까지
+    law = dict['law_selected']
+    response=[]
+    cypher=f"""
+        MATCH (c:Compliance:Law{{name:'{law}'}})-[:CHAPTER]->(ch:Chapter)-[:SECTION]->(s:Section)
+        RETURN '['+s.no+'] '+s.name AS s
+    """
+
+    results = graph.run(cypher)
+    for result in results:
+        response.append(result)
+    
+    return response
+
 def add_cate(dict):
     name=dict['name']
     comment=dict['comment']
@@ -71,8 +99,6 @@ def add_cate(dict):
     except Exception:
         return 'fail'
 
-def mod_date(dict):
-    name=dict['name']
 
 
 def del_cate(dict):

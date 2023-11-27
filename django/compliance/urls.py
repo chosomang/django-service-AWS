@@ -18,6 +18,8 @@ urlpatterns = [
     path('evidence_data_add_result/', views.evidence_data_add_result),
     path('evidence_data_del/', views.evidence_data_del),
     path('evidence_get_compliance', views.evidence_get_compliance),
-    path('evidence_get_compliance_articles', views.evidence_get_compliance_articles)
+    path('evidence_get_compliance_articles', views.evidence_get_compliance_articles),
+    path('evidence_get_laws', views.evidence_get_laws),
+    path('evidence_get_laws_chapter', views.evidence_get_laws_chapter)
 
  ]
