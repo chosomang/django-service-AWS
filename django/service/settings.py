@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'M_threatD',
     'configurations',
     'dashboard',
-    # 'compliance',
+    'compliance',
     'testing',
     'rest_framework',
     'django.contrib.admin',
@@ -167,3 +167,6 @@ EMAIL_HOST_PASSWORD = 'ymdriofeqgmuuqst'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from common.risk.v1.notification.alert import check_topbar_alert
 from .src import evidence, lists, lists_2, version_modify
+from . import models
 
 
 # Compliance
@@ -45,3 +46,4 @@ def evidence_view_2(request):
 #     if context['version'] == '1':
 #         context = addSection.addSection(data)
 #     return render(request, f"compliance/section/{sectionType}.html", context)
+

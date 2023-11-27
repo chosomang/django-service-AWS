@@ -106,28 +106,7 @@
         <button type="button" class="btn btn-md btn-teiren" onclick="openModal()">add</button>
     </h4>
 
-    <div id="modalOverlay" class="modal-overlay">
-        <div class="modal-content" style="width:20%">
-            <span class="close-button" onclick="closeModal()" style="font-size:20px">&times;</span>
-            <h2>Input Evidence Information</h2>
-            <form id="evidenceForm" style="font-size:0.7vw">
-                <label for="categoryName">Category:</label>
-                <input type="text" id="categoryName" name="categoryName" required><br>
-                
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required><br>
     
-                <label for="comment">Comment:</label>
-                <textarea id="comment" name="comment" rows="4" required></textarea><br>
-
-                <label for="file">파일 업로드:</label>
-                <input type="file" id="file" name="file">
-                <input type="hidden" name="art_no" id="art_no" value="{{no}}"/>
-                <button type="button" onclick="addEvidence(this)">Submit</button>
-            </form>
-            
-        </div>
-    </div>
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
@@ -159,9 +138,7 @@
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-md btn-teiren">
-                                download
-                            </button>
+                            <label>첨부 파일</label>
                         </td>
                         <td>
                             <form method="post">
@@ -175,6 +152,24 @@
             </table>
         </div>
     </div>
+    <div>
+        <form id="evidence_form" enctype="multipart/form-data">
+            <label for="categoryName">Category:</label>
+            <input type="text" id="categoryName" name="categoryName"><br>
+
+            <label for="name">Name:</label>
+            <input type="text" id="fileTitle" name="fileTitle" placeholder="Enter a title">
+            
+            <label for="comment">Comment:</label>
+            <textarea id="comment" name="comment" rows="4"></textarea><br>
+
+            <input type="file" name="uploadedFile">
+            {% csrf_token %}
+            <input type="hidden" name="art_no" id="art_no" value="{{no}}"/>
+            <input type="submit" value="Upload">
+        </form>
+    </div>
+
 
 <script>
     function deleteEvidence(e){
@@ -191,20 +186,25 @@
     })   
     }
 
-    function addEvidence(e) {
-        var data = $(e).parent().serialize();
+    $('#evidence_form').on('submit', function(e){
+        e.preventDefault();
+
+        var formData = new FormData(this)
+        
         $.ajax({
             url: '/compliance/add/',
             headers: {
                 'X-CSRFToken': '{{csrf_token}}'
             },
-            data: data,
-            type: 'post'
-        }).done(function (response) {
-            alert(response);
-            closeModal();
-        })
-    }
+            data: formData,
+            type: 'post',
+            processData: false,  // Important!
+            contentType: false,  // Important!
+            success: function(response) {
+                alert(response);
+            }
+        });
+    })
 
     function openModal() {
         // Display the modal overlay
