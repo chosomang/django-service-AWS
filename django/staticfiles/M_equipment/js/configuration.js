@@ -83,14 +83,20 @@ $('#trigger_accept').on('click', function() {
             alert(response.error)
             return 0
         } else {
-            console.log('status: ' + response.isRunning)
+            console.log('status: ' + response.status)
+            console.log('isRunning: ' + response.isRunning)
             console.log('container id: ' + response.containerId)
+            console.log('message: ' + response.message)
 
-            if (response.isCreate == 1){
+            if (response.status == 'create'){
                 alert('Collection Started Successfully \n' + response.containerId)
-            } else if (response.isRunning == 1){
+            } else if(response.status == 'running'){
                 alert('Collection Is Already Running!\n' + response.containerId)
-            } else{
+            } else if(response.status == 'delete'){
+                alert('Collection Delete Successfully!\n' + response.message)
+            } else if(response.status == 'none'){
+                alert('Nha.. Collector is maybe not working!\n')
+            }else{
                 alert('Failed To Change Collection Status')
             }
             location.reload()

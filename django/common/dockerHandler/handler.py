@@ -14,7 +14,8 @@ class DockerHandler:
         self.client.containers.get(container_id).start()
     
     def stop_container(self, container_id) -> None:
-        self.client.containers.get(container_id).stop()
+        result = self.client.containers.get(container_id).stop()
+        return result
     
     def remove_container(self, container_id) -> None:
         self.client.containers.get(container_id).remove()
@@ -24,6 +25,7 @@ class DockerHandler:
             image_name,
             detach=True,
             environment=environment,
+            command='python /app/proc.py'
         )
         return container
         
