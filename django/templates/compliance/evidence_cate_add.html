@@ -1,50 +1,56 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
+<div class="form-group row text-center">
+    <div class="col-sm-6 mb-sm-1">
+        <span>Evidence Name</span>
+        <input type="text" class="form-control form-control-user" name="name" placeholder="Evidence Name">
+    </div>
+    <div class="col-sm-6">
+        <span>Evidence Comment</span>
+        <input type="text" class="form-control form-control-user" name="comment" placeholder="Evidence Comment">
+    </div>
+</div>
 
-<!-- Begin Page Content -->
-
-    분류: <input name="name" type="text"><br><br>
-    설명: <input name="comment" type="text"><br><br>
-    인증 매핑 리스트<br><br>
-
-
-    <label for="compliance">상위 카테고리 선택:</label>
-    <select id="compliance" onchange="updateArticles()">
-        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-        <option value="none">선택하세요</option>
-    </select>
-
-    <label for="article_selected">하위 카테고리 선택:</label>
-    <select id="article_selected">
-        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-        <option value="none">상위 카테고리를 선택하세요</option>
-    </select>
-
-    <br><br>법령 매핑 리스트<br><br>
-
-
-    <label for="law">상위 카테고리 선택:</label>
-    <select id="law" onchange="updateLawChapter()">
-        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-        <option value="none">선택하세요</option>
-    </select>
-
-    <label for="chapter_selected">하위 카테고리 선택:</label>
-    <select id="chapter_selected">
-        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-        <option value="none">상위 카테고리를 선택하세요</option>
-    </select>
-
-    <br><br>
-    <button type="button" class="btn btn-md btn-teiren" onclick="add_cate()">저장</button>
+인증 매핑 리스트<br><br>
+<div class="form-group row text-center">
+    <div class="col-sm-6 mb-sm-1">
+        <span>Compliance</span>
+        <select class="form-control form-control-user" id="compliance" name="compliance" style="height:auto" onchange="updateArticles()" >
+            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+            <option value="none">Secelct Compliance</option>
+        </select>
+    </div>
+    <div class="col-sm-6">
+        <span>Article</span>
+        <select class="form-control form-control-user" id="article_selected" name="article_selected" style="height:auto">
+            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+            <option value="none">Secelct Article</option>
+        </select>
+    </div>
+</div>
+<br><br>법령 매핑 리스트<br><br>
+<div class="form-group row text-center">
+    <div class="col-sm-6 mb-sm-1">
+        <span>Compliance</span>
+        <select class="form-control form-control-user" id="law" name="law" style="height:auto" onchange="updateLawChapter()" >
+            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+            <option value="none">Secelct Compliance</option>
+        </select>
+    </div>
+    <div class="col-sm-6">
+        <span>Article</span>
+        <select class="form-control form-control-user" id="chapter_selected" name="chapter_selected" style="height:auto">
+            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+            <option value="none">Secelct Article</option>
+        </select>
+    </div>
+</div>
+<button type="button" class="btn btn-md btn-teiren" onclick="add_cate()">저장</button>
 <script>
     function add_cate(){
         var name=document.querySelector('input[name="name"]');
-        var comment=document.querySelector('input[name="comment"]');
-        console.log(name.value);
-        console.log(comment.value);
-    
+        var comment=document.querySelector('input[name="comment"]');    
 
         $.ajax({
             url: '/compliance/evidence_cate_add/',

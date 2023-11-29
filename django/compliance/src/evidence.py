@@ -188,41 +188,62 @@ def del_data(dict):
     except Exception:
         return 'fail'
 
-def get_category(category=None):
-    response=[]
-    if category==None:
-        cypher=f"""
-            MATCH (c:Category:Compliance:Evidence)
-            RETURN c AS cate
-        """
-
-        results = graph.run(cypher)
-        for result in results:
-            response.append(result)
-            
-    else:
-        cypher=f"""
-            MATCH (c:Category:Compliance:Evidence)
-            WHERE c.name='{category}'
-            RETURN c AS cate
-        """
-        results = graph.run(cypher)
-        for result in results:
-            response.append(result)
-
+def get_category_list():
+    results = graph.run("""
+    MATCH (c:Category:Compliance:Evidence)
+    RETURN
+        c.name AS name,
+        c.comment AS comment
+    """)
+    response = []
+    for result in results:
+        data = dict(result.items())
+        response.append(data)
     return response
 
-def get_data(category=None):
-    if category==None:
-        return "잘못된 데이터"
-    else:
-        data=graph.evaluate(f"""
-            MATCH (c:Category:Compliance:Evidence)-[:DATA]->(d:Compliance:Data:Evidence)
-            WHERE c.name='{category}'
-            RETURN COLLECT(d)
-        """)
+def get_evidence_data(dataName):
+    try:
+        cypher = f"""
+        MATCH (c:Category:Compliance:Evidence)-[:DATA]->(d:Compliance:Data:Evidence)
+        WHERE c.name='{dataName}'
+        """
+        response = graph.run(f"{cypher} RETURN c.name AS cateName, c.comment As cateComment LIMIT 1").data()[0]
+    except:
+        response = {}
+    
+    data_list=[]
+    results = graph.run(f"""{cypher}
+    RETURN
+        d.name AS name,
+        d.comment AS comment,
+        d.version_date AS version,
+        d.author AS author,
+        d.file AS file
+    """)
+    for result in results:
+        data_list.append(dict(result.items()))
+    
+    law_list = []
+    results = graph.run(f"""
+    MATCH (com:Compliance)-[:VERSION]->(ver:Version)-[:CHAPTER]->(chap:Chapter)-[:SECTION]->(sec:Section)-[:ARTICLE]->(arti:Article)<-[:EVIDENCE]-(evi:Evidence)
+    WHERE evi.name="{dataName}"
+    RETURN 
+        com.no AS comNo,
+        com.name AS comName,
+        ver.date AS verDate,
+        chap.no AS chapNo,
+        chap.name AS chapName,
+        sec.no AS secNo,
+        sec.name AS secName,
+        arti.no AS articleNo,
+        arti.name AS articleName
+        ORDER BY arti.no
+    """)
+    for result in results:
+        law_list.append(dict(result.items()))
+    response.update({'data_list': data_list, 'law_list': law_list})
+    return response
 
-    return data
 
 
 def get_law_list(search_cate=None, search_content=None):

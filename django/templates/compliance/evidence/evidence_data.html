@@ -23,26 +23,22 @@
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
                 style="table-layout:fixed;text-align:center;font-size:15px;">
                 <tbody>
-                    {%for c in category%}
                     <tr>
                         <th>분류</th>
-                        <td>{{c.cate.name}}</td>
+                        <td>{{cateName}}</td>
                     </tr>
-
                     <tr>
                         <th>설명</th>
-                        <td>{{c.cate.comment}}</td>
+                        <td>{{cateComment}}</td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">매핑 항목 요약</th>
+                    </tr>
+                    {% for l in law_list %}
+                    <tr>
+                        <td colspan="2">{{l.comName}}</td>
                     </tr>
                     {% endfor %}
-
-                    <tr>
-                        <th>매핑 항목 요약</th>
-                        <td>
-                            {%for l in law_list%}
-                            {{l.com.name}},
-                            {% endfor %}
-                        </td>
-                    </tr>
                 </tbody>
             </table>
         </div>
@@ -82,17 +78,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {%for d in data_list%}
+                    {%for data in data_list%}
                         <tr>
-                            <td>1</td>
-                            <td>{{d.name}}</td>
-                            <td>{{d.comment}}</td>
-                            <td>{{d.version_date}}</td>
-                            <td>{{d.author}}</td>
-                            <td> - </td>
+                            <td>{{forloop.counter}}</td>
+                            {% for key, value in data.items %}
+                                {% if value %}
+                                    <td>{{value}}</td>
+                                {% else %}
+                                    <td>-</td>
+                                {% endif %}
+                            {% endfor %}
                             <td>
-                                <button class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="mod_data()">수정</button>
-                                <button class="btn btn-md btn-teiren" style="font-size:0.7vw" onclick="del_data('{{title}}','{{d.name}}')">삭제</button>
+                                <button class="btn btn-md btn-danger" onclick="mod_data()">수정</button>
+                                <button class="btn btn-md btn-teiren" onclick="del_data('{{title}}','{{data.name}}')">삭제</button>
                             </td>
                         </tr>
                     {% endfor %}
@@ -121,17 +119,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {%for l in law_list%}
-                        <td>1</td>
-                        <td>{{l.com.name}}</td>
-                        <td>{{l.ver.date}}</td>
+                    {%for law in law_list%}
+                        <td>{{forloop.counter}}</td>
+                        <td>{{law.comName}}</td>
+                        <td>{{law.verDate}}</td>
                         <td>
-                            {{l.chap.no}}. {{l.chap.name}} ><br>
-                            {{l.sec.no}}. {{l.sec.name}} ><br>
-                            {{l.arti.no}}. {{l.arti.name}}
+                            {{law.chapNo}}. {{law.chapName}} ><br>
+                            {{law.secNo}}. {{law.secName}} ><br>
+                            {{law.articleNo}}. {{law.articleName}}
                         </td>
                         <td>
-                            <a href="#" class="btn btn-md btn-teiren" style="font-size:0.7vw">
+                            <a href="#" class="btn btn-md btn-teiren">
                                 바로가기
                             </a>
                         </td>
@@ -160,12 +158,12 @@ function del_data(cate, name){
         success: function(response){
             if(response.startsWith('\n<meta')){
                 location.reload()
+                return 0
             }
             if(response === 'success'){ 
                 alert('Saved Successfully')
                 location.reload()
             } else {
-                //alert('Failed To Save. Please Try Again')
                 alert(response)
             }
         },
