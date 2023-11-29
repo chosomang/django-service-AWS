@@ -23,15 +23,15 @@
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
                 style="table-layout:fixed;text-align:center;font-size:15px;">
                 <tbody>
-                    {%for c in category%}
+                    {%for d in data%}
                     <tr>
                         <th>분류</th>
-                        <td>{{c.cate.name}}</td>
+                        <td>{{d.data.name}}</td>
                     </tr>
 
                     <tr>
                         <th>설명</th>
-                        <td>{{c.cate.comment}}</td>
+                        <td>{{d.data.comment}}</td>
                     </tr>
                     {% endfor %}
 

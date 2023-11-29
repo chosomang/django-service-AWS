@@ -12,9 +12,9 @@ graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 def get_compliance():
     response=[]
     cypher=f"""
-        MATCH (c:Compliance)
-        WHERE c.country IS NOT NULL
-        RETURN c.name AS comp
+        MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance)
+        WHERE c.name <> 'Evidence'
+        RETURN c.name
     """
 
     results = graph.run(cypher)
@@ -28,14 +28,13 @@ def get_compliance_articles(dict):
     response=[]
     cypher=f"""
         MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(:Version)-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
-        WHERE c.country IS NOT NULL
-        RETURN '['+a.no+'] '+a.name AS a
+        RETURN a.no AS no, a.name AS name
     """
 
     results = graph.run(cypher)
     for result in results:
-        response.append(result)
-    
+        response.append({'no':result['no'], 'name': result['name']})
+        
     return response
 
 def get_laws():
@@ -66,15 +65,20 @@ def get_law_chapters(dict):
     
     return response
 
-def add_cate(dict):
+def add_data(dict):
     name=dict['name']
     comment=dict['comment']
+    author=dict['author']
+    last_update=datetime.now()
+    compliance=dict['compliance']
+    article_selected=dict['article_selected']
 
     if name == '':
-        return 'NULL'
+        return 'name NULL'
 
+    #중복 체크 필요
     cypher=f"""
-        MATCH (c:Category:Compliance:Evidence{{
+        MATCH (c:Data:Compliance:Evidence{{
             name:'{name}'
         }})
         RETURN count(c)
@@ -82,15 +86,34 @@ def add_cate(dict):
     if graph.evaluate(cypher) >= 1:
         return 'already exist'
 
-    cypher= f"""
-        MATCH (e:Compliance:Evidence{{name:'evidence'}})
-        MERGE (e)-[:CATEGORY]->
-            (c:Category:Compliance:Evidence {{
-            name:'{name}',
-            comment:'{comment}'
-        }})
-        RETURN COUNT(c)
-    """
+    #매핑 리스트가 있을 때(컴플라이언스와 관계 생성)
+    if  name and compliance and article_selected:   
+        cypher= f"""
+                MATCH (e:Compliance:Evidence{{name:'Evidence'}})
+                MATCH (a:Article{{compliance_name:'{compliance}', no:'{article_selected}'}})
+                MERGE (e)-[:DATA]->
+                    (d:Data:Compliance:Evidence {{
+                    name:'{name}',
+                    comment:'{comment}',
+                    author:'{author}',
+                    last_update:'{last_update}'
+                }})-[:EVIDENCE]->(a)
+                RETURN COUNT(d)
+            """
+    #매핑할 애들이 없을 때(그냥 증적 노드만 생성)
+    elif name: 
+        cypher= f"""
+                MATCH (e:Compliance:Evidence{{name:'Evidence'}})
+                MERGE (e)-[:DATA]->
+                    (d:Data:Compliance:Evidence {{
+                    name:'{name}',
+                    comment:'{comment}',
+                    author:'{author}',
+                    last_update:'{last_update}'
+                }})
+                RETURN COUNT(d)
+            """
+
     try:
         if graph.evaluate(cypher) == 1:
             return 'success'
@@ -101,28 +124,21 @@ def add_cate(dict):
 
 
 
-def del_cate(dict):
+def del_data(dict):
     name=dict['name']
     if name == '':
         return 'fail'
 
+    #하위 노드가 있을 경우 하위 노드(파일)까지 모두 삭제, 아니면 Data만 삭제
     cypher=f"""
-        MATCH (e:Compliance:Evidence:Category{{name:'{name}'}})-[:DATA]->(d:Data:Compliance:Evidence)
+        MATCH (d:Compliance:Evidence:Data{{name:'{name}'}})
+        WITH d
+        OPTIONAL MATCH (d)-[:DATA]->(f:File:Compliance:Evidence)
+        WITH d, COLLECT(f) AS file_list
+        FOREACH (f IN file_list| DETACH DELETE f)
+        DETACH DELETE d
         RETURN count(d)
     """
-    if graph.evaluate(cypher) == 0:
-        cypher=f"""
-            MATCH (e:Compliance:Evidence:Category{{name:'{name}'}})
-            DETACH DELETE (e)
-            RETURN count(e)
-        """
-    else:
-        #하위 노드(증적 파일들)까지 모두 삭제 해버림
-        cypher=f"""
-            MATCH (e:Compliance:Evidence:Category{{name:'{name}'}})-[:DATA]->(d:Data:Compliance:Evidence)
-            DETACH DELETE (e),(d)
-            RETURN count(e)
-        """
 
     try:
         if graph.evaluate(cypher) >= 1:
@@ -133,30 +149,35 @@ def del_cate(dict):
         return 'fail'
 
 
-def add_data(dict):
-    cate=dict['cate']
+def add_file(dict):
+    data=dict['data']
     name=dict['name']
     comment=dict['comment']
     author=dict['author']
-    version_date=datetime.now()
+    poc=dict['poc']
+    version=dict['version']
+    last_update=datetime.now()
 
     if name=='':
         return 'NULL'
 
+    #중복체크
     cypher=f"""
-        MATCH (c:Category:Compliance{{name:'{cate}'}})-[:DATA]->(d:Data:Evidence:Compliance{{name:'{name}'}})
-        RETURN count(d)
+        MATCH (d:Data:Evidence:Compliance{{name:'{data}'}})-[:FILE]->(f:File:Evidence:Compliance{{name:'{name}'}})
+        RETURN count(f)
     """
     if graph.evaluate(cypher) >= 1:
         return 'already exist'
 
     cypher= f"""
-        MATCH (c:Category:Compliance:Evidence{{name:'{cate}'}})
-        MERGE (c)-[:DATA]->(d:Compliance:Data:Evidence {{
+        MATCH (d:Data:Compliance:Evidence{{name:'{data}'}})
+        MERGE (d)-[:FILE]->(f:File:Compliance:Evidence {{
             name:'{name}',
             comment:'{comment}',
-            version_date:'{version_date}',
-            author:'{author}'
+            author:'{author}',
+            poc:'{poc}',
+            version:'{version}',
+            last_update:'{last_update}',
         }})
         RETURN count(d)
     """
@@ -170,6 +191,8 @@ def add_data(dict):
     except Exception:
         return 'fail'
 
+
+'''
 def del_data(dict):
     cate=dict['cate']
     name=dict['name']
@@ -187,13 +210,14 @@ def del_data(dict):
             raise Exception
     except Exception:
         return 'fail'
+'''
 
-def get_category(category=None):
+def get_data(data=None):
     response=[]
-    if category==None:
+    if data==None:
         cypher=f"""
-            MATCH (c:Category:Compliance:Evidence)
-            RETURN c AS cate
+            MATCH (d:Data:Compliance:Evidence)
+            RETURN d AS data
         """
 
         results = graph.run(cypher)
@@ -202,9 +226,9 @@ def get_category(category=None):
             
     else:
         cypher=f"""
-            MATCH (c:Category:Compliance:Evidence)
-            WHERE c.name='{category}'
-            RETURN c AS cate
+            MATCH (d:Data:Compliance:Evidence)
+            WHERE d.name='{data}'
+            RETURN d AS data
         """
         results = graph.run(cypher)
         for result in results:
@@ -212,6 +236,7 @@ def get_category(category=None):
 
     return response
 
+'''
 def get_data(category=None):
     if category==None:
         return "잘못된 데이터"
@@ -223,6 +248,8 @@ def get_data(category=None):
         """)
 
     return data
+'''
+
 
 
 def get_law_list(search_cate=None, search_content=None):
