@@ -155,13 +155,13 @@
     <div>
         <form id="evidence_form" enctype="multipart/form-data">
             <label for="categoryName">Category:</label>
-            <input type="text" id="categoryName" name="categoryName"><br>
+            <input type="text" id="categoryName" name="categoryName" required><br>
 
             <label for="name">Name:</label>
-            <input type="text" id="fileTitle" name="fileTitle" placeholder="Enter a title">
+            <input type="text" id="fileTitle" name="fileTitle" placeholder="Enter a title" required>
             
             <label for="comment">Comment:</label>
-            <textarea id="comment" name="comment" rows="4"></textarea><br>
+            <textarea id="comment" name="comment" rows="4" required></textarea><br>
 
             <input type="file" name="uploadedFile">
             {% csrf_token %}
