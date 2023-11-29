@@ -37,8 +37,7 @@ def evidence_data(request, dataName):
         context = {'title':dataName}
         context.update(evidence.get_evidence_data(dataName))
         return render(request, f"compliance/evidence/evidence_data.html", context)
-    else:
-        raise Http404('test')
+    return render(request, "404page.html")
 
 def evidence_get_compliance(request):
     if request.method == "POST":
