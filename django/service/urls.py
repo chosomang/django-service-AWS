@@ -18,11 +18,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-# from django.conf.urls import handler404, handler500
-# from django.views.static import serve
+from django.conf.urls import handler404, handler500
+from django.views.static import serve
 
-# handler404 = 'testing.src.tests.test_400'
-# handler500 = 'testing.src.tests.test_400'
+handler404 = 'testing.src.tests.test_400'
+handler500 = 'testing.src.tests.test_400'
 
 API_VERSION = 'v1'
 AJAX_VERSION = 'v1'
