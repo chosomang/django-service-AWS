@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Begin Page Content -->
+<div class="locationbar ml-2">
+    <span>Compliance &nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;</span>
+    <span class="current">증적관리 <span>
+</div>
+
+<!-- Page Heading -->
+<h2 class="h2 font-weight-bold mb-2 text-gray-800 ml-2">증적 리스트</h2>
+<p class="h4 mb-4 ml-2">전체 증적 관리 및 버전관리, 매핑 관리를 한번에 수행할 수 있습니다.</p>    
+
+<div class="card shadow mb-4" id="log_table">
+    <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-teiren">
+            분류 상세
+            <a href="/compliance/evidence_cate_add" class="btn btn-md btn-teiren" style="font-size:0.7vw">
+                항목 추가
+            </a>
+        </h4>
+    </div>
+    
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                style="table-layout:fixed;text-align:center;font-size:15px;">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>분류</th>
+                        <th>설명</th>
+                        <th>증적</th>
+                        <th>비고</th>
+                        <th>작업</th>
+                    </tr>
+                    </thead>
+                
+                <tbody>
+                    {% for c in category_list%}
+                        <tr>
+                            <td>1</td>
+                            <td>{{ c.cate.name }}</td>
+                            <td>{{c.cate.comment}}</td>
+                            <td>
+                                <form method="POST" action="/compliance/evidence_data/">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="title" value="{{c.cate.name}}"/>
+                                    <input type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw" value="바로가기"/>           
+                                </form>     
+                            </td>
+                            <td> - </td>
+                            <td>
+                                <button type="button" class="btn btn-md btn-teiren" onclick="mod_cate('{{c.cate.name}}')">수정</button>
+                                <button type="button" class="btn btn-md btn-danger" onclick="del_cate('{{c.cate.name}}')">삭제</button>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+function mod_cate(mod_cate_name){
+    console.log(mod_cate_name);
+}
+
+function del_cate(del_cate_name){
+    console.log(del_cate_name);
+    del_cate_name=del_cate_name
+
+    $.ajax({
+        url: '/compliance/evidence_cate_del/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'name': del_cate_name,
+        },
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Saved Successfully')
+                window.location.href= '/compliance/evidence_cate/'
+            } else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+}
+</script>
+{% endblock %}
+
