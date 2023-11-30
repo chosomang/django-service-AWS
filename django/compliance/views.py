@@ -72,14 +72,6 @@ def file(request, at=None):
     else:
         return render(request, f"compliance/evidence/file.html")
 
-
-# Compliance evidence_4 - 성연쓰 테스트 페이지
-def evidence_view_4(request):
-    if request.method=="POST":
-        context=dict(request.POST.items())
-        evidence.add_data(context)
-    return render(request, f"compliance/evidence_4.html", context)
-
 # Compliance evidence_data_add - 증적 추가 페이지
 def add_file(request):
     if request.method=="POST":
