@@ -155,6 +155,50 @@ def add_data(dict):
     except Exception:
         return 'fail'
 
+def mod_data(dict):
+    last_name=dict.get('last_name', '')
+    name = dict.get('mod_name', '')
+    comment = dict.get('mod_comment', '')
+    author = dict.get('mod_author', '')
+    last_update = datetime.now()
+
+    if name == '':
+        return 'name NULL'
+
+    
+    if last_name == name:
+        #data name을 수정하는 게 아니라면
+        cypher= f"""
+            MATCH (d:Data:Compliance{{name:'{last_name}'}})
+            SET d.comment='{comment}', d.author='{author}', d.last_update='{last_update}' 
+            RETURN COUNT(d)
+        """
+    else:
+        #data name도 수정하는거라면 중복체크 필요
+        cypher=f"""
+            MATCH (c:Data:Compliance:Evidence{{
+                name:'{name}'
+            }})
+            RETURN count(c)
+        """
+        if graph.evaluate(cypher) >= 1:
+            return 'already exist'
+
+        cypher= f"""
+            MATCH (d:Data:Compliance{{name:'{last_name}'}})
+            SET d.name='{name}', d.comment='{comment}', d.author='{author}', d.last_update='{last_update}' 
+            RETURN COUNT(d)
+        """
+
+    try:
+        if graph.evaluate(cypher) == 1:
+            return 'success'
+        else:
+            raise Exception
+    except Exception:
+        return author
+        #return 'fail'
+
 
 # data 삭제
 def del_data(dict):

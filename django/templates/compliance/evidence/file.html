@@ -105,7 +105,7 @@
                             <td>{{f.name}}</td>
                             <td>{{f.comment}}</td>
                             <td>{{f.version}}</td>
-                            <td>download btn</td>
+                            <td><button id="downloadBtn" class="btn btn-md btn-teiren" onclick="download_file('{{f.name}}')">Download</button></td>
                             <td>{{f.poc}}</td>
                             <td>{{f.author}}</td>
                             <td>{{f.upload_date}}</td>
@@ -165,7 +165,6 @@
 </div>
 
 <script>
-  
 function del_file(data_name, file_name){
     console.log(data_name);
     console.log(file_name);
@@ -197,6 +196,11 @@ function del_file(data_name, file_name){
         }
     })
 }
+
+function download_file(file_name){
+    console.log(file_name)
+}
+
   </script>
 
 {% endblock %}

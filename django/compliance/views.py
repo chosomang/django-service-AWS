@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .src import evidence, lists
-from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
-
+from django.http import HttpResponse
+from django.conf import settings
+import os
 import json
+from django.http import FileResponse
 
 # Compliance
 def compliance_view(request):
@@ -42,11 +44,13 @@ def get_compliance_articles(request):
 
 # Data 추가
 def add_data(request):
-    if request.method=="POST":
-        data=dict(request.POST.items())
-        return HttpResponse(evidence.add_data(data))
-        
-    return render(request, f"compliance/evidence/data_add.html")
+    data=dict(request.POST.items())
+    return HttpResponse(evidence.add_data(data))
+    
+# Data 수정
+def mod_data(request):
+    data=dict(request.POST.items())
+    return HttpResponse(evidence.mod_data(data))
 
 # Data 삭제
 def del_data(request):
@@ -97,4 +101,3 @@ def del_file(request):
     if request.method=="POST":
         del_file=dict(request.POST.items())
         return HttpResponse(evidence.del_file(del_file))
-

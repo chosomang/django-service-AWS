@@ -5,20 +5,58 @@
 <!-- Begin Page Content -->
 <div class="locationbar ml-2">
     <span>Compliance &nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;</span>
-    <span class="current">증적관리 <span>
+    <span class="current">Evidence <span>
 </div>
 
 <!-- Page Heading -->
-<h2 class="h2 font-weight-bold mb-2 text-gray-800 ml-2">증적 리스트</h2>
-<p class="h4 mb-4 ml-2">전체 증적 관리 및 버전관리, 매핑 관리를 한번에 수행할 수 있습니다.</p>    
+<h2 class="h2 font-weight-bold mb-2 text-gray-800 ml-2">Evidence List</h2>
+<p class="h4 mb-4 ml-2">You can manage the entire evidence, manage the version, and manage the mapping at once.</p>    
 
 <div class="card shadow mb-4" id="log_table">
     <div class="card-header py-3">
         <h4 class="m-0 font-weight-bold text-teiren">
-            분류 상세
-            <a href="/compliance/evidence/data_add" class="btn btn-md btn-teiren" style="font-size:0.7vw">
-                항목 추가
-            </a>
+            Evidence List
+
+            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_add">Add Data</button>           
+            <!-- Add Data Modal -->
+            <div class="modal hide fade card-body" id="data_add" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content" style='width:700px; height:auto'>
+                        <div class="modal-header">
+                            <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Data</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">x</span>
+                            </button>
+                        </div>
+                        <div class="modal-body card-body" style="font-size:12px;">
+                            <div>
+                                Name: <input class="form-control" name="add_name" type="text"><br><br>
+                                Comment: <input class="form-control" name="add_comment" type="text"><br><br>
+                                Author: <input class="form-control" name="add_author" type="text"><br><br>
+                                Relation Compliance<br><br>
+
+
+                                <label for="compliance">Choose Compliance:</label>
+                                <select id="compliance" onchange="updateArticles()">
+                                    <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                                    <option value="none">Choose Compliance</option>
+                                </select>
+                                <br>
+                                <label for="article_selected">Choose Compliance Article:</label>
+                                <select id="article_selected">
+                                    <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                                    <option value="none">Please select a Compliance</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer" id="modal_footer">
+                            <input type='button' id='add_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                            <input type='button' id='add_accept' class="btn btn-md btn-outline-primary" value="Save">
+                        </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </h4>
     </div>
     
@@ -29,12 +67,12 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>name</th>
-                        <th>comment</th>
-                        <th>author</th>
-                        <th>last update</th>
-                        <th>자세히</th>
-                        <th>작업</th>
+                        <th>Name</th>
+                        <th>Comment</th>
+                        <th>Author</th>
+                        <th>Last update</th>
+                        <th>Detail</th>
+                        <th>func</th>
                     </tr>
                     </thead>
                 
@@ -54,8 +92,11 @@
                                 </form>     
                             </td>
                             <td>
-                                <button type="button" class="btn btn-md btn-teiren" onclick="mod_data('{{d.data.name}}')">수정</button>
-                                <button type="button" class="btn btn-md btn-danger" onclick="del_data('{{d.data.name}}')">삭제</button>
+                                <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_mod"
+                                data-name="{{d.data.name}}" data-comment="{{d.data.comment}}" data-author="{{d.data.author}}">Mod</button>                                 
+                                
+
+                                <button type="button" class="btn btn-md btn-danger" onclick="del_data('{{d.data.name}}')">Del</button>
                             </td>
                         </tr>
 
@@ -67,11 +108,235 @@
 </div>
 
 
+<!-- Mod Data Modal -->
+<div class="modal hide fade card-body" id="data_mod" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <div>
+                    <input class="form-control" name="last_name" type="hidden"><br><br>
+                    Data Name: <input class="form-control" name="mod_name" type="text"><br><br>
+                    Comment: <input class="form-control" name="mod_comment" type="text"><br><br>
+                    Author: <input class="form-control" name="mod_author" type="text"><br><br>
+
+                    <!-- Relation Compliance를 추가할 수 있는 코드를 아래 제작해야 함-->
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' id='mod_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='mod_accept' class="btn btn-md btn-outline-primary" value="Modify">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 <script>
-function mod_data(mod_data_name){
-    console.log(mod_data_name);
+$('#data_mod').on('shown.bs.modal', function (e) {
+    var button = $(e.relatedTarget); // 클릭된 버튼
+    var last_name = button.data('name'); // data-name 속성의 값
+    var data_name = button.data('name'); // data-name 속성의 값
+    var data_comment = button.data('comment'); // data-name 속성의 값
+    var data_author = button.data('author'); // data-name 속성의 값
+
+    // 모달 내부 필드에 데이터 표시
+    $('input[name="last_name"]').val(data_name);
+    $('input[name="mod_name"]').val(data_name);
+    $('input[name="mod_comment"]').val(data_comment);
+    $('input[name="mod_author"]').val(data_author);
+
+    // 나머지 필드에 대한 처리도 동일하게 수행 가능
+});
+
+$('#add_accept').click(function() {
+    // Call your Ajax function here
+    var name = $('input[name="add_name"]').val();
+    var comment = $('input[name="add_comment"]').val();
+    var author = $('input[name="add_author"]').val();
+    var compliance=$('#compliance').val();
+    var article_selected=$('#article_selected').val();
+
+    console.log('name: ', name);
+    console.log('comment: ', comment);
+    console.log('article_selected: ', article_selected);
+
+
+    $.ajax({
+        url: '/compliance/evidence/data_add/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'name': name,
+            'comment': comment,
+            'author': author,
+            'compliance': compliance,
+            'article_selected': article_selected
+        },
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Saved Successfully')
+                window.location.href= '/compliance/evidence/data'
+            }else if(response === 'already exist'){
+                alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
+            }else if(response === 'NULL'){
+                alert('Name must be entered. Try Again')
+            }
+            else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+});
+    
+
+// 페이지 로드 시 초기화 함수 호출
+    window.onload = function() {
+    // 상위 카테고리를 서버에서 받아오는 함수 호출
+    fetchCategories();
 }
+
+// 상위 카테고리를 서버에서 받아오는 함수
+function fetchCategories() {
+    var compliance_selected = document.getElementById('compliance');
+    //실제로 데이터 가져오는 곳.
+
+    var compliance_list=[]
+
+    $.ajax({
+        url: '/compliance/evidence_get_compliance',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {},
+        success: function (response) {
+            var compliance_list = response['compliance_list'];
+            
+            for (var i = 0; i < compliance_list.length; i++) {
+                var compliance = compliance_list[i];
+                var optionElement = document.createElement('option');
+                optionElement.value = compliance;
+                //console.log(compliance);
+                optionElement.text = compliance;
+                compliance_selected.add(optionElement);
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+
+}
+
+// 상위 카테고리가 변경될 때 호출되는 함수
+function updateArticles() {
+    var compliance_selected = document.getElementById('compliance');
+    var article_selected = document.getElementById('article_selected');
+    fetchSubCategories()
+}
+
+// 하위 카테고리를 서버에서 받아오는 함수
+function fetchSubCategories() {
+    var compliance_selected = document.getElementById('compliance');
+    //console.log(compliance_selected.value)
+
+    $.ajax({
+        url: '/compliance/evidence/get_compliance_articles',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            "compliance_selected": compliance_selected.value // Send the selected value to the server
+        },
+        success: function (response) {
+            console.log(response);
+            var article_list = response['article_list'];
+
+            article_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
+            var optionElement = document.createElement('option');
+            optionElement.value = ''; // 실제 전달되는 값은 no만
+            optionElement.text = 'Nothing Select';
+
+            article_selected.add(optionElement);
+            // 받아온 카테고리를 드롭다운에 추가
+            for (var i = 0; i < article_list.length; i++) {
+                var article = '['+article_list[i]['no']+'] '+article_list[i]['name'];
+                var optionElement = document.createElement('option');
+                optionElement.value = article_list[i]['no']; // 실제 전달되는 값은 no만
+                console.log(article);
+                optionElement.text = article;
+                article_selected.add(optionElement);
+            }
+        },
+        error: function (xhr, errmsg, err) {
+            console.log(xhr.status + ": " + xhr.responseText);
+        }
+    });
+}
+
+
+$('#mod_accept').click(function() {
+    // Call your Ajax function here
+    var last_name=$('input[name="last_name"]').val();
+    var mod_name = $('input[name="mod_name"]').val();
+    var mod_comment = $('input[name="mod_comment"]').val();
+    var mod_author = $('input[name="mod_author"]').val();
+
+    console.log('last_name: ', last_name);
+    console.log('name: ', mod_name);
+    console.log('comment: ', mod_comment);
+
+
+    $.ajax({
+        url: '/compliance/evidence/data_mod/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'last_name':last_name,
+            'mod_name': mod_name,
+            'mod_comment': mod_comment,
+            'mod_author': mod_author
+        },
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Saved Successfully')
+                window.location.href= '/compliance/evidence/data'
+            }else if(response === 'already exist'){
+                alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
+            }else if(response === 'NULL'){
+                alert('Name must be entered. Try Again')
+            }
+            else {
+                alert(response)
+                //alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+});
 
 function del_data(del_data_name){
     console.log(del_data_name);
@@ -101,6 +366,8 @@ function del_data(del_data_name){
         }
     })
 }
+
+
 </script>
 {% endblock %}
 

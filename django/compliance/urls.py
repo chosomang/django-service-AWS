@@ -10,6 +10,7 @@ urlpatterns = [
     path('lists_2/', views.lists_view_2),
     path('evidence/data/', views.data),
     path('evidence/data_add/', views.add_data),
+    path('evidence/data_mod/', views.mod_data),
     path('evidence/data_del/', views.del_data),
     path('evidence/file/', views.file),
     #path('<at>/evidence_data_add/', views.evidence_data_add),
