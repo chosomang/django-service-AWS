@@ -36,13 +36,14 @@ def add(request):
 
         # Add current timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        uploadedFile.name = uploadedFile.name.replace(' ', '_')
 
         # Create or update the node with properties
         add_evidence = f"""
         MATCH (a:Compliance:Certification:Article{{compliance_name:'Isms_p', no:'{art_no}'}})
         MATCH (c:Evidence:Compliance{{name:'Evidence'}})
         MERGE (n:Compliance:Evidence:Data{{name:'{dataName}', comment:'{dataComment}'}})
-        MERGE (e:Compliance:Evidence:File{{name:'{uploadedFile}', comment:'{fileComment}', upload_date:'{timestamp}', version:'{version}', author:'{author}', poc:'{poc}'}})
+        MERGE (e:Compliance:Evidence:File{{name:'{uploadedFile.name}', comment:'{fileComment}', upload_date:'{timestamp}', version:'{version}', author:'{author}', poc:'{poc}'}})
         MERGE (c)-[:DATA]->(n)
         MERGE (a)<-[:EVIDENCE]-(n)
         merge (n)-[:FILE]->(e)
