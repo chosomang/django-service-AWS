@@ -32,10 +32,8 @@
         var compliance=$('#compliance').val();
         var article_selected=$('#article_selected').val();
 
-        console.log(name.value);
-        console.log(comment.value);
-        console.log(compliance);
-        console.log(article_selected);
+        // console.log(name.value);
+        // console.log(article_selected);
 
 
         $.ajax({
@@ -96,12 +94,11 @@
             success: function (response) {
                 var compliance_list = response['compliance_list'];
                 
-                console.log(compliance_list.length)
                 for (var i = 0; i < compliance_list.length; i++) {
                     var compliance = compliance_list[i];
                     var optionElement = document.createElement('option');
-                    optionElement.value = compliance[i];
-                    console.log(compliance);
+                    optionElement.value = compliance;
+                    //console.log(compliance);
                     optionElement.text = compliance;
                     compliance_selected.add(optionElement);
                 }
@@ -116,16 +113,17 @@
     // 상위 카테고리가 변경될 때 호출되는 함수
     function updateArticles() {
         var compliance_selected = document.getElementById('compliance');
-        var article = document.getElementById('article_selected');
+        var article_selected = document.getElementById('article_selected');
         fetchSubCategories()
     }
 
     // 하위 카테고리를 서버에서 받아오는 함수
     function fetchSubCategories() {
         var compliance_selected = document.getElementById('compliance');
-        console.log(compliance_selected.value)
+        //console.log(compliance_selected.value)
+
         $.ajax({
-            url: '/compliance/evidence_get_compliance_articles',
+            url: '/compliance/evidence/get_compliance_articles',
             headers: {
                 'X-CSRFToken': "{{ csrf_token }}"
             },
@@ -136,9 +134,8 @@
             success: function (response) {
                 console.log(response);
                 var article_list = response['article_list'];
-                // compliance_selected
-                console.log(article_list);
     
+                article_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
                 // 받아온 카테고리를 드롭다운에 추가
                 for (var i = 0; i < article_list.length; i++) {
                     var article = '['+article_list[i]['no']+'] '+article_list[i]['name'];

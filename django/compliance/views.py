@@ -33,7 +33,7 @@ def evidence_get_compliance(request):
         json_data = json.dumps({"compliance_list" :compliance_list})    
         return HttpResponse(json_data, content_type='application/json')
 
-def evidence_get_compliance_articles(request):
+def get_compliance_articles(request):
     if request.method == "POST":
         compliance_selected=dict(request.POST.items())
         article_list = evidence.get_compliance_articles(compliance_selected)
@@ -51,26 +51,26 @@ def add_data(request):
 def del_data(request):
     if request.method=="POST":
         del_data=dict(request.POST.items())
-        return HttpResponse(evidence.del_cate(del_data))
+        return HttpResponse(evidence.del_data(del_data))
 
 # Compliance evidence_data - 성연
-def evidence_data(request, at=None):
+def file(request, at=None):
     if request.method=="POST":
         title=request.POST['title']
 
-        category=evidence.get_category(title)
-        data_list=evidence.get_data(title)
-        law_list=evidence.get_law_list('evi',title)
+        data=evidence.get_data(title)
+        file_list=evidence.get_file(title)
+        compliance_list=evidence.get_compliance_list('evi',title)
         
         context={
             'title':title,
-            'category': category,
-            'data_list': data_list,
-            'law_list':law_list
+            'data': data,
+            'file_list': file_list,
+            'compliance_list':compliance_list
         }
-        return render(request, f"compliance/evidence_data.html", context)
+        return render(request, f"compliance/evidence/file.html", context)
     else:
-        return render(request, f"compliance/evidence_data.html")
+        return render(request, f"compliance/evidence/file.html")
 
 
 # Compliance evidence_4 - 성연쓰 테스트 페이지
@@ -81,26 +81,26 @@ def evidence_view_4(request):
     return render(request, f"compliance/evidence_4.html", context)
 
 # Compliance evidence_data_add - 증적 추가 페이지
-def add_data(request):
+def add_file(request):
     if request.method=="POST":
         title=request.POST['title']
-        category=evidence.get_category(title)
+        data=evidence.get_data(title)
 
         context={
-            'category': category,
+            'data': data,
         }
-    return render(request, f"compliance/evidence/data_add.html", context)
+    return render(request, f"compliance/evidence/file_add.html", context)
 
 # Compliance evidence_data_add - 증적 추가 페이지
-def evidence_data_add_result(request):
+def add_file_func(request):
     if request.method=="POST":
-        add_data=dict(request.POST.items())
-        return HttpResponse(evidence.add_data(add_data))
+        add_file=dict(request.POST.items())
+        return HttpResponse(evidence.add_file(add_file))
         
     return render(request, f"compliance/evidence_cate_add.html")
 
-def evidence_data_del(request):
+def del_file(request):
     if request.method=="POST":
-        del_data=dict(request.POST.items())
-        return HttpResponse(evidence.del_data(del_data))
+        del_file=dict(request.POST.items())
+        return HttpResponse(evidence.del_file(del_file))
 

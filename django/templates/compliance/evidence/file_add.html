@@ -15,10 +15,10 @@
       {{d.data.comment}}<br><br>
        
     <form id="add_file">
-      <input name="data" value="{{d.data.name}}" type="hidden"/>
+      <input name="data_name" value="{{d.data.name}}" type="hidden"/>
 
       File name:
-      <input name="name" type="text"><br><br>
+      <input name="file_name" type="text"><br><br>
 
       File comment:
       <input name="comment" type="text"><br><br>
@@ -37,7 +37,7 @@
       <input name="file" type="file" accept="image/*, .pdf, .xlsx, .xls, .hwp, .hwpx, .ppt, .pptx, .csv, .docx, .doc"><br><br>
 
   </form>
-  <button class="btn btn-md btn-teiren" onclick="add_file('{{data}}')"/>제출</button>
+  <button class="btn btn-md btn-teiren" onclick="add_file('{data_name}')">제출</button>
   {% endfor %}
 
 </form>
@@ -46,7 +46,7 @@
   function add_file(data_name){
     var data=$('#add_file').serialize()
       $.ajax({
-          url: '/compliance/evidence/file_add/',
+          url: '/compliance/evidence/file_add_func/',
           headers: {
               'X-CSRFToken': "{{ csrf_token }}"
           },
@@ -58,7 +58,7 @@
               }
               if(response === 'success'){
                   alert('Saved Successfully')
-                  location.reload()
+                  //location.reload()
               }else if(response === 'already exist'){
                 alert('file name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
               }else if(response === 'NULL'){

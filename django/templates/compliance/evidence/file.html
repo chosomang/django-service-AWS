@@ -15,7 +15,7 @@
 <p class="h4 mb-4 ml-2">{{title}} 분류에 대한 내용 및 관련 법령, 매핑 항목, 증적 버전 관리 등을 수행할 수 있습니다.</p>    
 <div class="card shadow mb-4" id="log_table">
     <div class="card-header py-3">
-        <h4 class="m-0 font-weight-bold text-teiren">증적 리스트</h4>
+        <h4 class="m-0 font-weight-bold text-teiren">Overview</h4>
     </div>
     
     <div class="card-body" style="font-size:15px;">
@@ -25,24 +25,39 @@
                 <tbody>
                     {%for d in data%}
                     <tr>
-                        <th>분류</th>
+                        <th>Name</th>
                         <td>{{d.data.name}}</td>
                     </tr>
 
                     <tr>
-                        <th>설명</th>
+                        <th>Comment</th>
                         <td>{{d.data.comment}}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Poc</th>
+                        <td>{{d.data.poc}}</td>
+                    </tr>
+
+                    
+                    <tr>
+                        <th>Version</th>
+                        <td>{{d.data.version}}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Author</th>
+                        <td>{{d.data.author}}</td>
+                    </tr>
+
+
+                    <tr>
+                        <th>Last Update Time</th>
+                        <td>{{d.data.last_update}}</td>
                     </tr>
                     {% endfor %}
 
-                    <tr>
-                        <th>매핑 항목 요약</th>
-                        <td>
-                            {%for l in law_list%}
-                            {{l.com.name}},
-                            {% endfor %}
-                        </td>
-                    </tr>
+                    
                 </tbody>
             </table>
         </div>
@@ -51,14 +66,14 @@
 
 <div class="card shadow mb-4" id="log_table">
     <div class="card-header py-3">
-        <h4 class="m-0 font-weight-bold text-teiren">최근 증적 미리보기</h4>
+        <h4 class="m-0 font-weight-bold text-teiren">Current Evidence Preview</h4>
     </div>
 
-    <h2> 준비중입니다.</h2>
+    <h2> 즌비증~</h2>
 
     <div class="card-header py-3">
-        <form method="POST" action="/compliance/evidence_data_add/">
-            <h4 class="m-0 font-weight-bold text-teiren">증적 현황
+        <form method="POST" action="/compliance/evidence/file_add/">
+            <h4 class="m-0 font-weight-bold text-teiren">Evidence Version Manage
                 {% csrf_token %}
                 <input type="hidden" name="title" value="{{title}}"/>
                 <input type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw" value="증적추가"/>
@@ -73,26 +88,30 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>파일명</th>
-                        <th>세부설명</th>
-                        <th>버전</th>
-                        <th>작성자</th>
-                        <th>파일</th>
-                        <th>작업</th>
+                        <th>name</th>
+                        <th>comment</th>
+                        <th>version</th>
+                        <th>download</th>
+                        <th>poc</th>
+                        <th>author</th>
+                        <th>upload</th>
+                        <th>func</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {%for d in data_list%}
+                    {%for f in file_list%}
                         <tr>
                             <td>1</td>
-                            <td>{{d.name}}</td>
-                            <td>{{d.comment}}</td>
-                            <td>{{d.version_date}}</td>
-                            <td>{{d.author}}</td>
-                            <td> - </td>
+                            <td>{{f.name}}</td>
+                            <td>{{f.comment}}</td>
+                            <td>{{f.version}}</td>
+                            <td>download btn</td>
+                            <td>{{f.poc}}</td>
+                            <td>{{f.author}}</td>
+                            <td>{{f.upload_date}}</td>
                             <td>
-                                <button class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="mod_data()">수정</button>
-                                <button class="btn btn-md btn-teiren" style="font-size:0.7vw" onclick="del_data('{{title}}','{{d.name}}')">삭제</button>
+                                <button class="btn btn-md btn-teiren" style="font-size:0.7vw" onclick="mod_file()">수정</button>
+                                <button class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_file('{{title}}','{{f.name}}')">삭제</button>
                             </td>
                         </tr>
                     {% endfor %}
@@ -121,14 +140,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {%for l in law_list%}
+                    {%for c in compliance_list%}
                         <td>1</td>
-                        <td>{{l.com.name}}</td>
-                        <td>{{l.ver.date}}</td>
+                        <td>{{c.ver.name}}</td>
+                        <td>{{c.ver.date}}</td>
                         <td>
-                            {{l.chap.no}}. {{l.chap.name}} ><br>
-                            {{l.sec.no}}. {{l.sec.name}} ><br>
-                            {{l.arti.no}}. {{l.arti.name}}
+                            {{c.chap.no}}. {{c.chap.name}} ><br>
+                            {{c.sec.no}}. {{c.sec.name}} ><br>
+                            {{c.arti.no}}. {{c.arti.name}}
                         </td>
                         <td>
                             <a href="#" class="btn btn-md btn-teiren" style="font-size:0.7vw">
@@ -144,18 +163,19 @@
 
 <script>
   
-function del_data(cate, name){
-    console.log(name);
+function del_file(data_name, file_name){
+    console.log(data_name);
+    console.log(file_name);
 
     $.ajax({
-        url: '/compliance/evidence_data_del/',
+        url: '/compliance/evidence/file_del/',
         headers: {
             'X-CSRFToken': "{{ csrf_token }}"
         },
         type: 'POST',
         data: {
-            'cate': cate,
-            'name': name
+            'data_name': data_name,
+            'file_name': file_name
         },
         success: function(response){
             if(response.startsWith('\n<meta')){
