@@ -138,6 +138,7 @@ def static_cypher(rule, logType):
             {rule_properties}
             ruleClass: 'static',
             ruleType: 'custom',
+            status: 'Add',
             ruleCount: '{rule['ruleCount'] if 'ruleCount' in rule else 1}',
             timeRange: '{rule['timeRange'] if 'timeRange' in rule else 0}'
         }}
@@ -393,6 +394,7 @@ def dynamic_cypher(flows, wheres, rule, count, logType):
         timeRange: {rule['timeRange']},
         ruleType: 'custom',
         ruleClass : 'dynamic',
+        status: 'Add',
         wheres: {where_prop}
     }})
     """
