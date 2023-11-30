@@ -21,8 +21,8 @@ from django.conf.urls.static import static
 from django.conf.urls import handler404, handler500
 from django.views.static import serve
 
-handler404 = 'testing.src.tests.test_400'
-handler500 = 'testing.src.tests.test_400'
+handler404 = 'common.views.error_page'
+handler500 = 'common.views.error_page'
 
 API_VERSION = 'v1'
 AJAX_VERSION = 'v1'

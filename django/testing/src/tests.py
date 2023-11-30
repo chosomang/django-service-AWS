@@ -37,7 +37,7 @@ def main_test(request):
         ip = x_forwarded_for.split(',')[0] # 'X-Forwarded-For' header can contain multiple IP addresses
     else:
         ip = request.META.get('REMOTE_ADDR')
-    context = {'test': str(type(ip))}
+    context = {'test': ip}
     return render(request, 'testing/test.html', context)
 
 
