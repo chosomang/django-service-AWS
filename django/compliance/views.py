@@ -20,7 +20,7 @@ def lists_view_2(request):
     return render(request, f"compliance/lists_2.html")
 
 
-# Compliance evidence - 성연
+# Data 리스트 출력 페이지
 def data(request):
     context={
         'data_list': evidence.get_data()
@@ -40,7 +40,7 @@ def get_compliance_articles(request):
         json_data = json.dumps({"article_list" :article_list})  
         return HttpResponse(json_data, content_type='application/json')
 
-# Compliance evidence_cate_add - 성연
+# Data 추가
 def add_data(request):
     if request.method=="POST":
         data=dict(request.POST.items())
@@ -48,12 +48,13 @@ def add_data(request):
         
     return render(request, f"compliance/evidence/data_add.html")
 
+# Data 삭제
 def del_data(request):
     if request.method=="POST":
         del_data=dict(request.POST.items())
         return HttpResponse(evidence.del_data(del_data))
 
-# Compliance evidence_data - 성연
+# file 출력 (Data 바로가기)
 def file(request, at=None):
     if request.method=="POST":
         title=request.POST['title']
@@ -72,7 +73,7 @@ def file(request, at=None):
     else:
         return render(request, f"compliance/evidence/file.html")
 
-# Compliance evidence_data_add - 증적 추가 페이지
+# file 추가 페이지 view
 def add_file(request):
     if request.method=="POST":
         title=request.POST['title']
@@ -83,7 +84,7 @@ def add_file(request):
         }
     return render(request, f"compliance/evidence/file_add.html", context)
 
-# Compliance evidence_data_add - 증적 추가 페이지
+# file 추가 시, 함수 동작
 def add_file_func(request):
     if request.method=="POST":
         add_file=dict(request.POST.items())
@@ -91,6 +92,7 @@ def add_file_func(request):
         
     return render(request, f"compliance/evidence_cate_add.html")
 
+# file 삭제
 def del_file(request):
     if request.method=="POST":
         del_file=dict(request.POST.items())

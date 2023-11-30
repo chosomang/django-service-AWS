@@ -41,7 +41,7 @@
                 <tbody>
                     {% for d in data_list%}
                         <tr>
-                            <td>1</td>
+                            <td>{{forloop.counter}}</td>
                             <td>{{ d.data.name }}</td>
                             <td>{{d.data.comment}}</td>
                             <td>{{d.data.author}}</td>

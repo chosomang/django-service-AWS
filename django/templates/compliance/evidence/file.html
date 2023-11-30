@@ -101,7 +101,7 @@
                 <tbody>
                     {%for f in file_list%}
                         <tr>
-                            <td>1</td>
+                            <td>{{forloop.counter}}</td>
                             <td>{{f.name}}</td>
                             <td>{{f.comment}}</td>
                             <td>{{f.version}}</td>
@@ -133,27 +133,30 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>인증/법령</th>
-                        <th>버전</th>
-                        <th>항목</th>
+                        <th>Compliance</th>
+                        <th>Version Date</th>
+                        <th>Chapter</th>
+                        <th>Section</th>
+                        <th>Article</th>
                         <th>바로가기</th>
                     </tr>
                 </thead>
                 <tbody>
                     {%for c in compliance_list%}
-                        <td>1</td>
+                    <tr>
+                        <td>{{forloop.counter}}</td>
                         <td>{{c.ver.name}}</td>
                         <td>{{c.ver.date}}</td>
-                        <td>
-                            {{c.chap.no}}. {{c.chap.name}} ><br>
-                            {{c.sec.no}}. {{c.sec.name}} ><br>
-                            {{c.arti.no}}. {{c.arti.name}}
-                        </td>
+                        <td>{{c.chap.no}}. {{c.chap.name}}</td>
+                        <td>{{c.sec.no}}. {{c.sec.name}}</td>
+                        <td>{{c.arti.no}}. {{c.arti.name}}</td>
+
                         <td>
                             <a href="#" class="btn btn-md btn-teiren" style="font-size:0.7vw">
                                 바로가기
                             </a>
                         </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -9,6 +9,7 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 
+# 전체 컴플라이언스 리스트 가져오기 (Evidence 노드 제외)
 def get_compliance():
     response=[]
     cypher=f"""
@@ -23,6 +24,7 @@ def get_compliance():
     
     return response
 
+# 컴플라이언스에 맞는 article 가져오기
 def get_compliance_articles(dict):
     compliance = dict['compliance_selected']
     response=[]
@@ -34,21 +36,14 @@ def get_compliance_articles(dict):
 
         UNION
 
-        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
+        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(:Version)-[:CHAPTER]->(:Chapter)-[:ARTICLE]->(a:Article)
         WITH a
         WHERE a IS NOT NULL
         RETURN a.no AS no, a.name AS name ORDER BY a.no
 
         UNION
 
-        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:CHAPTER]->(:Chapter)-[:ARTICLE]->(a:Article)
-        WITH a
-        WHERE a IS NOT NULL
-        RETURN a.no AS no, a.name AS name ORDER BY a.no
-
-        UNION
-
-        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:ARTICLE]->(a:Article)
+        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(:Version)-[:ARTICLE]->(a:Article)
         WITH a
         WHERE a IS NOT NULL
         RETURN a.no AS no, a.name AS name ORDER BY a.no
@@ -60,41 +55,40 @@ def get_compliance_articles(dict):
         
     return response
 
-def get_laws():
+# data 목록 가져오기
+def get_data(data=None):
     response=[]
-    cypher=f"""
-        MATCH (c:Compliance:Law)-[:CHAPTER]->(:Chapter:Law)
-        RETURN DISTINCT c.name 
-    """
+    if data==None:
+        cypher=f"""
+            MATCH (d:Data:Compliance:Evidence)
+            RETURN d AS data
+        """
 
-    results = graph.run(cypher)
-    for result in results:
-        response.append(result)
-    
+        results = graph.run(cypher)
+        for result in results:
+            response.append(result)
+            
+    else:
+        cypher=f"""
+            MATCH (d:Data:Compliance:Evidence)
+            WHERE d.name='{data}'
+            RETURN d AS data
+        """
+        results = graph.run(cypher)
+        for result in results:
+            response.append(result)
+
     return response
 
-def get_law_chapters(dict):
-    #만약 chapter까지만 있으면 거기까지만, section까지 있으면 section까지
-    law = dict['law_selected']
-    response=[]
-    cypher=f"""
-        MATCH (c:Compliance:Law{{name:'{law}'}})-[:CHAPTER]->(ch:Chapter)-[:SECTION]->(s:Section)
-        RETURN '['+s.no+'] '+s.name AS s
-    """
 
-    results = graph.run(cypher)
-    for result in results:
-        response.append(result)
-    
-    return response
-
+# data 추가
 def add_data(dict):
-    name=dict['name']
-    comment=dict['comment']
-    author=dict['author']
-    last_update=datetime.now()
-    compliance=dict['compliance']
-    article_selected=dict['article_selected']
+    name = dict.get('name', '')
+    comment = dict.get('comment', '')
+    author = dict.get('author', '')
+    last_update = datetime.now()
+    compliance = dict.get('compliance', '')
+    article_selected = dict.get('article_selected', '')
 
     if name == '':
         return 'name NULL'
@@ -108,9 +102,11 @@ def add_data(dict):
     """
     if graph.evaluate(cypher) >= 1:
         return 'already exist'
+        
 
     #매핑 리스트가 있을 때(컴플라이언스와 관계 생성)
-    if  name and compliance and article_selected:   
+    if article_selected!='none' and article_selected: 
+        #article까지 selected 했을 때
         cypher= f"""
                 MATCH (e:Compliance:Evidence{{name:'Evidence'}})
                 MATCH (a:Article{{compliance_name:'{compliance}', no:'{article_selected}'}})
@@ -123,8 +119,22 @@ def add_data(dict):
                 }})-[:EVIDENCE]->(a)
                 RETURN COUNT(d)
             """
+    elif compliance!='none' and compliance: 
+    # 컴플라이언스만 selected 했을 때
+        cypher= f"""
+                MATCH (e:Compliance:Evidence{{name:'Evidence'}})
+                MATCH (c:Version:Compliance{{name:'{compliance}'}})
+                MERGE (e)-[:DATA]->
+                    (d:Data:Compliance:Evidence {{
+                    name:'{name}',
+                    comment:'{comment}',
+                    author:'{author}',
+                    last_update:'{last_update}'
+                }})-[:EVIDENCE]->(c)
+                RETURN COUNT(d)
+            """  
     #매핑할 애들이 없을 때(그냥 증적 노드만 생성)
-    elif name: 
+    else: 
         cypher= f"""
                 MATCH (e:Compliance:Evidence{{name:'Evidence'}})
                 MERGE (e)-[:DATA]->
@@ -146,7 +156,7 @@ def add_data(dict):
         return 'fail'
 
 
-
+# data 삭제
 def del_data(dict):
     name=dict['name']
     if name == '':
@@ -172,6 +182,20 @@ def del_data(dict):
         return 'fail'
 
 
+# file 리스트 가져오기
+def get_file(data=None):
+    if data==None:
+        return "잘못된 데이터"
+    else:
+        data=graph.evaluate(f"""
+            MATCH (d:Data:Compliance:Evidence{{name:'{data}'}})-[:FILE]->(file:File:Compliance:Evidence)
+            RETURN collect(file)
+        """)
+
+    return data
+
+
+# file 추가
 def add_file(dict):
     data_name=dict['data_name']
     file_name=dict['file_name']
@@ -215,7 +239,7 @@ def add_file(dict):
         return 'fail'
 
 
-
+# file 삭제
 def del_file(dict):
     data_name=dict['data_name']
     file_name=dict['file_name']
@@ -235,61 +259,36 @@ def del_file(dict):
         return 'fail'
 
 
-def get_data(data=None):
-    response=[]
-    if data==None:
-        cypher=f"""
-            MATCH (d:Data:Compliance:Evidence)
-            RETURN d AS data
-        """
 
-        results = graph.run(cypher)
-        for result in results:
-            response.append(result)
-            
-    else:
-        cypher=f"""
-            MATCH (d:Data:Compliance:Evidence)
-            WHERE d.name='{data}'
-            RETURN d AS data
-        """
-        results = graph.run(cypher)
-        for result in results:
-            response.append(result)
-
-    return response
-
-def get_file(data=None):
-    if data==None:
-        return "잘못된 데이터"
-    else:
-        data=graph.evaluate(f"""
-            MATCH (d:Data:Compliance:Evidence{{name:'{data}'}})-[:FILE]->(file:File:Compliance:Evidence)
-            RETURN collect(file)
-        """)
-
-    return data
-
-
-# 컴플라이언스와 증적 파일과 매핑된 애들을 갖고 오기
+# 컴플라이언스와 증적 파일이 매핑된 애들을 갖고 오기
 def get_compliance_list(search_cate=None, search_content=None):
-    '''
-        MATCH (l:Law:Compliance)-[:CHAPTER]->(c:Chapter:Law:Compliance)-[:SECTION]->(s:Section)-[:MAPPED]->(a:Article:Compliance:Isms_p)<-[:EVIDENCE]-(e:Evidence:Category)
-        WHERE e.name='{evidence_cate}'
-        RETURN l AS law, c AS chapter, a AS article, s AS section
-    '''
     response=[]
     
     if search_cate=="com":
         cypher=f"""
-            MATCH (com:Compliance)-[:VERSION]->(ver:Version)-[:CHAPTER]->(chap:Chapter)-[:SECTION]->(sec:Section)-[:ARTICLE]->(arti:Article)
-            WHERE {search_cate}.name="{search_content}"
+            MATCH (com:Compliance{{name:'{search_content}'}})-[:VERSION]->(ver:Version)-[:CHAPTER]->(chap:Chapter)-[:SECTION]->(sec:Section)-[:ARTICLE]->(arti:Article)
             RETURN com, ver, chap, sec, arti ORDER BY arti.no
         """
     elif search_cate=="evi":
         cypher=f"""
             MATCH (ver:Version:Compliance)-[:CHAPTER]->(chap:Chapter)-[:SECTION]->(sec:Section)-[:ARTICLE]->(arti:Article)<-[:EVIDENCE]-(evi:Data:Compliance:Evidence{{name:'{search_content}'}})
             RETURN ver, chap, sec, arti ORDER BY arti.no
+
+            UNION
+
+            MATCH (ver:Version:Compliance)-[:CHAPTER]->(chap:Chapter)-[:ARTICLE]->(arti:Article)<-[:EVIDENCE]-(evi:Data:Compliance:Evidence{{name:'{search_content}'}})
+            RETURN ver, chap, '' AS sec, arti ORDER BY arti.no
+
+            UNION
+
+            MATCH (ver:Version:Compliance)-[:ARTICLE]->(arti:Article)<-[:EVIDENCE]-(evi:Data:Compliance:Evidence{{name:'{search_content}'}})
+            RETURN ver, '' AS chap, '' AS sec, arti ORDER BY arti.no
+
+            UNION
+
+            MATCH (ver:Version:Compliance)<-[:EVIDENCE]-(evi:Data:Compliance:Evidence{{name:'{search_content}'}})
+            RETURN ver, '' AS chap, '' AS sec, '' AS arti
+
         """
 
     results = graph.run(cypher)

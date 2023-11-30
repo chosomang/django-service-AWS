@@ -32,8 +32,9 @@
         var compliance=$('#compliance').val();
         var article_selected=$('#article_selected').val();
 
-        // console.log(name.value);
-        // console.log(article_selected);
+        console.log(name.value);
+        console.log('compliance: ', compliance);
+        console.log('article_selected: ', article_selected);
 
 
         $.ajax({
@@ -136,6 +137,11 @@
                 var article_list = response['article_list'];
     
                 article_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
+                var optionElement = document.createElement('option');
+                optionElement.value = ''; // 실제 전달되는 값은 no만
+                optionElement.text = '선택 안함';
+
+                article_selected.add(optionElement);
                 // 받아온 카테고리를 드롭다운에 추가
                 for (var i = 0; i < article_list.length; i++) {
                     var article = '['+article_list[i]['no']+'] '+article_list[i]['name'];
