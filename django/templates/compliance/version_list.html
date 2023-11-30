@@ -9,8 +9,7 @@
                 <th>Article</th>
                 <th>Comment</th>
                 <th>준수 여부</th>
-                <th>사내 정책</th>
-                <th>운영 현황</th>
+                <th>Last Update</th>
                 <th>Details</th>
             </tr>
             </thead>
@@ -21,8 +20,7 @@
                 <th>Article</th>
                 <th>Comment</th>
                 <th>준수 여부</th>
-                <th>사내 정책</th>
-                <th>운영 현황</th>
+                <th>Last Update</th>
                 <th>Details</th>
             </tr>
             </tfoot>
@@ -41,24 +39,7 @@
                     <td>
                         checkbox
                     </td>
-                    <td>
-                        <img src="{% static '/img/doc.png' %}" style="height:1.3em">
-                    </td>
-                    <td>
-                        {% if com.files == '-' %}
-                        <img src="{% static '/img/text.png' %}" style="height:1.3em">
-                        {% else %}
-                        {% for i in com.files %}
-                            {% if i == 'pdf' %}
-                            <img src="{% static '/img/pdf.png' %}" style="height:1.3em">
-                            {% elif i == 'jpg' %}
-                            <img src="{% static '/img/image.png' %}" style="height:1.3em">
-                            {% else %}
-                            <img src="{% static '/img/image.png' %}" style="height:1.3em">
-                            {% endif %}
-                        {% endfor %}
-                        {% endif %}
-                    </td>
+                    <td>date</td>
                     <td>
                         <form  method="POST" action="/compliance/lists_2/">
                             {% csrf_token %}

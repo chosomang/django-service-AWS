@@ -12,34 +12,29 @@ graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 def test(data):
     no = data['no']
 
-    results = graph.run(f"""
-    MATCH (l:Law)-[:CHAPTER]->(c:Chapter)-[*]->(i:Isms_p{{no:'{no}'}})
-    OPTIONAL MATCH (c:Chapter)-[relation]->(element)<-[MAPPED]->(i:Isms_p{{no:'{no}'}})
-    WITH
-        l.name as lawName,
-        c.name as chapterName,
-        c.no as chapterNo,
-        COLLECT(DISTINCT
-            CASE
-                WHEN element:Section and relation:SECTION THEN {{ name: element.name, no: element.no + '조' }}
-                WHEN element is null and relation is null THEN {{ name: '-', no: '-' }}
-                ELSE {{ name: element.name, no: element.no }}
-            END
-        ) as sections
-    UNWIND sections as section
-    RETURN DISTINCT
-        lawName,
-        chapterName,
-        chapterNo,
-        section.no as sectionNo,
-        section.name as sectionName
+    results  = graph.run(f"""
+    OPTIONAL MATCH (l:Law)-[:VERSION]->(v:Version)-[*]->(a:Article)<-[:MAPPED]->(i:Certification{{no:'{no}'}})
+    WITH l, v, a, i
+    OPTIONAL MATCH (v)-[:CHAPTER]->(c:Chapter)-[:SECTION]->(s:Section)-[:ARTICLE]->(a)<-[:MAPPED]->(i)
+    WITH l, v, c, a, i, s
+    OPTIONAL MATCH (v)-[:CHAPTER]->(c1:Chapter)-[:ARTICLE]->(a)<-[:MAPPED]->(i)
+    RETURN
+    COALESCE(l.name, '') AS lawName,
+    COALESCE(COALESCE(c.no + '장', '') + COALESCE(c1.no + '장', ''), '') AS chapterNo,
+    COALESCE(COALESCE(c.name, '') + COALESCE(c1.name, ''), '') AS chapterName,
+    COALESCE(s.no + '절', '') AS sectionNo,
+    COALESCE(s.name, '') AS sectionName,
+    COALESCE(a.no + '조', '') AS articleNo,
+    COALESCE(a.name, '') AS articleName
+    ORDER BY lawName
     """)
     law = []
     for result in results:
         law.append(dict(result.items()))
     
+    # query 수정 완
     results = graph.run(f"""
-    MATCH (n:Isms_p:Compliance:Article{{no:'{no}'}})
+    MATCH (n:Certification:Compliance:Article{{compliance_name:'Isms_p', no:'{no}'}})
     RETURN
         n.no as articleNo,
         n.name as articleName,
@@ -51,25 +46,30 @@ def test(data):
     for result in results:
         article.append(dict(result.items()))
 
+    #query 수정 완 
     results = graph.run(f"""
-    MATCH (d:Data:Compliance:Evidence)<-[:DATA]-(c:Compliance:Evidence:Category)-[:EVIDENCE]->(a:Compliance:Isms_p:Article{{no:'{no}'}})
+    MATCH (f:File:Compliance:Evidence)<-[:FILE]-(d:Compliance:Evidence:Data)-[:EVIDENCE]->(a:Compliance:Certification:Article{{compliance_name:'Isms_p', no:'{no}'}})
     RETURN
+        f.name as fileName,
+        f.comment as fileComment,
+        f.version as fileVersion,
+        f.file as dataFile,
+        f.last_update as fileLastUpdate,
+        f.upload_date as fileUploadDate,
+        f.poc as filePoc,
+        f.author as fileAuthor,
         d.name as dataName,
-        d.comment as dataComment,
-        d.version_date as dataVersion,
-        d.file as dataFile,
-        c.name as categoryName,
-        c.comment as categoryComment
+        d.comment as dataComment
     """)
     evidence = []
     for result in results:
         evidence.append(dict(result.items()))
 
     results = graph.run(f"""
-    MATCH (c:Compliance:Evidence:Category)-[:EVIDENCE]->(a:Compliance:Isms_p:Article{{no:'{no}'}})
+    MATCH (c:Compliance:Evidence:Data)-[:EVIDENCE]->(a:Compliance:Certification:Article{{compliance_name:'Isms_p', no:'{no}'}})
     RETURN
-        c.name as categoryName,
-        c.comment as categoryComment,
+        c.name as dataName,
+        c.comment as dataComment,
         a.no as art_no
     """)
     category = []

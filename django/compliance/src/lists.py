@@ -12,10 +12,9 @@ graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 def version():
 
     results = graph.run(f"""
-    MATCH (c:Chapter:Compliance:Isms_p)-[:SECTION]->(n:Isms_p:Compliance:Section)-[:ARTICLE]->(m:Isms_p:Compliance:Article)
-    optional match (m)<-[:EVIDENCE]-(ca:Category)-[:DATA]->(da:Data)
-    WITH split(m.no, '.') as articleNo, c, n, m, split(da.file,'.')[1] as file
-    WITH toInteger(articleNo[0]) AS part1, toInteger(articleNo[1]) AS part2, toInteger(articleNo[2]) AS part3, c, n, m, collect(file) as files
+    MATCH (c:Chapter:Compliance:Certification)-[:SECTION]->(n:Certification:Compliance:Section)-[:ARTICLE]->(m:Certification:Compliance:Article)
+    WITH split(m.no, '.') as articleNo, c, n, m
+    WITH toInteger(articleNo[0]) AS part1, toInteger(articleNo[1]) AS part2, toInteger(articleNo[2]) AS part3, c, n, m
     RETURN
         c.no as chapterNo,
         c.name as chapterName,
@@ -23,11 +22,7 @@ def version():
         n.name as sectionName,
         m.no as articleNo,
         m.name as articleName,
-        m.comment as articleComment,
-        CASE
-            WHEN files=[] THEN '-'
-            ELSE files
-        END as files
+        m.comment as articleComment
         ORDER BY part1, part2, part3
     """)
     response = []
@@ -45,7 +40,7 @@ def version():
 
 
     version_list = graph.evaluate(f"""
-        MATCH (n:Isms_p:Compliance:Version)       
+        MATCH (n:Compliance:Version{{name:'Isms_p'}})       
         return COLLECT(n.date)
     """)
     

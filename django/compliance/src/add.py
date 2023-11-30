@@ -18,13 +18,16 @@ def add(request):
         # Extract data from the POST request
         data = dict(request.POST.items())
         art_no = data['art_no']
-        categoryName = data.get('categoryName', '')
-        comment = data.get('comment', '')
-        fileTitle = data.get('fileTitle', '')
+        dataName = data.get('dataName', '')
+        dataComment = data.get('dataComment', '')
+        fileComment = data.get('fileComment', '')
+        author = data.get('author', '')
+        poc = data.get('poc', '')
+        version = data.get('version', '')
         uploadedFile = request.FILES["uploadedFile"]
         # Saving the information in the database
         document = Document(
-            title=fileTitle,
+            title=fileComment,
             uploadedFile=uploadedFile
         )
         document.save()
@@ -36,13 +39,13 @@ def add(request):
 
         # Create or update the node with properties
         add_evidence = f"""
-        MATCH (a:Compliance:Isms_p:Article{{no:'{art_no}'}})
-        MATCH (c:Evidence:Compliance{{name:'evidence'}})
-        MERGE (n:Compliance:Evidence:Category{{name:'{categoryName}'}})
-        MERGE (e:Compliance:Evidence:Data{{name:'{fileTitle}', comment:'{comment}', version_date:'{timestamp}', file:'{uploadedFile}'}})
-        MERGE (c)-[:CATEGORY]->(n)
+        MATCH (a:Compliance:Certification:Article{{compliance_name:'Isms_p', no:'{art_no}'}})
+        MATCH (c:Evidence:Compliance{{name:'Evidence'}})
+        MERGE (n:Compliance:Evidence:Data{{name:'{dataName}', comment:'{dataComment}'}})
+        MERGE (e:Compliance:Evidence:File{{name:'{uploadedFile}', comment:'{fileComment}', upload_date:'{timestamp}', version:'{version}', author:'{author}', poc:'{poc}'}})
+        MERGE (c)-[:DATA]->(n)
         MERGE (a)<-[:EVIDENCE]-(n)
-        merge (n)-[:DATA]->(e)
+        merge (n)-[:FILE]->(e)
         """
         graph.run(add_evidence)
 

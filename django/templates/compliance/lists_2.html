@@ -57,17 +57,14 @@
                     <th>{{no}} {{name}}</th>
                 </tr>
                 </thead>
-                <tfoot></tfoot>
-    
                 <tbody>
-                    <!--for 문으로 리스트 출력: 파이썬 코드를 쓸 때는 % % 안에 담아서 사용-->
                     {% for a in article_list %}
                     <tr>
-                        <td align="center">인증 기준</td>
+                        <td style="text-align:center">인증 기준</td>
                         <td>{{a.articleComment}}</td>
                     </tr>
                     <tr>
-                        <td align="center" width="200px" rowspan=len({{checklist}})>주요 확인사항</td>
+                        <td style="text-align:center" width="200px" rowspan=len({{checklist}})>주요 확인사항</td>
                         <td>{% for i in a.articleChecklist %}{{i|linebreaks}}{% endfor %}</td>
                     </tr>
                     {% endfor %}
@@ -75,7 +72,7 @@
             </table>
         </div>
     </div>
-<h4 class="m-0 font-weight-bold text-teiren"> Related Law
+<h4 class="m-0 font-weight-bold text-teiren"> Related Law </h4>
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
@@ -85,16 +82,23 @@
                         <th>Law</th>
                         <th>Chapter</th>
                         <th>Section</th>
+                        <th>Article</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!--for 문으로 리스트 출력: 파이썬 코드를 쓸 때는 % % 안에 담아서 사용-->
                     {% for i in law %}
+                        {% if i.lawName == '' and i.chapterNo == '' and i.sectionNo == '' and i.articleNo == '' %}
+                        <tr>
+                            <td colspan="4">엣큥!! 관련 법령이 없어요</td>
+                        </tr>
+                        {% else %}
                     <tr>
                         <td>{{i.lawName}}</td>
-                        <td>{{i.chapterNo}}장 {{i.chapterName}}</td>
+                        <td>{{i.chapterNo}} {{i.chapterName}}</td>
                         <td>{{i.sectionNo}} {{i.sectionName}}</td>
+                        <td>{{i.articleNo}} {{i.articleName}}</td>
                     </tr>
+                        {% endif %}
                     {% endfor %}
                 </tbody>
             </table>
@@ -105,19 +109,20 @@
     <div class="ex-text">{% for a in article_list %}{% for i in a.articleExample %}{{i|linebreaks}}{% endfor %}{% endfor %}</div>
         <button type="button" class="btn btn-md btn-teiren" onclick="openModal()">add</button>
     </h4>
-
-    
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
                    style="text-align:center; font-size:15px;">
                 <thead>
                     <tr>
-                        <th>Category</th>
-                        <th>Name</th>
-                        <th>Comment</th>
-                        <th>Version</th>
+                        <th>Data</th>
+                        <th>Data Comment</th>
                         <th>File</th>
+                        <th>File Comment</th>
+                        <th>Version</th>
+                        <th>담당자</th>
+                        <td>Upload Date</td>
+                        <td>Upload</td>
                         <th>Preview</th>
                         <th>Download</th>
                         <th>Delete</th>
@@ -127,22 +132,27 @@
                     <!--for 문으로 리스트 출력: 파이썬 코드를 쓸 때는 % % 안에 담아서 사용-->
                     {% for a in evidence_list %}
                     <tr>
-                        <td>{{a.categoryName}}</td>
                         <td>{{a.dataName}}</td>
                         <td>{{a.dataComment}}</td>
-                        <td>{{a.dataVersion}}</td>
-                        <td>{{a.dataFile}}</td>
+                        <td>{{a.fileName}}</td>
+                        <td>{{a.fileComment}}</td>
+                        <td>{{a.fileVersion}}</td>
+                        <td>{{a.filePoc}}</td>
+                        <td>{{a.fileUploadDate}}</td>
+                        <td>{{a.fileAuthor}}</td>
                         <td>
                             <button class="btn btn-md btn-teiren">
                                 preview
                             </button>
                         </td>
                         <td>
-                            <label>첨부 파일</label>
+                            <button class="btn btn-md btn-teiren">
+                                download
+                            </button>
                         </td>
                         <td>
                             <form method="post">
-                                <input type="hidden" name="data_name" id="data_name" value="{{a.dataName}}"/>
+                                <input type="hidden" name="file_name" id="file_name" value="{{a.fileName}}"/>
                                 <button type="button" class="btn btn-md btn-teiren" onclick="deleteEvidence(this)">delete</button>
                             </form>
                         </td>
@@ -154,14 +164,23 @@
     </div>
     <div>
         <form id="evidence_form" enctype="multipart/form-data">
-            <label for="categoryName">Category:</label>
-            <input type="text" id="categoryName" name="categoryName" required><br>
+            <label for="dataName">Data:</label>
+            <input type="text" id="dataName" name="dataName">
 
-            <label for="name">Name:</label>
-            <input type="text" id="fileTitle" name="fileTitle" placeholder="Enter a title" required>
+            <label for="dataComment">Comment:</label>
+            <input type="text" id="dataComment" name="dataComment" placeholder="Enter a Comment">
             
-            <label for="comment">Comment:</label>
-            <textarea id="comment" name="comment" rows="4" required></textarea><br>
+            <label for="fileComment">File Comment:</label>
+            <input type="text" id="fileComment" name="fileComment" placeholder="Enter a Comment">
+            
+            <label for="version">Version:</label>
+            <input type="text" id="version" name="version" placeholder="ex. v_1.0">
+
+            <label for="author">Author:</label>
+            <input type="text" id="author" name="author">
+            
+            <label for="poc">Poc:</label>
+            <input type="text" id="poc" name="poc">
 
             <input type="file" name="uploadedFile">
             {% csrf_token %}

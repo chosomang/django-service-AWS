@@ -12,9 +12,9 @@ graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 
 def delete(request):
     data = dict(request.POST.items())
-    data_name = data['data_name']
+    file_name = data['file_name']
     delete_evidence = f"""
-    MATCH (n:Compliance:Evidence:Data{{name:'{data_name}'}})
+    MATCH (n:Compliance:Evidence:File{{name:'{file_name}'}})
 
     DETACH DELETE n
     """
