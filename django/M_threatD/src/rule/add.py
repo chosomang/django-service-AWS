@@ -145,8 +145,10 @@ def static_cypher(rule, logType):
     )
     WITH rule
     """
+    query_cypher = cypher.replace('MERGE', 'MATCH')
     if 'ruleCount' in rule:
         cypher += static_count_cypher(where_cypher, rule, is_errorCode)
+        query_cypher += static_count_cypher(where_cypher, rule, is_errorCode)
     else:
         cypher += f"""
         MATCH (log:Log:{logType})
@@ -156,7 +158,15 @@ def static_cypher(rule, logType):
         WITH rule, log
         MERGE (log)-[:DETECTED {{alert:0, sent:0}}]->(rule)
         """
-    result = rule_merge_test(cypher, rule, logType, 'static')
+        query_cypher += f"""
+        MATCH (log:Log:{logType})
+        WHERE
+            {'log.errorCode IS NOT NULL AND' if is_errorCode == 1 else 'log.errorCode IS NULL AND'}
+            {where_cypher}
+        WITH rule, log
+        MERGE (log)-[:DETECTED {{alert:0, sent:0}}]->(rule)
+        """
+    result = rule_merge_test(cypher, query_cypher, rule, logType, 'static')
     return result
 
 def static_count_cypher(where_cypher, rule, is_errorCode):
@@ -327,11 +337,10 @@ def add_dynamic_rule(request):
     if 'check' in request:
         request.pop('check')
         return 1
-    cypher = dynamic_cypher(flows, wheres, rule, count, logType)
+    cypher, query_cypher = dynamic_cypher(flows, wheres, rule, count, logType)
     if cypher.startswith('Dynamic Detection'):
         return cypher
-    # return cypher
-    result = rule_merge_test(cypher, rule, logType, 'dynamic')
+    result = rule_merge_test(cypher, query_cypher, rule, logType, 'dynamic')
     return result
 
 def dynamic_cypher(flows, wheres, rule, count, logType):
@@ -433,14 +442,19 @@ def dynamic_cypher(flows, wheres, rule, count, logType):
         detection_path += f"id(log{i})+','+"
     detection_path = detection_path[0:-5]
     merge_cypher = 'MERGE '
+    query_cypher = cypher.replace('MERGE', 'MATCH')
     for i in range(1, count+1):
         cypher += f"""
+        MERGE (log{i})-[:CHECK{{path:{detection_path}}}]->(flow{i})
+        """
+        query_cypher += f"""
         MERGE (log{i})-[:CHECK{{path:{detection_path}}}]->(flow{i})
         """
         merge_cypher += f"{'' if i == 1 else f'-[:FLOW{{path:{detection_path}}}]->'}(log{i})"
     merge_cypher += f'-[:FLOW_DETECTED{{path:{detection_path}, alert:0, sent:0}}]->(rule)'
     cypher += merge_cypher
-    return cypher
+    query_cypher += merge_cypher
+    return cypher, query_cypher
 
 def dynamic_count_cypher(flow, i, rule, with_cypher):
     count_where_cypher = ''
@@ -491,7 +505,7 @@ def dynamic_count_cypher(flow, i, rule, with_cypher):
     with_cypher += f', firstLog{i}, logs{i}, l_logs{i}'
     return count_cypher, with_cypher
 
-def rule_merge_test(cypher, rule, logType, ruleClass):
+def rule_merge_test(cypher, query_cypher, rule, logType, ruleClass):
     try:
         graph.run(cypher)
     except ClientError as e:
@@ -505,7 +519,7 @@ def rule_merge_test(cypher, rule, logType, ruleClass):
             ruleType: 'custom'
         }}
     )
-    SET rule.query = "{cypher}"
+    SET rule.query = "{query_cypher}"
     RETURN COUNT(rule)
     """
     try:

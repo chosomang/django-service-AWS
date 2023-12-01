@@ -111,6 +111,19 @@ def rule_on_off(request):
     """
     try:
         graph.evaluate(cypher)
+        if abs(int(on_off)-1) == 1:
+            graph.run(f"""
+            MATCH (r:Rule:{logType} {{ruleName:'{rule_name}'}})
+            SET r.status = 'Add'
+            RETURN r
+            """)
+        else:
+            graph.run(f"""
+            MATCH (r:Rule:{logType} {{ruleName:'{rule_name}'}})
+            WITH ID(r) AS nodeId
+            MERGE (d:Rule {{status:'Delete', nodeId: nodeId}})
+            RETURN d
+            """)
         return abs(int(on_off)-1)
     except ClientError as e:
         return int(2)
