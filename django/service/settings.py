@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-76dtlqs!mq_1(mxvkd@ep-)9!sk=e4(u(7^hy&c%2bqw5iepev'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = ['*']
 # REST API DRF SETTINGS #
 from rest_framework import permissions
@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'M_threatD',
     'configurations',
     'dashboard',
-    # 'compliance',
+    'compliance',
     'testing',
     'rest_framework',
     'django.contrib.admin',
@@ -56,6 +56,7 @@ INSTALLED_APPS = [
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -100,7 +101,7 @@ MONGODB = {
 
 NEO4J = {
     'HOST': '13.124.121.1',
-    'PORT': '7688',
+    'PORT': '7687',
     'USERNAME': 'neo4j',
     'PASSWORD': 'dbdnjs!23'
 }

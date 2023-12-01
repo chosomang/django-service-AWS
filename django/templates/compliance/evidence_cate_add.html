@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="form-group row text-center">
+    <div class="col-sm-6 mb-sm-1">
+        <span>Evidence Name</span>
+        <input type="text" class="form-control form-control-user" name="name" placeholder="Evidence Name">
+    </div>
+    <div class="col-sm-6">
+        <span>Evidence Comment</span>
+        <input type="text" class="form-control form-control-user" name="comment" placeholder="Evidence Comment">
+    </div>
+</div>
+
+인증 매핑 리스트<br><br>
+<div class="form-group row text-center">
+    <div class="col-sm-6 mb-sm-1">
+        <span>Compliance</span>
+        <select class="form-control form-control-user" id="compliance" name="compliance" style="height:auto" onchange="updateArticles()" >
+            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+            <option value="none">Secelct Compliance</option>
+        </select>
+    </div>
+    <div class="col-sm-6">
+        <span>Article</span>
+        <select class="form-control form-control-user" id="article_selected" name="article_selected" style="height:auto">
+            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+            <option value="none">Secelct Article</option>
+        </select>
+    </div>
+</div>
+<br><br>법령 매핑 리스트<br><br>
+<div class="form-group row text-center">
+    <div class="col-sm-6 mb-sm-1">
+        <span>Compliance</span>
+        <select class="form-control form-control-user" id="law" name="law" style="height:auto" onchange="updateLawChapter()" >
+            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+            <option value="none">Secelct Compliance</option>
+        </select>
+    </div>
+    <div class="col-sm-6">
+        <span>Article</span>
+        <select class="form-control form-control-user" id="chapter_selected" name="chapter_selected" style="height:auto">
+            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+            <option value="none">Secelct Article</option>
+        </select>
+    </div>
+</div>
+<button type="button" class="btn btn-md btn-teiren" onclick="add_cate()">저장</button>
+<script>
+    function add_cate(){
+        var name=document.querySelector('input[name="name"]');
+        var comment=document.querySelector('input[name="comment"]');    
+
+        $.ajax({
+            url: '/compliance/evidence_cate_add/',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: {
+                'name': name.value,
+                'comment': comment.value
+            },
+            success: function(response){
+                if(response.startsWith('\n<meta')){
+                    location.reload()
+                }
+                if(response === 'success'){
+                    alert('Saved Successfully')
+                    window.location.href= '/compliance/evidence_cate/'
+                }else if(response === 'already exist'){
+                    alert('Category is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
+                }else if(response === 'NULL'){
+                    alert('Category must be entered. Try Again')
+                }
+                else {
+                    alert('Failed To Save. Please Try Again')
+                }
+            },
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); 
+            }
+        })
+    }
+
+    // 페이지 로드 시 초기화 함수 호출
+     window.onload = function() {
+        // 상위 카테고리를 서버에서 받아오는 함수 호출
+        fetchCategories();
+        fetchLaws();
+    }
+
+    // 상위 카테고리를 서버에서 받아오는 함수
+    function fetchCategories() {
+        var compliance_selected = document.getElementById('compliance');
+        //실제로 데이터 가져오는 곳.
+
+        var compliance_list=[]
+
+        $.ajax({
+            url: '/compliance/evidence_get_compliance',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: {},
+            success: function (response) {
+                var compliance_list = response['compliance_list'];
+                
+                console.log(compliance_list.length)
+                for (var i = 0; i < compliance_list.length; i++) {
+                    var compliance = compliance_list[i];
+                    var optionElement = document.createElement('option');
+                    optionElement.value = compliance[i];
+                    console.log(compliance);
+                    optionElement.text = compliance;
+                    compliance_selected.add(optionElement);
+                }
+            },
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); 
+            }
+        })
+
+    }
+
+    // 상위 카테고리가 변경될 때 호출되는 함수
+    function updateArticles() {
+        var compliance_selected = document.getElementById('compliance');
+        var article = document.getElementById('article_selected');
+        fetchSubCategories()
+
+        // 하위 카테고리를 서버에서 받아오는 함수 호출
+     //   fetchSubCategories(compliance_selected.value);
+    }
+
+    // 하위 카테고리를 서버에서 받아오는 함수
+    function fetchSubCategories() {
+        var compliance_selected = document.getElementById('compliance');
+        console.log(compliance_selected.value)
+        $.ajax({
+            url: '/compliance/evidence_get_compliance_articles',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: {
+                "compliance_selected": compliance_selected.value // Send the selected value to the server
+            },
+            success: function (response) {
+                console.log(response);
+                var article_list = response['article_list'];
+                // compliance_selected
+                console.log(article_list);
+    
+                // 받아온 카테고리를 드롭다운에 추가
+                for (var i = 0; i < article_list.length; i++) {
+                    var article = article_list[i];
+                    var optionElement = document.createElement('option');
+                    optionElement.value = article; // Fix the value assignment
+                    console.log(article);
+                    optionElement.text = article;
+                    article_selected.add(optionElement);
+                }
+            },
+            error: function (xhr, errmsg, err) {
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
+        });
+    }
+
+
+    // 상위 카테고리를 서버에서 받아오는 함수
+    function fetchLaws() {
+        var law_selected = document.getElementById('law');
+        //실제로 데이터 가져오는 곳.
+
+        var law_list=[]
+
+        $.ajax({
+            url: '/compliance/evidence_get_laws',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: {},
+            success: function (response) {
+                var law_list = response['law_list'];
+                
+                console.log(law_list.length)
+                for (var i = 0; i < law_list.length; i++) {
+                    var law = law_list[i];
+                    var optionElement = document.createElement('option');
+                    optionElement.value = law[i];
+                    console.log(law);
+                    optionElement.text = law;
+                    law_selected.add(optionElement);
+                }
+            },
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); 
+            }
+        })
+
+    }
+
+    // 상위 카테고리가 변경될 때 호출되는 함수
+    function updateLawChapter() {
+        var law_selected = document.getElementById('law');
+        var chapter = document.getElementById('chapter_selected');
+        fetchSubLaws()
+
+        // 하위 카테고리를 서버에서 받아오는 함수 호출
+     //   fetchSubCategories(compliance_selected.value);
+    }
+
+    // 하위 카테고리를 서버에서 받아오는 함수
+    function fetchSubLaws() {
+        var law_seleted = document.getElementById('law');
+        console.log(law_seleted.value)
+        $.ajax({
+            url: '/compliance/evidence_get_laws_chapter',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: {
+                "law_seleted": law_seleted.value // Send the selected value to the server
+            },
+            success: function (response) {
+                console.log(response);
+                var chapter_list = response['chapter_list'];
+                // compliance_selected
+                console.log(chapter_list);
+    
+                // 받아온 카테고리를 드롭다운에 추가
+                for (var i = 0; i < chapter_list.length; i++) {
+                    var chapter = chapter_list[i];
+                    var optionElement = document.createElement('option');
+                    optionElement.value = chapter; // Fix the value assignment
+                    console.log(chapter);
+                    optionElement.text = chapter;
+                    chapter_selected.add(optionElement);
+                }
+            },
+            error: function (xhr, errmsg, err) {
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
+        });
+    }
+</script>
+
+
+{% endblock %}
+

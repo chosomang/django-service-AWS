@@ -1,4 +1,4 @@
-function getCookie(name) {
+function getCookie(name = 'csrftoken') {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
@@ -31,6 +31,7 @@ $(function () {
             $('#topbar_alert').removeClass('text-danger fa-bounce')
         }
     })
+
     setInterval(function(){
         $.ajax({
             url: '/topbar/alert/',

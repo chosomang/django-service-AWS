@@ -35,9 +35,11 @@ def delete_static_rule(request):
     cypher = f"""
     MATCH (rule:Rule:{logType} {{ruleName:'{ruleName}'}})
     DETACH DELETE rule
+    RETURN ID(rule)
     """
     try:
-        graph.evaluate(cypher)
+        nodeId = graph.evaluate(cypher)
+        graph.evaluate(f"MERGE (r:Rule {{status: 'Delete', nodeId:{nodeId}}})")
         return 1
     except:
         return 'Failed To Delete. Please Try Again'
@@ -80,9 +82,11 @@ def delete_dynamic_rule(request):
         {{flow_rels:flow_rels}}
     )YIELD value
     DETACH DELETE rule, flow
+    RETURN ID(rule)
     """
     try:
-        graph.evaluate(cypher)
+        nodeId = graph.evaluate(cypher)
+        graph.evaluate(f"MERGE (r:Rule {{status: 'Delete', nodeId:{nodeId}}})")
         return 1
     except:
         return 'Failed To Delete. Please Try Again'

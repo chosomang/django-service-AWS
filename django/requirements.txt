@@ -22,3 +22,4 @@ graphene-django
 djangorestframework
 django-filter
 docker
+whitenoise

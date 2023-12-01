@@ -18,9 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.conf.urls import handler404, handler500
+from django.views.static import serve
+
+handler404 = 'common.views.error_page'
+handler500 = 'common.views.error_page'
 
 API_VERSION = 'v1'
-COMPLIANCE_VERSION = 'v1'
 AJAX_VERSION = 'v1'
 
 urlpatterns = [
@@ -33,7 +37,8 @@ urlpatterns = [
     path('threat/', include('M_threatD.urls')),
     path('configurations/', include('configurations.urls')),
     path(f'api/{API_VERSION}/', include('api.urls')),
-    path('test/', include('testing.urls'))    
+    path('compliance/', include('compliance.urls')),
+    path('test/', include('testing.urls'))
     # path(f'compliance/{COMPLIANCE_VERSION}/', include(f'compliance.{COMPLIANCE_VERSION}.urls')),
     # path('', include(f'ajax_handler.{AJAX_VERSION}.urls')),
     # path('', include('TeirenSIEM.urls')),
