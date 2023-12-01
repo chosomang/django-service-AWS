@@ -24,28 +24,43 @@ def get_compliance():
     
     return response
 
-# 컴플라이언스에 맞는 article 가져오기
-def get_compliance_articles(dict):
+def get_version(dict):
     compliance = dict['compliance_selected']
+
     response=[]
     cypher=f"""
-        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(:Version)-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
+        MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)
+        RETURN v.date AS version, c.name AS name
+    """
+    results = graph.run(cypher)
+    for result in results:
+        response.append({'version': str(result['version']), 'name': result['name']})
+    
+    return response
+
+# 컴플라이언스에 맞는 article 가져오기
+def get_article(dict):
+    compliance = dict['compliance_selected']
+    version=dict['version_selected']
+    response=[]
+    cypher=f"""
+        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
         WITH a
-        WHERE a IS NOT NULL
+        WHERE a IS NOT NULL AND v.date = date('{version}')
         RETURN a.no AS no, a.name AS name ORDER BY a.no
 
         UNION
 
-        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(:Version)-[:CHAPTER]->(:Chapter)-[:ARTICLE]->(a:Article)
+        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:ARTICLE]->(a:Article)
         WITH a
-        WHERE a IS NOT NULL
+        WHERE a IS NOT NULL AND v.date = date('{version}')
         RETURN a.no AS no, a.name AS name ORDER BY a.no
 
         UNION
 
-        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(:Version)-[:ARTICLE]->(a:Article)
+        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:ARTICLE]->(a:Article)
         WITH a
-        WHERE a IS NOT NULL
+        WHERE a IS NOT NULL AND v.date = date('{version}')
         RETURN a.no AS no, a.name AS name ORDER BY a.no
     """
 

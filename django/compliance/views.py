@@ -29,17 +29,24 @@ def data(request):
     }
     return render(request, f"compliance/evidence/data.html", context)
 
-def evidence_get_compliance(request):
+def get_compliance(request):
     if request.method == "POST":
         compliance_list = evidence.get_compliance()
         json_data = json.dumps({"compliance_list" :compliance_list})    
         return HttpResponse(json_data, content_type='application/json')
 
-def get_compliance_articles(request):
+def get_version(request):
+    if request.method == "POST":
+        compliance_selected=dict(request.POST.items())
+        version_list = evidence.get_version(compliance_selected)
+        json_data = json.dumps({"version_list" :version_list})    
+        return HttpResponse(json_data, content_type='application/json')
+
+def get_article(request):
     if request.method == "POST":
         try:
-            compliance_selected=dict(request.POST.items())
-            article_list = evidence.get_compliance_articles(compliance_selected)
+            version_selected=dict(request.POST.items())
+            article_list = evidence.get_article(version_selected)
             json_data = json.dumps({"article_list" :article_list})  
             return HttpResponse(json_data, content_type='application/json')
         except Exception as e:

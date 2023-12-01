@@ -86,18 +86,24 @@
 
 
                     <label for="compliance">Choose Compliance:</label>
-                    <select id="compliance" onchange="updateArticles()">
+                    <select id="compliance" onchange="updateVersion()">
                         <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
                         <option value="none">Choose Compliance</option>
+                    </select>
+                    <br>
+                    <label for="version_selected">Choose Version:</label>
+                    <select id="version_selected" onclick="updateArticle()">
+                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                        <option value="none">Please select Compliance</option>
                     </select>
                     <br>
                     <label for="article_selected">Choose Compliance Article:</label>
                     <select id="article_selected">
                         <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-                        <option value="none">Please select a Compliance</option>
+                        <option value="none">Please select Version</option>
                     </select>
 
-                    <!-- Relation Compliance를 추가할 수 있는 코드를 아래 제작해야 함-->
+                    <!--더 많은 Relation Compliance를 추가할 수 있는 코드를 아래 제작해야 함-->
 
                 </div>
             </div>
@@ -209,18 +215,18 @@ $('#add_accept').click(function() {
 // 페이지 로드 시 초기화 함수 호출
     window.onload = function() {
     // 상위 카테고리를 서버에서 받아오는 함수 호출
-    fetchCategories();
+    fetchComplianceSelected();
 }
 
 // 상위 카테고리를 서버에서 받아오는 함수
-function fetchCategories() {
+function fetchComplianceSelected() {
     var compliance_selected = document.getElementById('compliance');
+    
     //실제로 데이터 가져오는 곳.
-
     var compliance_list=[]
 
     $.ajax({
-        url: '/compliance/evidence_get_compliance',
+        url: '/compliance/evidence/get_compliance',
         headers: {
             'X-CSRFToken': "{{ csrf_token }}"
         },
@@ -233,7 +239,6 @@ function fetchCategories() {
                 var compliance = compliance_list[i];
                 var optionElement = document.createElement('option');
                 optionElement.value = compliance;
-                //console.log(compliance);
                 optionElement.text = compliance;
                 compliance_selected.add(optionElement);
             }
@@ -246,19 +251,11 @@ function fetchCategories() {
 }
 
 // 상위 카테고리가 변경될 때 호출되는 함수
-function updateArticles() {
+function updateVersion() {
     var compliance_selected = document.getElementById('compliance');
-    var article_selected = document.getElementById('article_selected');
-    fetchSubCategories()
-}
-
-// 하위 카테고리를 서버에서 받아오는 함수
-function fetchSubCategories() {
-    var compliance_selected = document.getElementById('compliance');
-    //console.log(compliance_selected.value)
 
     $.ajax({
-        url: '/compliance/evidence/get_compliance_articles',
+        url: '/compliance/evidence/get_version',
         headers: {
             'X-CSRFToken': "{{ csrf_token }}"
         },
@@ -267,15 +264,62 @@ function fetchSubCategories() {
             "compliance_selected": compliance_selected.value // Send the selected value to the server
         },
         success: function (response) {
+            var version_list = response['version_list'];
+
+            version_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
+
+            var optionElement = document.createElement('option');
+            optionElement.value = ''; // 실제 전달되는 값은 no만
+            optionElement.text = 'Nothing Select';
+            version_selected.add(optionElement);
+
+            // 받아온 카테고리를 드롭다운에 추가
+            for (var i = 0; i < version_list.length; i++) {
+                var version = version_list[i]['version'];
+
+                // 새로운 option 엘리먼트를 생성
+                var optionElement = document.createElement('option');
+                optionElement.value = version_list[i]['version']; // 실제 전달되는 값은 no만
+                optionElement.text = version; 
+            
+                // version_selected에 추가
+                version_selected.add(optionElement);
+            }
+        },
+        error: function (xhr, errmsg, err) {
+            console.log(xhr.status + ": " + xhr.responseText);
+        }
+    });
+}
+
+
+// 하위 카테고리를 서버에서 받아오는 함수
+function updateArticle() {
+    var compliance_selected = document.getElementById('compliance');
+    var version_selected = document.getElementById('version_selected');
+    console.log(compliance_selected+'hehe');
+
+    $.ajax({
+        url: '/compliance/evidence/get_article',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            "compliance_selected": compliance_selected.value, // Send the selected value to the server
+            "version_selected": version_selected.value
+        },
+        success: function (response) {
             console.log(response);
             var article_list = response['article_list'];
 
             article_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
+
             var optionElement = document.createElement('option');
             optionElement.value = ''; // 실제 전달되는 값은 no만
             optionElement.text = 'Nothing Select';
-
             article_selected.add(optionElement);
+
             // 받아온 카테고리를 드롭다운에 추가
             for (var i = 0; i < article_list.length; i++) {
                 var article = '['+article_list[i]['no']+'] '+article_list[i]['name'];

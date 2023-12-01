@@ -17,6 +17,7 @@ urlpatterns = [
     path('evidence/file_mod/', views.mod_file),
     path('evidence/file_del/', views.del_file),
     path('evidence/com_add/', views.add_com),
-    path('evidence_get_compliance', views.evidence_get_compliance),
-    path('evidence/get_compliance_articles', views.get_compliance_articles),
+    path('evidence/get_compliance', views.get_compliance),
+    path('evidence/get_version', views.get_version),
+    path('evidence/get_article', views.get_article),
 ]
