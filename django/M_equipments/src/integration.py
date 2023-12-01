@@ -34,7 +34,7 @@ def list_integration():
     return {'integrations': response}
 
 def check_process_func(no, container_id):
-    return False
+    return True
 
 def integration_check(request, equipment, logType):
     functionName = globals()[f'{equipment.lower()}_check']
