@@ -173,9 +173,8 @@ def container_trigger(request):
             'image_name': image_name
         }
         is_collection_on = int(request.get('on_off'))
-        print(f"is_collection_on: {is_collection_on}")
         # log collector ON
-        if is_collection_on:
+        if is_collection_on == 1:
             result = container_trigger_on(integration_node, aws_config)
             
             return result         
