@@ -16,47 +16,7 @@
     <div class="card-header py-3">
         <h4 class="m-0 font-weight-bold text-teiren">
             Evidence List
-
-            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_add">Add Data</button>           
-            <!-- Add Data Modal -->
-            <div class="modal hide fade card-body" id="data_add" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content" style='width:700px; height:auto'>
-                        <div class="modal-header">
-                            <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Data</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">x</span>
-                            </button>
-                        </div>
-                        <div class="modal-body card-body" style="font-size:12px;">
-                            <div>
-                                Name: <input class="form-control" name="add_name" type="text"><br><br>
-                                Comment: <input class="form-control" name="add_comment" type="text"><br><br>
-                                Author: <input class="form-control" name="add_author" type="text"><br><br>
-                                Relation Compliance<br><br>
-
-
-                                <label for="compliance">Choose Compliance:</label>
-                                <select id="compliance" onchange="updateArticles()">
-                                    <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-                                    <option value="none">Choose Compliance</option>
-                                </select>
-                                <br>
-                                <label for="article_selected">Choose Compliance Article:</label>
-                                <select id="article_selected">
-                                    <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-                                    <option value="none">Please select a Compliance</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer" id="modal_footer">
-                            <input type='button' id='add_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
-                            <input type='button' id='add_accept' class="btn btn-md btn-outline-primary" value="Save">
-                        </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_add"  style="font-size:0.7vw">Add Data</button>           
         </h4>
     </div>
     
@@ -71,7 +31,7 @@
                         <th>Comment</th>
                         <th>Author</th>
                         <th>Last update</th>
-                        <th>Detail</th>
+                        <th>Files</th>
                         <th>func</th>
                     </tr>
                     </thead>
@@ -85,18 +45,18 @@
                             <td>{{d.data.author}}</td>
                             <td>{{d.data.last_update}}</td>
                             <td>
-                                <form method="POST" action="/compliance/evidence/file/">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="title" value="{{d.data.name}}"/>
-                                    <input type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw" value="바로가기"/>           
-                                </form>     
+                                
+                                <form method="GET" action="/compliance/evidence/file/">
+                                    <input type="hidden" name="title" value="{{ d.data.name }}"/>
+                                    <button type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw">바로가기</button>
+                                </form>
                             </td>
                             <td>
-                                <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_mod"
+                                <button type="button" class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#data_mod"
                                 data-name="{{d.data.name}}" data-comment="{{d.data.comment}}" data-author="{{d.data.author}}">Mod</button>                                 
                                 
 
-                                <button type="button" class="btn btn-md btn-danger" onclick="del_data('{{d.data.name}}')">Del</button>
+                                <button type="button" class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_data('{{d.data.name}}')">Del</button>
                             </td>
                         </tr>
 
@@ -107,13 +67,55 @@
     </div>
 </div>
 
+<!-- Add Data Modal -->
+<div class="modal hide fade card-body" id="data_add" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <div>
+                    Name: <input class="form-control" name="add_name" type="text"><br><br>
+                    Comment: <input class="form-control" name="add_comment" type="text"><br><br>
+                    Author: <input class="form-control" name="add_author" type="text"><br><br>
+                    Relation Compliance<br><br>
+
+
+                    <label for="compliance">Choose Compliance:</label>
+                    <select id="compliance" onchange="updateArticles()">
+                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                        <option value="none">Choose Compliance</option>
+                    </select>
+                    <br>
+                    <label for="article_selected">Choose Compliance Article:</label>
+                    <select id="article_selected">
+                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                        <option value="none">Please select a Compliance</option>
+                    </select>
+
+                    <!-- Relation Compliance를 추가할 수 있는 코드를 아래 제작해야 함-->
+
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' id='add_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='add_accept' class="btn btn-md btn-outline-primary" value="Save">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Mod Data Modal -->
 <div class="modal hide fade card-body" id="data_mod" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
-                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Data</h5>
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify Data</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                 </button>
@@ -139,6 +141,8 @@
 
 
 <script>
+
+
 $('#data_mod').on('shown.bs.modal', function (e) {
     var button = $(e.relatedTarget); // 클릭된 버튼
     var last_name = button.data('name'); // data-name 속성의 값
@@ -147,12 +151,10 @@ $('#data_mod').on('shown.bs.modal', function (e) {
     var data_author = button.data('author'); // data-name 속성의 값
 
     // 모달 내부 필드에 데이터 표시
-    $('input[name="last_name"]').val(data_name);
+    $('input[name="last_name"]').val(last_name);
     $('input[name="mod_name"]').val(data_name);
     $('input[name="mod_comment"]').val(data_comment);
     $('input[name="mod_author"]').val(data_author);
-
-    // 나머지 필드에 대한 처리도 동일하게 수행 가능
 });
 
 $('#add_accept').click(function() {
@@ -181,13 +183,13 @@ $('#add_accept').click(function() {
             'compliance': compliance,
             'article_selected': article_selected
         },
-        success: function(response){
+        success: function(response){       
             if(response.startsWith('\n<meta')){
                 location.reload()
             }
             if(response === 'success'){
                 alert('Saved Successfully')
-                window.location.href= '/compliance/evidence/data'
+                window.location.href= '/compliance/evidence/data/'
             }else if(response === 'already exist'){
                 alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
             }else if(response === 'NULL'){

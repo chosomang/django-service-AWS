@@ -86,7 +86,7 @@ def add_data(dict):
     name = dict.get('name', '')
     comment = dict.get('comment', '')
     author = dict.get('author', '')
-    last_update = datetime.now()
+    last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     compliance = dict.get('compliance', '')
     article_selected = dict.get('article_selected', '')
 
@@ -160,7 +160,7 @@ def mod_data(dict):
     name = dict.get('mod_name', '')
     comment = dict.get('mod_comment', '')
     author = dict.get('mod_author', '')
-    last_update = datetime.now()
+    last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     if name == '':
         return 'name NULL'
@@ -242,19 +242,19 @@ def get_file(data=None):
 # file 추가
 def add_file(dict):
     data_name=dict['data_name']
-    file_name=dict['file_name']
+    name=dict['name']
     comment=dict['comment']
     author=dict['author']
-    poc=dict['poc']
     version=dict['version']
-    upload_date=datetime.now()
+    poc=dict['poc']
+    upload_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    if file_name=='':
+    if name=='':
         return 'NULL'
 
     #중복체크
     cypher=f"""
-        MATCH (d:Data:Evidence:Compliance{{name:'{data_name}'}})-[:FILE]->(f:File:Evidence:Compliance{{name:'{file_name}'}})
+        MATCH (d:Data:Evidence:Compliance{{name:'{data_name}'}})-[:FILE]->(f:File:Evidence:Compliance{{name:'{name}'}})
         RETURN count(f)
     """
     if graph.evaluate(cypher) >= 1:
@@ -263,7 +263,7 @@ def add_file(dict):
     cypher= f"""
         MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})
         MERGE (d)-[:FILE]->(f:File:Compliance:Evidence {{
-            name:'{file_name}',
+            name:'{name}',
             comment:'{comment}',
             author:'{author}',
             poc:'{poc}',
@@ -281,6 +281,59 @@ def add_file(dict):
             raise Exception
     except Exception:
         return 'fail'
+    
+def mod_file(dict):
+    data_name=dict.get('data_name', '')
+    last_name=dict.get('last_name', '')
+    name = dict.get('mod_name', '')
+    comment = dict.get('mod_comment', '')
+    author = dict.get('mod_author', '')
+    version = dict.get('mod_version', '')
+    poc = dict.get('mod_poc', '')
+    last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    if name == '':
+        return 'name NULL'
+
+    if last_name == name:
+        #data name을 수정하는 게 아니라면
+        cypher= f"""
+            MATCH (d:Data:Compliance{{name:'{data_name}'}})-[:FILE]->(f:File:Evidence:Compliance{{name:'{last_name}'}})
+            SET f.comment='{comment}', 
+                f.author='{author}', 
+                f.version='{version}',
+                f.poc='{poc}',
+                f.last_update='{last_update}'
+            RETURN COUNT(f)
+        """
+    else:
+        #data name도 수정하는거라면 중복체크 필요
+        cypher=f"""
+            MATCH (d:Data:Compliance{{name:'{data_name}'}})-[:FILE]->(f:File:Evidence:Compliance{{name:'{name}'}})
+            RETURN count(f)
+        """
+        if graph.evaluate(cypher) >= 1:
+            return 'already exist'
+
+        cypher= f"""
+            MATCH (d:Data:Compliance{{name:'{data_name}'}})-[:FILE]->(f:File:Evidence:Compliance{{name:'{last_name}'}})
+            SET f.name='{name}',
+                f.comment='{comment}', 
+                f.author='{author}', 
+                f.version='{version}',
+                f.poc='{poc}',
+                f.last_update='{last_update}'
+            RETURN COUNT(f)
+        """
+
+    try:
+        if graph.evaluate(cypher) == 1:
+            return 'success'
+        else:
+            raise Exception
+    except Exception:
+        return author
+        #return 'fail'
 
 
 # file 삭제
@@ -340,6 +393,48 @@ def get_compliance_list(search_cate=None, search_content=None):
      response.append(result)
 
     return response
+
+
+# File 페이지 내 Compliance 추가
+def add_com(dict):
+    data_name = dict.get('name', '')
+    last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    compliance = dict.get('compliance', '')
+    article_selected = dict.get('article_selected', '')
+
+    if data_name == '':
+        return 'name NULL'
+       
+
+    #매핑 리스트가 있을 때(컴플라이언스와 관계 생성)
+    if article_selected!='none' and article_selected: 
+        #article까지 selected 했을 때
+        cypher= f"""
+                MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})
+                MATCH (a:Article:Compliance{{compliance_name:'{compliance}', no:'{article_selected}'}})
+                MERGE (d)-[:EVIDENCE]->(a)
+                SET d.last_update='{last_update}'
+                RETURN COUNT(d)
+            """
+    elif compliance!='none' and compliance: 
+    # 컴플라이언스만 selected 했을 때
+        cypher= f"""
+                MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})
+                MATCH (v:Version:Compliance{{name:'{compliance}'}})
+                MERGE (d)-[:EVIDENCE]->(a)
+                SET d.last_update='{last_update}'
+                RETURN COUNT(d)
+            """  
+    else: 
+        return 'fail'
+
+    try:
+        if graph.evaluate(cypher) == 1:
+            return 'success'
+        else:
+            raise Exception
+    except Exception:
+        return 'fail'
 
 
 

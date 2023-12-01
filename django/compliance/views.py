@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .src import evidence, lists
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 import os
 import json
@@ -37,32 +37,62 @@ def evidence_get_compliance(request):
 
 def get_compliance_articles(request):
     if request.method == "POST":
-        compliance_selected=dict(request.POST.items())
-        article_list = evidence.get_compliance_articles(compliance_selected)
-        json_data = json.dumps({"article_list" :article_list})  
-        return HttpResponse(json_data, content_type='application/json')
-
+        try:
+            compliance_selected=dict(request.POST.items())
+            article_list = evidence.get_compliance_articles(compliance_selected)
+            json_data = json.dumps({"article_list" :article_list})  
+            return HttpResponse(json_data, content_type='application/json')
+        except Exception as e:
+            # 에러가 발생한 경우
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
 # Data 추가
 def add_data(request):
-    data=dict(request.POST.items())
-    return HttpResponse(evidence.add_data(data))
+    if request.method=="POST":
+        data=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(evidence.add_data(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
     
 # Data 수정
 def mod_data(request):
-    data=dict(request.POST.items())
-    return HttpResponse(evidence.mod_data(data))
+    if request.method=="POST":
+        data=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(evidence.mod_data(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
 
 # Data 삭제
 def del_data(request):
     if request.method=="POST":
         del_data=dict(request.POST.items())
-        return HttpResponse(evidence.del_data(del_data))
 
-# file 출력 (Data 바로가기)
-def file(request, at=None):
-    if request.method=="POST":
-        title=request.POST['title']
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(evidence.del_data(del_data))   
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
 
+# file 출력
+def file(request):
+    if request.method == 'GET':
+        # Ajax GET 요청에서 전달된 파라미터 가져오기
+        title = request.GET.get('title', None)
         data=evidence.get_data(title)
         file_list=evidence.get_file(title)
         compliance_list=evidence.get_compliance_list('evi',title)
@@ -73,31 +103,50 @@ def file(request, at=None):
             'file_list': file_list,
             'compliance_list':compliance_list
         }
-        return render(request, f"compliance/evidence/file.html", context)
+
+        if title:
+            return render(request, f"compliance/evidence/file.html", context)
+        else:
+            # title이 없을 경우 에러 응답
+            return JsonResponse({'error': 'Missing title parameter'}, status=400)
     else:
-        return render(request, f"compliance/evidence/file.html")
-
-# file 추가 페이지 view
-def add_file(request):
-    if request.method=="POST":
-        title=request.POST['title']
-        data=evidence.get_data(title)
-
-        context={
-            'data': data,
-        }
-    return render(request, f"compliance/evidence/file_add.html", context)
+        # GET 이외의 메소드에 대한 처리
+        return JsonResponse({'error': 'Invalid method'}, status=400)
 
 # file 추가 시, 함수 동작
-def add_file_func(request):
+def add_file(request):
+    add_file=dict(request.POST.items())
+    return HttpResponse(evidence.add_file(add_file))
+
+# file 수정
+def mod_file(request):
     if request.method=="POST":
-        add_file=dict(request.POST.items())
-        return HttpResponse(evidence.add_file(add_file))
+        mod_file=dict(request.POST.items())
+
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(evidence.mod_file(mod_file))   
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
         
-    return render(request, f"compliance/evidence_cate_add.html")
 
 # file 삭제
 def del_file(request):
     if request.method=="POST":
         del_file=dict(request.POST.items())
         return HttpResponse(evidence.del_file(del_file))
+    
+def add_com(request):
+    if request.method=="POST":
+        add_com=dict(request.POST.items())
+
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(evidence.add_com(add_com))   
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+

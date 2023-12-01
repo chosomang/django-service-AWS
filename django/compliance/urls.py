@@ -13,10 +13,10 @@ urlpatterns = [
     path('evidence/data_mod/', views.mod_data),
     path('evidence/data_del/', views.del_data),
     path('evidence/file/', views.file),
-    #path('<at>/evidence_data_add/', views.evidence_data_add),
     path('evidence/file_add/', views.add_file),
-    path('evidence/file_add_func/', views.add_file_func),
+    path('evidence/file_mod/', views.mod_file),
     path('evidence/file_del/', views.del_file),
+    path('evidence/com_add/', views.add_com),
     path('evidence_get_compliance', views.evidence_get_compliance),
     path('evidence/get_compliance_articles', views.get_compliance_articles),
 ]

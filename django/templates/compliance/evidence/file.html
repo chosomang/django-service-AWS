@@ -71,14 +71,9 @@
 
     <h2> 즌비증~</h2>
 
-    <div class="card-header py-3">
-        <form method="POST" action="/compliance/evidence/file_add/">
-            <h4 class="m-0 font-weight-bold text-teiren">Evidence Version Manage
-                {% csrf_token %}
-                <input type="hidden" name="title" value="{{title}}"/>
-                <input type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw" value="증적추가"/>
-            </h4>
-        </form>
+    <div class="card-header py-3 row">
+        <h4 class="m-0 font-weight-bold text-teiren">Evidence Version Manage</h4>
+        <button class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#file_add" data-name="{{title}}">Add File</button>           
     </div>
 
     <div class="card-body" style="font-size:15px;">
@@ -105,12 +100,14 @@
                             <td>{{f.name}}</td>
                             <td>{{f.comment}}</td>
                             <td>{{f.version}}</td>
-                            <td><button id="downloadBtn" class="btn btn-md btn-teiren" onclick="download_file('{{f.name}}')">Download</button></td>
+                            <td><button id="downloadBtn" class="btn btn-md btn-teiren"  style="font-size:0.7vw" onclick="download_file('{{f.name}}')">Download</button></td>
                             <td>{{f.poc}}</td>
                             <td>{{f.author}}</td>
                             <td>{{f.upload_date}}</td>
                             <td>
-                                <button class="btn btn-md btn-teiren" style="font-size:0.7vw" onclick="mod_file()">수정</button>
+                                <button class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#file_mod" 
+                                data-data-name="{{title}}" data-name="{{f.name}}" data-comment="{{f.commnt}}" data-version="{{f.version}}"
+                                data-poc="{{f.poc}}" data-author="{{f.author}}" data-last-update="{{f.upload_date}}">Mod</button>           
                                 <button class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_file('{{title}}','{{f.name}}')">삭제</button>
                             </td>
                         </tr>
@@ -122,8 +119,10 @@
 </div>
 
 <div class="card shadow mb-4" id="log_table">
-    <div class="card-header py-3">
+    <div class="card-header py-3 row">
         <h4 class="m-0 font-weight-bold text-teiren">관련 인증 및 정책</h4>
+
+        <button class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#com_add">Add Compliance</button>           
     </div>
 
     <div class="card-body" style="font-size:15px;">
@@ -164,11 +163,298 @@
     </div>
 </div>
 
-<script>
-function del_file(data_name, file_name){
-    console.log(data_name);
-    console.log(file_name);
 
+<!-- Add File Modal -->
+<div class="modal hide fade card-body" id="file_add" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <div>
+                    Data Name: <input class="form-control" name="data_name" type="text" readonly><br><br>
+                    File Name: <input class="form-control" name="add_name" type="text"><br><br>
+                    File Comment: <input class="form-control" name="add_comment" type="text"><br><br>
+                    Author: <input class="form-control" name="add_author" type="text"><br><br>
+                    Version: <input class="form-control" name="add_version" type="text"><br><br>
+                    POC: <input class="form-control" name="add_poc" type="text"><br><br>
+                    
+                    Upload file:
+                    image 파일 전체, pdf, 엑셀(xlsx, xls, csv), 한글파일(hwp, hwpx), 파워포인트(ppt, pptx), 워드(docx, doc) 형식만 업로드 가능합니다.
+                    <input name="file" type="file" accept="image/*, .pdf, .xlsx, .xls, .hwp, .hwpx, .ppt, .pptx, .csv, .docx, .doc"><br><br>
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' id='add_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='add_accept' class="btn btn-md btn-outline-primary" value="Save">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Mod File Modal -->
+<div class="modal hide fade card-body" id="file_mod" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify File</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <div>
+                    <input class="form-control" name="last_name" type="hidden"><br><br>
+                    Data Name: <input class="form-control" name="data_name" type="text" readonly><br><br>
+                    Last Update(Auto Change): <input class="form-control" name="last_update" type="text" readonly><br><br>
+                    File Name: <input class="form-control" name="mod_name" type="text"><br><br>
+                    File Comment: <input class="form-control" name="mod_comment" type="text"><br><br>
+                    File Author: <input class="form-control" name="mod_author" type="text"><br><br>
+                    File Version: <input class="form-control" name="mod_version" type="text"><br><br>
+                    File Poc: <input class="form-control" name="mod_poc" type="text"><br><br>
+
+                    <!-- Relation Compliance를 추가할 수 있는 코드를 아래 제작해야 함-->
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' id='mod_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='mod_accept' class="btn btn-md btn-outline-primary" value="Modify">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Add Compliance Modal -->
+<div class="modal hide fade card-body" id="com_add" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Compliance</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <div>
+                    <input class="form-control" name="data_name" type="hidden">
+                    <input class="form-control" name="file_name" type="hidden">
+                    Relation Compliance
+
+                    <label for="compliance">Choose Compliance:</label>
+                    <select id="compliance" onchange="updateArticles()">
+                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                        <option value="none">Choose Compliance</option>
+                    </select>
+                    <br>
+                    <label for="article_selected">Choose Compliance Article:</label>
+                    <select id="article_selected">
+                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                        <option value="none">Please select a Compliance</option>
+                    </select>
+
+                    <!--더 많은 Relation Compliance를 추가할 수 있는 코드를 아래 제작해야 함-->
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' id='com_add_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='com_add_accept' class="btn btn-md btn-outline-primary" onclick="add_com('{{title}}')" value="Add">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+
+$('#file_mod').on('shown.bs.modal', function (e) {
+    var button = $(e.relatedTarget); // 클릭된 버튼
+    var data_name = button.data('data-name'); // data-name 속성의 값
+    var last_name = button.data('name');    // 변경 전 file name
+    var last_update = button.data('last-update');    // 변경 전 file name
+    var file_name = button.data('name');    // 변경 후 file name
+    var file_comment = button.data('comment'); 
+    var file_author = button.data('author'); 
+    var file_version = button.data('version'); 
+    var file_poc = button.data('poc'); 
+
+
+    // 모달 내부 필드에 데이터 표시
+    $('input[name="data_name"]').val(data_name);
+    $('input[name="last_name"]').val(last_name);
+    $('input[name="last_update"]').val(last_update);
+    $('input[name="mod_name"]').val(file_name);
+    $('input[name="mod_comment"]').val(file_comment);
+    $('input[name="mod_author"]').val(file_author);
+    $('input[name="mod_version"]').val(file_version);
+    $('input[name="mod_poc"]').val(file_poc);
+
+});
+
+$('#file_add').on('shown.bs.modal', function (e) {
+    var button = $(e.relatedTarget); // 클릭된 버튼
+    var data_name = button.data('name'); // data-name 속성의 값
+    var data_comment = button.data('comment'); // data-name 속성의 값
+   
+
+    // 모달 내부 필드에 데이터 표시
+    $('input[name="data_name"]').val(data_name);
+    $('input[name="data_comment"]').val(data_comment);
+    // 나머지 필드에 대한 처리도 동일하게 수행 가능
+
+    console.log(data_name)
+});
+
+$('#add_accept').click(function() {
+    // Call your Ajax function here
+    var data_name = $('input[name="data_name"]').val();
+    var name = $('input[name="add_name"]').val();
+    var comment = $('input[name="add_comment"]').val();
+    var author = $('input[name="add_author"]').val();
+    var version = $('input[name="add_version"]').val();
+    var poc = $('input[name="add_poc"]').val();
+
+    $.ajax({
+        url: '/compliance/evidence/file_add/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'data_name': data_name,
+            'name': name,
+            'comment': comment,
+            'author': author,
+            'version': version,
+            'poc': poc
+        },        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload() //이전 목록 페이지로 가야 되는데 어떻게 하는지 모르겠음
+            }
+            if(response === 'success'){
+                alert('Saved Successfully')
+                location.reload()
+            }else if(response === 'already exist'){
+            alert('file name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
+            }else if(response === 'NULL'){
+                alert('Data name must be entered. Try Again')
+            }
+            else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+})
+
+$('#mod_accept').click(function() {
+    // Call your Ajax function here
+    var data_name=$('input[name="data_name"]').val();
+    var last_name=$('input[name="last_name"]').val();
+    var mod_name = $('input[name="mod_name"]').val();
+    var mod_comment = $('input[name="mod_comment"]').val();
+    var mod_author = $('input[name="mod_author"]').val();
+    var mod_version = $('input[name="mod_version"]').val();
+    var mod_poc = $('input[name="mod_poc"]').val();
+
+
+    console.log('last_name: ', last_name);
+    console.log('name: ', mod_name);
+    console.log('comment: ', mod_comment);
+    console.log('mod_poc: ', mod_poc);
+
+
+    $.ajax({
+        url: '/compliance/evidence/file_mod/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'data_name':data_name,
+            'last_name':last_name,
+            'mod_name': mod_name,
+            'mod_comment': mod_comment,
+            'mod_author': mod_author,
+            'mod_version': mod_version,
+            'mod_poc': mod_poc
+        },
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Modify Successfully')
+                location.reload()
+            }else if(response === 'already exist'){
+                alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
+            }else if(response === 'NULL'){
+                alert('Name must be entered. Try Again')
+            }
+            else {
+                alert(response)
+                //alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+});
+
+function add_com(data_name){
+    // Call your Ajax function here
+    var data_name = data_name;
+    var compliance=$('#compliance').val();
+    var article_selected=$('#article_selected').val();
+
+    console.log('compliance: ', compliance);
+    console.log('article_selected: ', article_selected);
+    console.log('data_name: ', data_name);
+
+
+    $.ajax({
+        url: '/compliance/evidence/com_add/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'name': data_name,
+            'compliance': compliance,
+            'article_selected': article_selected
+        },
+        success: function(response){       
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Saved Successfully')
+                location.reload()
+            }else if(response === 'already exist'){
+                alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
+            }else if(response === 'NULL'){
+                alert('Name must be entered. Try Again')
+            }
+            else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+}
+
+function del_file(data_name, file_name){
     $.ajax({
         url: '/compliance/evidence/file_del/',
         headers: {
@@ -184,7 +470,7 @@ function del_file(data_name, file_name){
                 location.reload()
             }
             if(response === 'success'){ 
-                alert('Saved Successfully')
+                alert('Deleted Successfully')
                 location.reload()
             } else {
                 //alert('Failed To Save. Please Try Again')
@@ -201,7 +487,95 @@ function download_file(file_name){
     console.log(file_name)
 }
 
-  </script>
+   
+
+// 페이지 로드 시 초기화 함수 호출
+window.onload = function() {
+    // 상위 카테고리를 서버에서 받아오는 함수 호출
+    fetchCategories();
+}
+
+// 상위 카테고리를 서버에서 받아오는 함수
+function fetchCategories() {
+    var compliance_selected = document.getElementById('compliance');
+    //실제로 데이터 가져오는 곳.
+
+    var compliance_list=[]
+
+    $.ajax({
+        url: '/compliance/evidence_get_compliance',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {},
+        success: function (response) {
+            var compliance_list = response['compliance_list'];
+            
+            for (var i = 0; i < compliance_list.length; i++) {
+                var compliance = compliance_list[i];
+                var optionElement = document.createElement('option');
+                optionElement.value = compliance;
+                //console.log(compliance);
+                optionElement.text = compliance;
+                compliance_selected.add(optionElement);
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+
+}
+
+// 상위 카테고리가 변경될 때 호출되는 함수
+function updateArticles() {
+    var compliance_selected = document.getElementById('compliance');
+    var article_selected = document.getElementById('article_selected');
+    fetchSubCategories()
+}
+
+// 하위 카테고리를 서버에서 받아오는 함수
+function fetchSubCategories() {
+    var compliance_selected = document.getElementById('compliance');
+    //console.log(compliance_selected.value)
+
+    $.ajax({
+        url: '/compliance/evidence/get_compliance_articles',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            "compliance_selected": compliance_selected.value // Send the selected value to the server
+        },
+        success: function (response) {
+            console.log(response);
+            var article_list = response['article_list'];
+
+            article_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
+            var optionElement = document.createElement('option');
+            optionElement.value = ''; // 실제 전달되는 값은 no만
+            optionElement.text = 'Nothing Select';
+
+            article_selected.add(optionElement);
+            // 받아온 카테고리를 드롭다운에 추가
+            for (var i = 0; i < article_list.length; i++) {
+                var article = '['+article_list[i]['no']+'] '+article_list[i]['name'];
+                var optionElement = document.createElement('option');
+                optionElement.value = article_list[i]['no']; // 실제 전달되는 값은 no만
+                console.log(article);
+                optionElement.text = article;
+                article_selected.add(optionElement);
+            }
+        },
+        error: function (xhr, errmsg, err) {
+            console.log(xhr.status + ": " + xhr.responseText);
+        }
+    });
+}
+
+</script>
 
 {% endblock %}
 
