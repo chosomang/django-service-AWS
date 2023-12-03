@@ -137,7 +137,7 @@
                         <th>Chapter</th>
                         <th>Section</th>
                         <th>Article</th>
-                        <th>바로가기</th>
+                        <th>Detail</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -152,7 +152,7 @@
 
                         <td>
                             <a href="#" class="btn btn-md btn-teiren" style="font-size:0.7vw">
-                                바로가기
+                                Detail
                             </a>
                         </td>
                     </tr>
@@ -248,15 +248,21 @@
                     Relation Compliance
 
                     <label for="compliance">Choose Compliance:</label>
-                    <select id="compliance" onchange="updateArticles()">
+                    <select id="compliance" onchange="updateVersion()">
                         <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
                         <option value="none">Choose Compliance</option>
+                    </select>
+                    <br>
+                    <label for="version_selected">Choose Version:</label>
+                    <select id="version_selected" onchange="updateArticle()">
+                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                        <option value="none">Please select Compliance</option>
                     </select>
                     <br>
                     <label for="article_selected">Choose Compliance Article:</label>
                     <select id="article_selected">
                         <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-                        <option value="none">Please select a Compliance</option>
+                        <option value="none">Please select Version</option>
                     </select>
 
                     <!--더 많은 Relation Compliance를 추가할 수 있는 코드를 아래 제작해야 함-->
@@ -366,12 +372,6 @@ $('#mod_accept').click(function() {
     var mod_poc = $('input[name="mod_poc"]').val();
 
 
-    console.log('last_name: ', last_name);
-    console.log('name: ', mod_name);
-    console.log('comment: ', mod_comment);
-    console.log('mod_poc: ', mod_poc);
-
-
     $.ajax({
         url: '/compliance/evidence/file_mod/',
         headers: {
@@ -414,9 +414,11 @@ function add_com(data_name){
     // Call your Ajax function here
     var data_name = data_name;
     var compliance=$('#compliance').val();
+    var version_selected=$('#version_selected').val();
     var article_selected=$('#article_selected').val();
 
     console.log('compliance: ', compliance);
+    console.log('version:', version_selected);
     console.log('article_selected: ', article_selected);
     console.log('data_name: ', data_name);
 
@@ -430,6 +432,7 @@ function add_com(data_name){
         data: {
             'name': data_name,
             'compliance': compliance,
+            'version_selected':version_selected,
             'article_selected': article_selected
         },
         success: function(response){       
@@ -442,7 +445,7 @@ function add_com(data_name){
             }else if(response === 'already exist'){
                 alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
             }else if(response === 'NULL'){
-                alert('Name must be entered. Try Again')
+                alert('Compliance and Version must be entered. Try Again')
             }
             else {
                 alert('Failed To Save. Please Try Again')
@@ -452,7 +455,131 @@ function add_com(data_name){
             console.log(xhr.status + ": " + xhr.responseText); 
         }
     })
+
+    
 }
+
+
+// 페이지 로드 시 초기화 함수 호출
+window.onload = function() {
+    // 상위 카테고리를 서버에서 받아오는 함수 호출
+    fetchComplianceSelected();
+}
+
+// 상위 카테고리를 서버에서 받아오는 함수
+function fetchComplianceSelected() {
+    var compliance_selected = document.getElementById('compliance');
+    
+    //실제로 데이터 가져오는 곳.
+    var compliance_list=[]
+
+    $.ajax({
+        url: '/compliance/evidence/get_compliance',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {},
+        success: function (response) {
+            var compliance_list = response['compliance_list'];
+            
+            for (var i = 0; i < compliance_list.length; i++) {
+                var compliance = compliance_list[i];
+                var optionElement = document.createElement('option');
+                optionElement.value = compliance;
+                optionElement.text = compliance;
+                compliance_selected.add(optionElement);
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+
+}
+
+// 상위 카테고리가 변경될 때 호출되는 함수
+function updateVersion() {
+    var compliance_selected = document.getElementById('compliance');
+
+    $.ajax({
+        url: '/compliance/evidence/get_version',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            "compliance_selected": compliance_selected.value // Send the selected value to the server
+        },
+        success: function (response) {
+            var version_list = response['version_list'];
+
+            version_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
+
+            var optionElement = document.createElement('option');
+            optionElement.value = ''; // 실제 전달되는 값은 no만
+            optionElement.text = 'Nothing Select';
+            version_selected.add(optionElement);
+
+            // 받아온 카테고리를 드롭다운에 추가
+            for (var i = 0; i < version_list.length; i++) {
+                var version = version_list[i]['version'];
+
+                var optionElement = document.createElement('option');
+                optionElement.value = version; // 실제 전달되는 값은 no만
+                optionElement.text = version; 
+            
+                // version_selected에 추가
+                version_selected.add(optionElement);
+            }
+        },
+        error: function (xhr, errmsg, err) {
+            console.log(xhr.status + ": " + xhr.responseText);
+        }
+    });
+}
+
+
+// 하위 카테고리를 서버에서 받아오는 함수
+function updateArticle() {
+    var compliance_selected = document.getElementById('compliance');
+    var version_selected = document.getElementById('version_selected');
+
+    $.ajax({
+        url: '/compliance/evidence/get_article',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            "compliance_selected": compliance_selected.value, // Send the selected value to the server
+            "version_selected": version_selected.value
+        },
+        success: function (response) {
+            var article_list = response['article_list'];
+
+            article_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
+
+            var optionElement = document.createElement('option');
+            optionElement.value = ''; // 실제 전달되는 값은 no만
+            optionElement.text = 'Nothing Select';
+            article_selected.add(optionElement);
+
+            // 받아온 카테고리를 드롭다운에 추가
+            for (var i = 0; i < article_list.length; i++) {
+                var article = '['+article_list[i]['no']+'] '+article_list[i]['name'];
+                var optionElement = document.createElement('option');
+                optionElement.value = article_list[i]['no']; // 실제 전달되는 값은 no만
+                optionElement.text = article;
+                article_selected.add(optionElement);
+            }
+        },
+        error: function (xhr, errmsg, err) {
+            console.log(xhr.status + ": " + xhr.responseText);
+        }
+    });
+}
+
 
 function del_file(data_name, file_name){
     $.ajax({
@@ -503,7 +630,7 @@ function fetchCategories() {
     var compliance_list=[]
 
     $.ajax({
-        url: '/compliance/evidence_get_compliance',
+        url: '/compliance/evidence/get_compliance',
         headers: {
             'X-CSRFToken': "{{ csrf_token }}"
         },

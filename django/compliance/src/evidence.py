@@ -30,18 +30,19 @@ def get_version(dict):
     response=[]
     cypher=f"""
         MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)
-        RETURN v.date AS version, c.name AS name
+        RETURN v.date AS version
     """
     results = graph.run(cypher)
     for result in results:
-        response.append({'version': str(result['version']), 'name': result['name']})
+        version_date = result['version'].isoformat()
+        response.append({'version': version_date})
     
     return response
 
 # 컴플라이언스에 맞는 article 가져오기
 def get_article(dict):
     compliance = dict['compliance_selected']
-    version=dict['version_selected']
+    version=str(dict['version_selected'])
     response=[]
     cypher=f"""
         OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
@@ -105,8 +106,8 @@ def add_data(dict):
     compliance = dict.get('compliance', '')
     article_selected = dict.get('article_selected', '')
 
-    if name == '':
-        return 'name NULL'
+    if not name:
+        return 'NULL'
 
     #중복 체크 필요
     cypher=f"""
@@ -177,10 +178,9 @@ def mod_data(dict):
     author = dict.get('mod_author', '')
     last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    if name == '':
-        return 'name NULL'
+    if not name:
+        return 'NULL'
 
-    
     if last_name == name:
         #data name을 수정하는 게 아니라면
         cypher= f"""
@@ -218,14 +218,14 @@ def mod_data(dict):
 # data 삭제
 def del_data(dict):
     name=dict['name']
-    if name == '':
+    if not name:
         return 'fail'
 
     #하위 노드가 있을 경우 하위 노드(파일)까지 모두 삭제, 아니면 Data만 삭제
     cypher=f"""
         MATCH (d:Compliance:Evidence:Data{{name:'{name}'}})
         WITH d
-        OPTIONAL MATCH (d)-[:DATA]->(f:File:Compliance:Evidence)
+        OPTIONAL MATCH (d)-[:FILE]->(f:File:Compliance:Evidence)
         WITH d, COLLECT(f) AS file_list
         FOREACH (f IN file_list| DETACH DELETE f)
         DETACH DELETE d
@@ -307,8 +307,8 @@ def mod_file(dict):
     poc = dict.get('mod_poc', '')
     last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    if name == '':
-        return 'name NULL'
+    if not name:
+        return 'NULL'
 
     if last_name == name:
         #data name을 수정하는 게 아니라면
@@ -415,11 +415,11 @@ def add_com(dict):
     data_name = dict.get('name', '')
     last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     compliance = dict.get('compliance', '')
+    version_selected = dict.get('version_selected', '')
     article_selected = dict.get('article_selected', '')
 
-    if data_name == '':
-        return 'name NULL'
-       
+    if not version_selected or not compliance:
+        return 'NULL'       
 
     #매핑 리스트가 있을 때(컴플라이언스와 관계 생성)
     if article_selected!='none' and article_selected: 
@@ -431,12 +431,12 @@ def add_com(dict):
                 SET d.last_update='{last_update}'
                 RETURN COUNT(d)
             """
-    elif compliance!='none' and compliance: 
+    elif compliance!='none': 
     # 컴플라이언스만 selected 했을 때
         cypher= f"""
                 MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})
-                MATCH (v:Version:Compliance{{name:'{compliance}'}})
-                MERGE (d)-[:EVIDENCE]->(a)
+                MATCH (v:Version:Compliance{{name:'{compliance}', date:date('{version_selected}')}})
+                MERGE (d)-[:EVIDENCE]->(v)
                 SET d.last_update='{last_update}'
                 RETURN COUNT(d)
             """  
