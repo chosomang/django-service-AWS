@@ -8,9 +8,32 @@
     <span class="current">Evidence <span>
 </div>
 
+
 <!-- Page Heading -->
 <h2 class="h2 font-weight-bold mb-2 text-gray-800 ml-2">Evidence List</h2>
 <p class="h4 mb-4 ml-2">You can manage the entire evidence, manage the version, and manage the mapping at once.</p>    
+
+<div class="card shadow mb-4" id="log_table">
+    <div class="card-body" style="font-size:15px;">
+        
+        <form id="form" role="search">
+            <select id="search_query1" name="search_query1">
+                <option value="name">Name</option>
+                <option value="comment">Comment</option>
+                <option value="author">Author</option>
+                <option value="last_update">Last Update</option>
+            </select>
+
+            <input type="search" id="search_query2" name="search_query2" placeholder="Search...">
+            <button class="btn btn-md btn-outline-primary">Search</button>
+        
+            <a class="btn btn-md btn-outline-warning" href="/compliance/evidence/data">
+                Reset
+            </a>
+        </form>
+
+    </div>
+</div>
 
 <div class="card shadow mb-4" id="log_table">
     <div class="card-header py-3">
@@ -19,6 +42,7 @@
             <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_add"  style="font-size:0.7vw">Add Data</button>           
         </h4>
     </div>
+    
     
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
@@ -164,6 +188,7 @@ $('#data_mod').on('shown.bs.modal', function (e) {
 });
 
 $('#add_accept').click(function() {
+
     // Call your Ajax function here
     var name = $('input[name="add_name"]').val();
     var comment = $('input[name="add_comment"]').val();
@@ -216,6 +241,15 @@ $('#add_accept').click(function() {
     window.onload = function() {
     // 상위 카테고리를 서버에서 받아오는 함수 호출
     fetchComplianceSelected();
+
+     var search_query1 = new URLSearchParams(window.location.search).get("search_query1");
+     if (search_query1) {
+         document.getElementById("search_query1").value = search_query1;
+     }
+     var search_query2 = new URLSearchParams(window.location.search).get("search_query2");
+     if (search_query2) {
+         document.getElementById("search_query2").value = search_query2;
+     }
 }
 
 // 상위 카테고리를 서버에서 받아오는 함수
@@ -269,7 +303,7 @@ function updateVersion() {
             version_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
 
             var optionElement = document.createElement('option');
-            optionElement.value = ''; // 실제 전달되는 값은 no만
+            optionElement.value = 'none'; // 실제 전달되는 값은 no만
             optionElement.text = 'Nothing Select';
             version_selected.add(optionElement);
 
@@ -297,7 +331,6 @@ function updateVersion() {
 function updateArticle() {
     var compliance_selected = document.getElementById('compliance');
     var version_selected = document.getElementById('version_selected');
-    console.log(compliance_selected+'hehe');
 
     $.ajax({
         url: '/compliance/evidence/get_article',

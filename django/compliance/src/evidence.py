@@ -28,15 +28,17 @@ def get_version(dict):
     compliance = dict['compliance_selected']
 
     response=[]
-    cypher=f"""
-        MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)
-        RETURN v.date AS version
-    """
-    results = graph.run(cypher)
-    for result in results:
-        version_date = result['version'].isoformat()
-        response.append({'version': version_date})
-    
+
+    if compliance and compliance!='none':
+        cypher=f"""
+            MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)
+            RETURN v.date AS version
+        """
+        results = graph.run(cypher)
+        for result in results:
+            version_date = result['version'].isoformat()
+            response.append({'version': version_date})
+
     return response
 
 # 컴플라이언스에 맞는 article 가져오기
@@ -44,37 +46,39 @@ def get_article(dict):
     compliance = dict['compliance_selected']
     version=str(dict['version_selected'])
     response=[]
-    cypher=f"""
-        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
-        WITH a
-        WHERE a IS NOT NULL AND v.date = date('{version}')
-        RETURN a.no AS no, a.name AS name ORDER BY a.no
 
-        UNION
+    if compliance and version and version!='none':
+        cypher=f"""
+            OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
+            WITH a
+            WHERE a IS NOT NULL AND v.date = date('{version}')
+            RETURN a.no AS no, a.name AS name ORDER BY a.no
 
-        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:ARTICLE]->(a:Article)
-        WITH a
-        WHERE a IS NOT NULL AND v.date = date('{version}')
-        RETURN a.no AS no, a.name AS name ORDER BY a.no
+            UNION
 
-        UNION
+            OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:ARTICLE]->(a:Article)
+            WITH a
+            WHERE a IS NOT NULL AND v.date = date('{version}')
+            RETURN a.no AS no, a.name AS name ORDER BY a.no
 
-        OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:ARTICLE]->(a:Article)
-        WITH a
-        WHERE a IS NOT NULL AND v.date = date('{version}')
-        RETURN a.no AS no, a.name AS name ORDER BY a.no
-    """
+            UNION
 
-    results = graph.run(cypher)
-    for result in results:
-        response.append({'no':result['no'], 'name': result['name']})
+            OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:ARTICLE]->(a:Article)
+            WITH a
+            WHERE a IS NOT NULL AND v.date = date('{version}')
+            RETURN a.no AS no, a.name AS name ORDER BY a.no
+        """
+
+        results = graph.run(cypher)
+        for result in results:
+            response.append({'no':result['no'], 'name': result['name']})
         
     return response
 
 # data 목록 가져오기
-def get_data(data=None):
+def get_data(search_query1=None, search_query2=None):
     response=[]
-    if data==None:
+    if not search_query1 and not search_query2:
         cypher=f"""
             MATCH (d:Data:Compliance:Evidence)
             RETURN d AS data
@@ -82,12 +86,11 @@ def get_data(data=None):
 
         results = graph.run(cypher)
         for result in results:
-            response.append(result)
-            
+            response.append(result) 
     else:
         cypher=f"""
             MATCH (d:Data:Compliance:Evidence)
-            WHERE d.name='{data}'
+            WHERE toLower(d.{search_query1}) CONTAINS toLower('{search_query2}')
             RETURN d AS data
         """
         results = graph.run(cypher)
@@ -135,6 +138,8 @@ def add_data(dict):
                 }})-[:EVIDENCE]->(a)
                 RETURN COUNT(d)
             """
+        
+
     elif compliance!='none' and compliance: 
     # 컴플라이언스만 selected 했을 때
         cypher= f"""

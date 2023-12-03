@@ -24,10 +24,16 @@ def lists_view_2(request):
 
 # Data 리스트 출력 페이지
 def data(request):
-    context={
-        'data_list': evidence.get_data()
-    }
-    return render(request, f"compliance/evidence/data.html", context)
+    search_query1 = request.GET.get('search_query1', None)
+    search_query2 = request.GET.get('search_query2', None)
+
+    if search_query1 and search_query2:
+        data_list = evidence.get_data(search_query1, search_query2)
+    else:
+        data_list = evidence.get_data()
+    context = {'data_list': data_list}
+
+    return render(request, "compliance/evidence/data.html", context)
 
 def get_compliance(request):
     if request.method == "POST":
@@ -100,7 +106,7 @@ def file(request):
     if request.method == 'GET':
         # Ajax GET 요청에서 전달된 파라미터 가져오기
         title = request.GET.get('title', None)
-        data=evidence.get_data(title)
+        data=evidence.get_data('name', title)
         file_list=evidence.get_file(title)
         compliance_list=evidence.get_compliance_list('evi',title)
         
@@ -156,4 +162,6 @@ def add_com(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
-
+    
+def organization(request):
+    return render(request, f"compliance/evidence/organization.html")

@@ -20,4 +20,6 @@ urlpatterns = [
     path('evidence/get_compliance', views.get_compliance),
     path('evidence/get_version', views.get_version),
     path('evidence/get_article', views.get_article),
+    path('evidence/organization', views.organization),
+
 ]
