@@ -37,16 +37,12 @@ def main_test(request):
         ip = x_forwarded_for.split(',')[0] # 'X-Forwarded-For' header can contain multiple IP addresses
     else:
         ip = request.META.get('REMOTE_ADDR')
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        # doesn't have to be reachable
-        s.connect(('10.255.255.255', 1))
-        ss = s.getsockname()[0]
-    except:
-        ss = '127.0.0.1'
-    finally:
-        s.close()    
-    context = {'test': ip+'---'+ss}
+        xxx = requests.get('http://169.254.169.254/latest/meta-data/public-ipv4', timeout=2).text
+    except requests.exceptions.RequestException:
+        xxx = '127.0.0.1'   
+    context = {'test': ip+'---'+xxx}
+    
     return render(request, 'testing/test.html', context)
 
 
