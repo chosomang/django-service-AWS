@@ -290,6 +290,7 @@ def add_file(dict):
             version:'{version}',
             upload_date:'{upload_date}'
         }})
+        SET d.last_update='{upload_date}'
         RETURN count(d)
     """
     graph.evaluate(cypher)
@@ -323,7 +324,8 @@ def mod_file(dict):
                 f.author='{author}', 
                 f.version='{version}',
                 f.poc='{poc}',
-                f.last_update='{last_update}'
+                f.last_update='{last_update}',
+                d.last_update='{last_update}'
             RETURN COUNT(f)
         """
     else:
@@ -342,7 +344,8 @@ def mod_file(dict):
                 f.author='{author}', 
                 f.version='{version}',
                 f.poc='{poc}',
-                f.last_update='{last_update}'
+                f.last_update='{last_update}',
+                d.last_update='{last_update}'
             RETURN COUNT(f)
         """
 
@@ -360,10 +363,13 @@ def mod_file(dict):
 def del_file(dict):
     data_name=dict['data_name']
     file_name=dict['file_name']
+    last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
 
     cypher= f"""
-        MATCH (c:Data:Compliance:Evidence{{name:'{data_name}'}})-[:FILE]->(f:File:Evidence {{name:'{file_name}'}})
+        MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})-[:FILE]->(f:File:Evidence {{name:'{file_name}'}})
         DETACH DELETE f
+        SET d.last_update='{last_update}'
         RETURN count(f)
     """
 
