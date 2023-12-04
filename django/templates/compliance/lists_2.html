@@ -79,8 +79,39 @@
 <h4 class="m-0 font-weight-bold text-teiren"> Evidence List
     <button class="ex btn btn-md" style="font-size:0.7vw">ex</button>
     <div class="ex-text">{% for a in article_list %}{% for i in a.articleExample %}{{i|linebreaks}}{% endfor %}{% endfor %}</div>
-        <button type="button" class="btn btn-md btn-teiren" onclick="openModal()">add</button>
+    <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#upload_file">add</button>
     </h4>
+    <!-- Modal -->
+    <div class="modal hide fade card-body" id="upload_file" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style='width:700px; height:auto'>
+                <div class="modal-header">
+                    <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Upload Evidence File</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">x</span>
+                    </button>
+                </div>
+                <div class="modal-body card-body" style="font-size:12px;">
+                    <form id="evidence_form" enctype="multipart/form-data">
+                    <div>
+                        <p>Data: <input type="text" class="form-control" id='dataName' name="dataName" value=''></p>
+                        <p>Data Comment: <input type="text" class="form-control" id='dataComment' name="dataComment" value='' placeholder="Enter a Comment of Data"></p>
+                        <p>File Comment: <input type="text" class="form-control" id='fileComment' name="fileComment" value='' placeholder="Enter a Comment of File"></p>
+                        <p>Version: <input type="text" class="form-control" id='version' name="version" value='' placeholder="ex. v_1.0"></p>
+                        <p>Author: <input type="text" class="form-control" id='author' name="author" value=''></p>
+                        <p>Poc: <input type="text" class="form-control" id='poc' name="poc" value=''></p>
+                        <input type="file" name="uploadedFile">
+                        {% csrf_token %}
+                    </div>
+                </div>
+                <div class="modal-footer" id="modal_footer">
+                    <input type="hidden" name="art_no" id="art_no" value="{{no}}"/>
+                    <input type='submit' id='add' class="btn btn-md btn-outline-primary" value="Upload">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
@@ -92,9 +123,9 @@
                         <th>File</th>
                         <th>File Comment</th>
                         <th>Version</th>
-                        <th>담당자</th>
-                        <td>Upload Date</td>
-                        <td>Upload</td>
+                        <th>PoC</th>
+                        <th>Upload Date</th>
+                        <th>Upload</th>
                         <th>Preview</th>
                         <th>Download</th>
                         <th>Modify</th>
@@ -102,7 +133,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!--for 문으로 리스트 출력: 파이썬 코드를 쓸 때는 % % 안에 담아서 사용-->
                     {% for a in evidence_list %}
                     <tr>
                         <td>{{a.dataName}}</td>
@@ -126,7 +156,7 @@
                         <td>
                             <form method="post">
                                 <input type="hidden" name="file_name" id="file_name" value="{{a.fileName}}"/>
-                                <button type="button" class="btn btn-md btn-teiren">modify</button>
+                                <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#modify_file">modify</button>
                             </form>
                         </td>
                         <td>
@@ -141,33 +171,6 @@
             </table>
         </div>
     </div>
-    <div>
-        <form id="evidence_form" enctype="multipart/form-data">
-            <label for="dataName">Data:</label>
-            <input type="text" id="dataName" name="dataName">
-
-            <label for="dataComment">Comment:</label>
-            <input type="text" id="dataComment" name="dataComment" placeholder="Enter a Comment">
-            
-            <label for="fileComment">File Comment:</label>
-            <input type="text" id="fileComment" name="fileComment" placeholder="Enter a Comment">
-            
-            <label for="version">Version:</label>
-            <input type="text" id="version" name="version" placeholder="ex. v_1.0">
-
-            <label for="author">Author:</label>
-            <input type="text" id="author" name="author">
-            
-            <label for="poc">Poc:</label>
-            <input type="text" id="poc" name="poc">
-
-            <input type="file" name="uploadedFile">
-            {% csrf_token %}
-            <input type="hidden" name="art_no" id="art_no" value="{{no}}"/>
-            <input type="submit" value="Upload">
-        </form>
-    </div>
-
 
 <script>
     function deleteEvidence(e){
@@ -203,6 +206,7 @@
             }
         });
     })
+
 </script>
 
 {% endblock %}
