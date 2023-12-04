@@ -40,7 +40,7 @@ def main_test(request):
     try:
         xxx = requests.get('http://169.254.169.254/latest/meta-data/public-ipv4', timeout=2).text
     except requests.exceptions.RequestException:
-        xxx = '127.0.0.1'   
+        xxx = '127.0.0.1'
     context = {'test': ip+'---'+xxx}
     
     return render(request, 'testing/test.html', context)

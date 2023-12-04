@@ -19,8 +19,8 @@ host = settings.NEO4J['HOST']
 port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
-# graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
-graph = Graph(f"bolt://{host}:7688", auth=(username, password))
+graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
+# graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 
 def get_log_page(request, logType):
     #페이징
@@ -129,35 +129,60 @@ def get_log_page(request, logType):
     MATCH (n:Log:{logType.capitalize()})
     {where_cypher if len(where_cypher) > 6 else ''}
     WITH n
-    ORDER BY n.eventTime DESC
+    ORDER BY n.eventTime DESC, n.request_creation_time DESC, n.timestamp DESC
     SKIP {(now_page-1)*limit}
     LIMIT {limit}
     RETURN
         id(n) AS id,
         CASE
+            WHEN [label in labels(n) WHERE NOT label IN ['{logType.capitalize()}', 'Log']][0] IS NOT NULL THEN  [label in labels(n) WHERE NOT label IN ['{logType.capitalize()}', 'Log']][0]
+            ELSE '{logType.capitalize()}'
+        END AS logTypes,
+        CASE
             WHEN n.eventTime IS NOT NULL THEN apoc.date.format(apoc.date.parse(n.eventTime, "ms", "yyyy-MM-dd'T'HH:mm:ssX"), "ms", "yyyy-MM-dd HH:mm:ss")
-            WHEN n.time IS NOT NULL THEN n.time
+            WHEN n.request_creation_time IS NOT NULL THEN n.request_creation_time
             WHEN n.timestamp IS NOT NULL THEN n.timestamp
         END AS eventTime,
-        n.eventName AS eventName,
-        split(n.eventSource, '.')[0] AS eventSource,
-        n.userIdentity_arn AS userarn,
-        n.userIdentity_type AS userType,
         CASE
-            WHEN n.userName IS NOT NULL THEN n.userName
-            WHEN n.userIdentity_type <> 'IAMUser' THEN n.userIdentity_type
-            WHEN n.userIdentity_userName IS NOT NULL THEN n.userIdentity_userName
+            WHEN n.eventName IS NOT NULL THEN n.eventName
+            WHEN n.queryType IS NOT NULL THEN n.queryType
+            WHEN n.type IS NOT NULL THEN n.type
             ELSE '-'
-        END AS userName,
-        n.awsRegion AS awsRegion,
-        split(n.responseElements_assumedRoleUser_arn, '/')[1] AS role,
+        END AS eventType,
+        CASE
+            WHEN n.userIdentity_arn IS NOT NULL THEN n.userIdentity_arn
+            WHEN n.resources_1_ARN IS NOT NULL THEN n.resources_1_ARN
+            WHEN n.client_port IS NOT NULL THEN n.client_port
+            WHEN n.userName IS NOT NULL THEN n.userName
+            ELSE '-'
+        END AS source,
+        CASE
+            WHEN n.eventSource IS NOT NULL THEN n.eventSource
+            WHEN n.queryName IS NOT NULL THEN n.queryName
+            WHEN n.elb IS NOT NULL THEN n.elb
+            ELSE '-'
+        END AS destination,
+        CASE
+            WHEN n.errorCode IS NOT NULL THEN n.errorCode
+            WHEN n.eventType IS NOT NULL THEN n.eventType
+            WHEN n.responseCode IS NOT NULL THEN n.responseCode
+            WHEN n.actions_executed IS NOT NULL THEN n.actions_executed+' > '+n.redirect_url
+            WHEN n.eventResult IS NOT NULL THEN n.eventResult
+            ELSE '-'
+        END AS eventResult,
         CASE
             WHEN n.sourceIPAddress IS NOT NULL THEN n.sourceIPAddress
+            WHEN toString(n.client_port) IS NOT NULL THEN n.client_port
             WHEN n.sourceIp IS NOT NULL THEN n.sourceIp
-            WHEN n.
             ELSE '-'
-        END AS sourceIP,
-        [label IN LABELS(n) WHERE NOT label IN ['Log', 'Iam', 'Ec2'] AND size(label) = {len(logType)}][0] AS cloud
+        END AS srcIp,
+        CASE
+            WHEN n.resolverIp IS NOT NULL THEN n.resolverIp
+            WHEN n.request IS NOT NULL THEN n.request
+            WHEN n.serverIp IS NOT NULL THEN n.serverIp
+            ELSE '-'
+        END AS dstIp,
+        '{logType.capitalize()}' AS logType
     """
     log_list = []
     try:
