@@ -13,7 +13,8 @@
 <h2 class="h2 font-weight-bold mb-2 text-gray-800 ml-2">Evidence List</h2>
 <p class="h4 mb-4 ml-2">You can manage the entire evidence, manage the version, and manage the mapping at once.</p>    
 
-<div class="card shadow mb-4" id="log_table">
+
+<div class="card shadow mb-4" id="search_table">
     <div class="card-body" style="font-size:15px;">
         
         <form id="form" role="search">
@@ -31,7 +32,6 @@
                 Reset
             </a>
         </form>
-
     </div>
 </div>
 
@@ -42,6 +42,7 @@
             <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_add"  style="font-size:0.7vw">Add Data</button>           
         </h4>
     </div>
+    
     
     
     <div class="card-body" style="font-size:15px;">
@@ -103,6 +104,14 @@
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
                 <div>
+                    <label for="product_selected">Choose Product Category:</label>
+                    <select id="product_selected">
+                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                        <option value="none">Select Product</option>
+                    </select>
+
+                    <br><br>
+
                     Name: <input class="form-control" name="add_name" type="text"><br><br>
                     Comment: <input class="form-control" name="add_comment" type="text"><br><br>
                     Author: <input class="form-control" name="add_author" type="text"><br><br>
@@ -190,6 +199,7 @@ $('#data_mod').on('shown.bs.modal', function (e) {
 $('#add_accept').click(function() {
 
     // Call your Ajax function here
+    var product_selected=$('#product_selected').val();
     var name = $('input[name="add_name"]').val();
     var comment = $('input[name="add_comment"]').val();
     var author = $('input[name="add_author"]').val();
@@ -198,6 +208,7 @@ $('#add_accept').click(function() {
 
     console.log('name: ', name);
     console.log('comment: ', comment);
+    console.log('product_selected: ', product_selected);
     console.log('article_selected: ', article_selected);
 
 
@@ -208,6 +219,7 @@ $('#add_accept').click(function() {
         },
         type: 'POST',
         data: {
+            'product_selected': product_selected,
             'name': name,
             'comment': comment,
             'author': author,
@@ -240,6 +252,7 @@ $('#add_accept').click(function() {
 // 페이지 로드 시 초기화 함수 호출
     window.onload = function() {
     // 상위 카테고리를 서버에서 받아오는 함수 호출
+    fetchProductSelected();
     fetchComplianceSelected();
 
      var search_query1 = new URLSearchParams(window.location.search).get("search_query1");
@@ -252,7 +265,38 @@ $('#add_accept').click(function() {
      }
 }
 
-// 상위 카테고리를 서버에서 받아오는 함수
+function fetchProductSelected(){
+    var product_selected = document.getElementById('product_selected');
+
+    var product_list=[]
+
+    $.ajax({
+        url: '/compliance/evidence/get_product/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {},
+        success: function (response) {
+            var product_list = response['product_list'];
+            console.log(product_list)
+
+            for (var i = 0; i < product_list.length; i++) {
+                var product = product_list[i];
+                var optionElement = document.createElement('option');
+                optionElement.value = product;
+                optionElement.text = product;
+                product_selected.add(optionElement);
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+
+}
+
+
 function fetchComplianceSelected() {
     var compliance_selected = document.getElementById('compliance');
     
@@ -407,8 +451,7 @@ $('#mod_accept').click(function() {
                 alert('Name must be entered. Try Again')
             }
             else {
-                alert(response)
-                //alert('Failed To Save. Please Try Again')
+                alert('Failed To Save. Please Try Again')
             }
         },
         error : function(xhr,errmsg,err) {

@@ -102,6 +102,7 @@ def get_data(search_query1=None, search_query2=None):
 
 # data 추가
 def add_data(dict):
+    product_selected= dict.get('product_selected', '')
     name = dict.get('name', '')
     comment = dict.get('comment', '')
     author = dict.get('author', '')
@@ -127,9 +128,9 @@ def add_data(dict):
     if article_selected!='none' and article_selected: 
         #article까지 selected 했을 때
         cypher= f"""
-                MATCH (e:Compliance:Evidence{{name:'Evidence'}})
+                MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{product_selected}'}})
                 MATCH (a:Article{{compliance_name:'{compliance}', no:'{article_selected}'}})
-                MERGE (e)-[:DATA]->
+                MERGE (p)-[:DATA]->
                     (d:Data:Compliance:Evidence {{
                     name:'{name}',
                     comment:'{comment}',
@@ -143,9 +144,9 @@ def add_data(dict):
     elif compliance!='none' and compliance: 
     # 컴플라이언스만 selected 했을 때
         cypher= f"""
-                MATCH (e:Compliance:Evidence{{name:'Evidence'}})
+                MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{product_selected}'}})
                 MATCH (c:Version:Compliance{{name:'{compliance}'}})
-                MERGE (e)-[:DATA]->
+                MERGE (p)-[:DATA]->
                     (d:Data:Compliance:Evidence {{
                     name:'{name}',
                     comment:'{comment}',
@@ -157,8 +158,8 @@ def add_data(dict):
     #매핑할 애들이 없을 때(그냥 증적 노드만 생성)
     else: 
         cypher= f"""
-                MATCH (e:Compliance:Evidence{{name:'Evidence'}})
-                MERGE (e)-[:DATA]->
+                MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{product_selected}'}})
+                MERGE (p)-[:DATA]->
                     (d:Data:Compliance:Evidence {{
                     name:'{name}',
                     comment:'{comment}',
@@ -462,6 +463,53 @@ def add_com(dict):
     except Exception:
         return 'fail'
 
+def add_integration(dict):
+    product = dict.get('product', '')
+
+    if not product:
+        return 'NULL'
+
+    #중복 체크 필요
+    cypher=f"""
+        MATCH (c:Product:Compliance:Evidence{{
+            name:'{product}'
+        }})
+        RETURN count(c)
+    """
+    if graph.evaluate(cypher) >= 1:
+        return 'already exist'
+        
+        
+    cypher= f"""
+            MATCH (e:Compliance:Evidence{{name:'Evidence'}})
+            MERGE (e)-[:PRODUCT]->
+                (p:Product:Compliance:Evidence {{
+                name:'{product}'
+            }})
+            RETURN COUNT(p)
+        """
+
+    try:
+        if graph.evaluate(cypher) == 1:
+            return 'success'
+        else:
+            raise Exception
+    except Exception:
+        return 'fail'
+    
+def get_product():
+    response=[]
+
+    cypher=f"""
+        MATCH (product:Product:Compliance:Evidence)
+        RETURN product.name AS name ORDER BY toLower(product.name)
+    """
+    
+    results = graph.run(cypher)
+    for result in results:
+        response.append(result)
+    
+    return response
 
 
 
