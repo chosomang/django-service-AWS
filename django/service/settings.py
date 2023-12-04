@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'M_threatD',
     'configurations',
     'dashboard',
-    # 'compliance',
+    'compliance',
     'testing',
     'rest_framework',
     'django.contrib.admin',

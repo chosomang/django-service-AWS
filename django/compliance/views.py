@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from .src import evidence, lists
 from django.http import HttpResponse, JsonResponse
@@ -6,21 +6,31 @@ from django.conf import settings
 import os
 import json
 from django.http import FileResponse
+from common.risk.v1.notification.alert import check_topbar_alert
+from .src import evidence, lists, lists_2, version_modify
+from . import models
+
 
 # Compliance
 def compliance_view(request):
-    context=''
+    context=' '
     return render(request, f"compliance/compliance.html", context)
 
 # Compliance lists - 현경
 def lists_view(request):
-    context=lists.test() 
+
+    context= lists.version()
     return render(request, f"compliance/lists.html", context)
 
 # Compliance lists_2 - 현경
 def lists_view_2(request):
     return render(request, f"compliance/lists_2.html")
 
+def versionModify(request):
+    if request.method == "POST":
+        data = dict(request.POST.items())
+        data.update({'compliance':version_modify.version(data)})
+        return render(request, f"compliance/version_list.html", data)
 
 # Data 리스트 출력 페이지
 def data(request):
@@ -165,3 +175,11 @@ def add_com(request):
     
 def organization(request):
     return render(request, f"compliance/evidence/organization.html")
+
+
+# def addSection(request, sectionType):
+#     context = dict(request.POST.items())
+#     if context['version'] == '1':
+#         context = addSection.addSection(data)
+#     return render(request, f"compliance/section/{sectionType}.html", context)
+

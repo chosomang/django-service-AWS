@@ -1,6 +1,8 @@
 from django.urls import include, path
+from django.conf import settings
 from . import views
-
+from .src import delete, add
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('index/', views.compliance_view),
@@ -22,4 +24,9 @@ urlpatterns = [
     path('evidence/get_article', views.get_article),
     path('evidence/organization', views.organization),
 
+    path('evidence/', views.evidence_view),
+    path('evidence_2/', views.evidence_view_2),
+    path('delete/', delete.delete),
+    path('add/', add.add),
+    path('version_modify/', views.versionModify)
 ]

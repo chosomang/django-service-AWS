@@ -1,0 +1,26 @@
+컴플라이언스 보고서 서식 옵션
+*폰트 추후 개발파트랑 상의 후 조정 (지금은 글꼴 포함 문서)
+
+[용지 여백]
+위/아래 : 1.7(cm)
+왼/오른쪽 : 1.27(cm)
+
+[위/아래 배너]
+색상 : #24B6D4
+크기 : 1.2*20.96(cm)
+들여쓰기 : 왼/오 0.35(cm)
+폰트 : Teiren (Pretendard Semibold, 14)
+	항목 (Pretendard, 10)
+
+[표지 제목]
+에스코어 드림 7 ExtraBold, 36
+에스코어 드림 3 Light, 16
+
+[본문]
+항목 : Pretendard SemiBold, 18
+표 제목칸 : 색상 #24B6D4
+		Pretendard SemiBold, 12
+표 본문 칸 : 색상 #F7F7F7
+		Pretendard, 11
+표 여백 : 위/아래 : 0(cm)
+		왼/오른쪽 : 0.25(cm)

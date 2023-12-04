@@ -9,10 +9,10 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 
-def version():
-
+def version(data):
+    ver = data['version']
     results = graph.run(f"""
-    MATCH (c:Chapter:Compliance:Certification)-[:SECTION]->(n:Certification:Compliance:Section)-[:ARTICLE]->(m:Certification:Compliance:Article)
+    MATCH (i:Compliance:Version{{name:'Isms_p', date:date('{ver}')}})-[:CHAPTER]->(c:Chapter:Compliance:Certification)-[:SECTION]->(n:Certification:Compliance:Section)-[:ARTICLE]->(m:Certification:Compliance:Article)
     WITH split(m.no, '.') as articleNo, c, n, m
     WITH toInteger(articleNo[0]) AS part1, toInteger(articleNo[1]) AS part2, toInteger(articleNo[2]) AS part3, c, n, m
     RETURN
@@ -28,20 +28,4 @@ def version():
     response = []
     for result in results:
         response.append(dict(result.items()))
-
-    # results = graph.run(f"""
-    # match (d:Data:Law:Compliance)<-[:DATA]-(c:Category:Compliance:Law)-[:EVIDENCE]->(a:Article:Isms_p:Compliance{{art_no:'{art_no}'}})
-    # with split(d.file,'.')[1] as file
-    # return file
-    # """)
-    # response2 = []
-    # for result in results:
-    #     response2.append(dict(result.items()))
-
-
-    version_list = graph.evaluate(f"""
-        MATCH (n:Compliance:Version{{name:'Isms_p'}})       
-        return COLLECT(n.date)
-    """)
-    
-    return {'compliance': response, 'version_list': version_list}
+    return response

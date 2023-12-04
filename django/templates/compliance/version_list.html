@@ -1,0 +1,60 @@
+{% load static %} 
+    <div class="table-responsive" style="overflow:hidden;">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+               style="text-align:center;font-size:15px;">
+            <thead>
+            <tr>
+                <th>Chapter</th>
+                <th>Section</th>
+                <th>Article</th>
+                <th>Comment</th>
+                <th>준수 여부</th>
+                <th>Last Update</th>
+                <th>Details</th>
+            </tr>
+            </thead>
+            <tfoot>
+            <tr>
+                <th>Chapter</th>
+                <th>Section</th>
+                <th>Article</th>
+                <th>Comment</th>
+                <th>준수 여부</th>
+                <th>Last Update</th>
+                <th>Details</th>
+            </tr>
+            </tfoot>
+            
+            <tbody>
+                <!--for 문으로 리스트 출력: 파이썬 코드를 쓸 때는 % % 안에 담아서 사용-->
+                {% for com in compliance %}
+                <tr>
+                    <!-- {%for key, value in com.items%}
+                        <td>{{value}}</td>
+                    {% endfor %} -->
+                    <td>{{com.chapterNo}} {{com.chapterName}}</td>
+                    <td>{{com.sectionNo}} {{com.sectionName}}</td>
+                    <td>{{com.articleNo}} {{com.articleName}}</td>
+                    <td>{{com.articleComment}}</td>
+                    <td>
+                        checkbox
+                    </td>
+                    <td>date</td>
+                    <td>
+                        <form  method="POST" action="/compliance/lists_2/">
+                            {% csrf_token %}
+                            <input type="hidden" name="no" value="{{com.articleNo}}"/>
+                            <input type="hidden" name="name" value="{{com.articleName}}"/>
+                            <button class="btn btn-md btn-teiren" style="font-size:0.7vw">
+                                Details
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                
+            </tbody>
+        </table>
+    </div>
+
+
