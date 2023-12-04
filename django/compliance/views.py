@@ -7,7 +7,7 @@ from . import models
 
 # Compliance
 def compliance_view(request):
-    context=''
+    context=' '
     return render(request, f"compliance/compliance.html", context)
 
 # Compliance lists - 현경
