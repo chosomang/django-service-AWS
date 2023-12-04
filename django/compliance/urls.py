@@ -24,8 +24,8 @@ urlpatterns = [
     path('evidence/get_article', views.get_article),
     path('evidence/organization', views.organization),
 
-    path('evidence/', views.evidence_view),
-    path('evidence_2/', views.evidence_view_2),
+    # path('evidence/', views.evidence_view),
+    # path('evidence_2/', views.evidence_view_2),
     path('delete/', delete.delete),
     path('add/', add.add),
     path('version_modify/', views.versionModify)
