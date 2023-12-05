@@ -23,6 +23,7 @@ urlpatterns = [
     path('evidence/get_version', views.get_version),
     path('evidence/get_article', views.get_article),
     path('evidence/organization', views.organization),
+    path('assets/', views.assets_view),
 
     # path('evidence/', views.evidence_view),
     # path('evidence_2/', views.evidence_view_2),

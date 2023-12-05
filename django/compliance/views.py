@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.decorators import login_required
-from .src import evidence, lists
+from .src import evidence, lists, assets
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 import os
@@ -18,19 +18,29 @@ def compliance_view(request):
 
 # Compliance lists - 현경
 def lists_view(request):
-
     context= lists.version()
     return render(request, f"compliance/lists.html", context)
 
 # Compliance lists_2 - 현경
 def lists_view_2(request):
-    return render(request, f"compliance/lists_2.html")
+    data = dict(request.POST.items())
+    result = lists_2.test(data)
+    data.update(result)
+    return render(request, f"compliance/lists_2.html", data)
 
 def versionModify(request):
     if request.method == "POST":
         data = dict(request.POST.items())
+        if "article" in data :
+            return HttpResponse(version_modify.comply(data))
         data.update({'compliance':version_modify.version(data)})
         return render(request, f"compliance/version_list.html", data)
+
+#Assets lists - 현경
+def assets_view(request):
+
+    context= assets.view()
+    return render(request, f"compliance/assets.html", context)
 
 # Data 리스트 출력 페이지
 def data(request):
