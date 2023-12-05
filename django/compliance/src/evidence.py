@@ -80,18 +80,19 @@ def get_data(search_query1=None, search_query2=None):
     response=[]
     if not search_query1 and not search_query2:
         cypher=f"""
-            MATCH (d:Data:Compliance:Evidence)
-            RETURN d AS data
+            MATCH (p:Product:Evidence:Compliance)-[:DATA]->(d:Data:Compliance:Evidence)
+            RETURN d AS data, p AS product
         """
 
         results = graph.run(cypher)
         for result in results:
             response.append(result) 
+
     else:
         cypher=f"""
-            MATCH (d:Data:Compliance:Evidence)
+            MATCH (p:Product:Evidence:Compliance)-[:DATA]->(d:Data:Compliance:Evidence)
             WHERE toLower(d.{search_query1}) CONTAINS toLower('{search_query2}')
-            RETURN d AS data
+            RETURN d AS data, p AS product
         """
         results = graph.run(cypher)
         for result in results:
@@ -108,10 +109,12 @@ def add_data(dict):
     author = dict.get('author', '')
     last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     compliance = dict.get('compliance', '')
+    version_selected=dict.get('version_selected', '')
     article_selected = dict.get('article_selected', '')
 
-    if not name:
+    if not name:                         
         return 'NULL'
+
 
     #중복 체크 필요
     cypher=f"""
@@ -129,7 +132,7 @@ def add_data(dict):
         #article까지 selected 했을 때
         cypher= f"""
                 MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{product_selected}'}})
-                MATCH (a:Article{{compliance_name:'{compliance}', no:'{article_selected}'}})
+                MATCH (v:Version{{name:'{compliance}', date:date('{version_selected}')}})-[*]->(a:Article{{compliance_name:'{compliance}', no:'{article_selected}'}})
                 MERGE (p)-[:DATA]->
                     (d:Data:Compliance:Evidence {{
                     name:'{name}',
@@ -139,13 +142,12 @@ def add_data(dict):
                 }})-[:EVIDENCE]->(a)
                 RETURN COUNT(d)
             """
-        
 
     elif compliance!='none' and compliance: 
     # 컴플라이언스만 selected 했을 때
         cypher= f"""
                 MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{product_selected}'}})
-                MATCH (c:Version:Compliance{{name:'{compliance}'}})
+                MATCH (c:Version:Compliance{{name:'{compliance}', date:date('{version_selected}')}})
                 MERGE (p)-[:DATA]->
                     (d:Data:Compliance:Evidence {{
                     name:'{name}',
@@ -155,6 +157,7 @@ def add_data(dict):
                 }})-[:EVIDENCE]->(c)
                 RETURN COUNT(d)
             """  
+        
     #매핑할 애들이 없을 때(그냥 증적 노드만 생성)
     else: 
         cypher= f"""

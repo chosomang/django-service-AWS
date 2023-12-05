@@ -52,6 +52,7 @@
                 <thead>
                     <tr>
                         <th>No</th>
+                        <th>Product</th>
                         <th>Name</th>
                         <th>Comment</th>
                         <th>Author</th>
@@ -65,7 +66,8 @@
                     {% for d in data_list%}
                         <tr>
                             <td>{{forloop.counter}}</td>
-                            <td>{{ d.data.name }}</td>
+                            <td>{{d.product.name}}</td>
+                            <td>{{d.data.name}}</td>
                             <td>{{d.data.comment}}</td>
                             <td>{{d.data.author}}</td>
                             <td>{{d.data.last_update}}</td>
@@ -204,13 +206,8 @@ $('#add_accept').click(function() {
     var comment = $('input[name="add_comment"]').val();
     var author = $('input[name="add_author"]').val();
     var compliance=$('#compliance').val();
+    var version_selected=$('#version_selected').val();
     var article_selected=$('#article_selected').val();
-
-    console.log('name: ', name);
-    console.log('comment: ', comment);
-    console.log('product_selected: ', product_selected);
-    console.log('article_selected: ', article_selected);
-
 
     $.ajax({
         url: '/compliance/evidence/data_add/',
@@ -224,6 +221,7 @@ $('#add_accept').click(function() {
             'comment': comment,
             'author': author,
             'compliance': compliance,
+            'version_selected':version_selected,
             'article_selected': article_selected
         },
         success: function(response){       

@@ -7,7 +7,7 @@ import os
 import json
 from django.http import FileResponse
 from common.risk.v1.notification.alert import check_topbar_alert
-from .src import evidence, lists, lists_2, version_modify
+from .src import evidence, lists, lists_2, version_modify, policy
 from . import models
 
 
@@ -213,4 +213,37 @@ def get_product(request):
         product_list = evidence.get_product()
         json_data = json.dumps({"product_list" :product_list})    
         return HttpResponse(json_data, content_type='application/json')
-          
+
+def get_policy(request):
+    if request.method == "GET":
+        search_query1 = request.GET.get('search_query1', None)
+        search_query2 = request.GET.get('search_query2', None)
+
+        if search_query1 and search_query2:
+            articles_of_association=policy.get_articles_of_association(search_query1, search_query2)
+            regulation=policy.get_regulation(search_query1, search_query2)
+            guidelines=policy.get_guidelines(search_query1, search_query2)
+            rules=policy.get_rules(search_query1, search_query2)
+            document=policy.get_document(search_query1, search_query2)
+            etc=policy.get_etc(search_query1, search_query2)
+        else:
+            articles_of_association=policy.get_articles_of_association()
+            regulation=policy.get_regulation()
+            guidelines=policy.get_guidelines()
+            rules=policy.get_rules()
+            document=policy.get_document()
+            etc=policy.get_etc()
+
+        context={
+        'articles_of_association': articles_of_association,
+        'regulation':regulation,
+        'guidelines':guidelines,
+        'rules':rules,
+        'document':document,
+        'etc':etc,
+        }
+
+        return render(request, f"compliance/policy/policy.html", context)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+

@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Begin Page Content -->
+<div class="locationbar ml-2">
+    <span>Compliance &nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;</span>
+    <span class="current">Policy Manage<span>
+</div>
+
+
+<!-- Page Heading -->
+<h2 class="h2 font-weight-bold mb-2 text-gray-800 ml-2">Policy Manage</h2>
+<p class="h4 mb-4 ml-2">You can manage the entire Policy at once.</p>    
+
+
+<div class="card shadow mb-4" id="search_table">
+    <div class="card-body" style="font-size:15px;">
+        
+        <form id="form" role="search">
+            <select id="search_query1" name="search_query1">
+                <option value="name">Name</option>
+                <option value="comment">Comment</option>
+                <option value="author">Author</option>
+                <option value="last_update">Last Update</option>
+            </select>
+
+            <input type="search" id="search_query2" name="search_query2" placeholder="Search...">
+            <button class="btn btn-md btn-outline-primary">Search</button>
+        
+            <a class="btn btn-md btn-outline-warning" href="/compliance/evidence/data">
+                Reset
+            </a>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-teiren">
+            Articles of Association
+            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#policy_add"  style="font-size:0.7vw">Add</button>           
+        </h4>
+    </div>
+    
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" cellspacing="0"
+                style="table-layout:fixed;text-align:center;font-size:15px;">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Comment</th>
+                        <th>Author</th>
+                        <th>Last update</th>
+                        <th>Files</th>
+                        <th>func</th>
+                    </tr>
+                    </thead>
+                
+                <tbody>
+                    {% for d in articles_of_association%}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{d.data.name}}</td>
+                            <td>{{d.data.comment}}</td>
+                            <td>{{d.data.author}}</td>
+                            <td>{{d.data.last_update}}</td>
+                            <td>
+                                
+                                <form method="GET" action="/compliance/evidence/file/">
+                                    <input type="hidden" name="title" value="{{ d.data.name }}"/>
+                                    <button type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw">바로가기</button>
+                                </form>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#data_mod"
+                                data-name="{{d.data.name}}" data-comment="{{d.data.comment}}" data-author="{{d.data.author}}">Mod</button>                                 
+                                
+
+                                <button type="button" class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_data('{{d.data.name}}')">Del</button>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-teiren">
+            Regulation
+            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#policy_add"  style="font-size:0.7vw">Add</button>           
+        </h4>
+    </div>
+    
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                style="table-layout:fixed;text-align:center;font-size:15px;">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Comment</th>
+                        <th>Author</th>
+                        <th>Last update</th>
+                        <th>Files</th>
+                        <th>func</th>
+                    </tr>
+                    </thead>
+                
+                <tbody>
+                    {% for d in regulation%}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{d.data.name}}</td>
+                            <td>{{d.data.comment}}</td>
+                            <td>{{d.data.author}}</td>
+                            <td>{{d.data.last_update}}</td>
+                            <td>
+                                
+                                <form method="GET" action="/compliance/evidence/file/">
+                                    <input type="hidden" name="title" value="{{ d.data.name }}"/>
+                                    <button type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw">바로가기</button>
+                                </form>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#data_mod"
+                                data-name="{{d.data.name}}" data-comment="{{d.data.comment}}" data-author="{{d.data.author}}">Mod</button>                                 
+                                
+
+                                <button type="button" class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_data('{{d.data.name}}')">Del</button>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-teiren">
+            Guidelines
+            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#policy_add"  style="font-size:0.7vw">Add</button>           
+        </h4>
+    </div>
+    
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                style="table-layout:fixed;text-align:center;font-size:15px;">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Comment</th>
+                        <th>Author</th>
+                        <th>Last update</th>
+                        <th>Files</th>
+                        <th>func</th>
+                    </tr>
+                    </thead>
+                
+                <tbody>
+                    {% for d in guidelines%}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{d.data.name}}</td>
+                            <td>{{d.data.comment}}</td>
+                            <td>{{d.data.author}}</td>
+                            <td>{{d.data.last_update}}</td>
+                            <td>
+                                
+                                <form method="GET" action="/compliance/evidence/file/">
+                                    <input type="hidden" name="title" value="{{ d.data.name }}"/>
+                                    <button type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw">바로가기</button>
+                                </form>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#data_mod"
+                                data-name="{{d.data.name}}" data-comment="{{d.data.comment}}" data-author="{{d.data.author}}">Mod</button>                                 
+                                
+
+                                <button type="button" class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_data('{{d.data.name}}')">Del</button>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-teiren">
+            Rules
+            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#policy_add"  style="font-size:0.7vw">Add</button>           
+        </h4>
+    </div>
+    
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                style="table-layout:fixed;text-align:center;font-size:15px;">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Comment</th>
+                        <th>Author</th>
+                        <th>Last update</th>
+                        <th>Files</th>
+                        <th>func</th>
+                    </tr>
+                    </thead>
+                
+                <tbody>
+                    {% for d in rules%}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{d.data.name}}</td>
+                            <td>{{d.data.comment}}</td>
+                            <td>{{d.data.author}}</td>
+                            <td>{{d.data.last_update}}</td>
+                            <td>
+                                
+                                <form method="GET" action="/compliance/evidence/file/">
+                                    <input type="hidden" name="title" value="{{ d.data.name }}"/>
+                                    <button type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw">바로가기</button>
+                                </form>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#data_mod"
+                                data-name="{{d.data.name}}" data-comment="{{d.data.comment}}" data-author="{{d.data.author}}">Mod</button>                                 
+                                
+
+                                <button type="button" class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_data('{{d.data.name}}')">Del</button>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-teiren">
+            Document
+            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#policy_add"  style="font-size:0.7vw">Add</button>           
+        </h4>
+    </div>
+    
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                style="table-layout:fixed;text-align:center;font-size:15px;">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Comment</th>
+                        <th>Author</th>
+                        <th>Last update</th>
+                        <th>Files</th>
+                        <th>func</th>
+                    </tr>
+                    </thead>
+                
+                <tbody>
+                    {% for d in document%}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{d.data.name}}</td>
+                            <td>{{d.data.comment}}</td>
+                            <td>{{d.data.author}}</td>
+                            <td>{{d.data.last_update}}</td>
+                            <td>
+                                
+                                <form method="GET" action="/compliance/evidence/file/">
+                                    <input type="hidden" name="title" value="{{ d.data.name }}"/>
+                                    <button type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw">바로가기</button>
+                                </form>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#data_mod"
+                                data-name="{{d.data.name}}" data-comment="{{d.data.comment}}" data-author="{{d.data.author}}">Mod</button>                                 
+                                
+
+                                <button type="button" class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_data('{{d.data.name}}')">Del</button>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-teiren">
+            ETC
+            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#policy_add"  style="font-size:0.7vw">Add</button>           
+        </h4>
+    </div>
+    
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                style="table-layout:fixed;text-align:center;font-size:15px;">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Comment</th>
+                        <th>Author</th>
+                        <th>Last update</th>
+                        <th>Files</th>
+                        <th>func</th>
+                    </tr>
+                    </thead>
+                
+                <tbody>
+                    {% for d in etc%}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{d.data.name}}</td>
+                            <td>{{d.data.comment}}</td>
+                            <td>{{d.data.author}}</td>
+                            <td>{{d.data.last_update}}</td>
+                            <td>
+                                
+                                <form method="GET" action="/compliance/evidence/file/">
+                                    <input type="hidden" name="title" value="{{ d.data.name }}"/>
+                                    <button type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw">바로가기</button>
+                                </form>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#data_mod"
+                                data-name="{{d.data.name}}" data-comment="{{d.data.comment}}" data-author="{{d.data.author}}">Mod</button>                                 
+                                
+
+                                <button type="button" class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_data('{{d.data.name}}')">Del</button>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+
+</script>
+{% endblock %}
+
