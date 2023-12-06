@@ -6,7 +6,7 @@ from .src import log
 @login_required
 def log_view(request, resourceType, logType):
     if request.method == 'POST':
-        context = dict(request.POST.items())
+        context = dict(request.POST)
         context = (log.get_log_page(context, logType.split(' ')[0]))
         return render(request,f"M_logs/dataTable.html",context)
     context = dict(request.GET.items())

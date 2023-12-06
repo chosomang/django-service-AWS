@@ -9,6 +9,7 @@ from M_threatD.src.notification.detection import get_node_json, get_relation_jso
 import requests
 import os
 import socket
+import json
 from django.contrib.auth.signals import user_logged_out, user_logged_in
 from django.dispatch import receiver
 # LOCAL
@@ -45,7 +46,8 @@ def main_test(request):
     
     return render(request, 'testing/test.html', context)
 
-
+def test_ajax(request):
+    return HttpResponse(str(dict(request.POST)))
 
 from testing.dockerHandler.handler import DockerHandler
 def trigger(request):
