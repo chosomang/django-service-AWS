@@ -60,7 +60,6 @@ def get_log_page(request, logType):
         filter_dict[key] = value
 
     where_dict = create_where_dict(filter_dict)
-    # print(where_dict)
     
     # Creating Where Cypher
     where_cypher = 'WHERE '
@@ -86,9 +85,6 @@ def get_log_page(request, logType):
         where_cypher = where_cypher[:-4] + ') AND '
         if cnt == len(where_dict)-1:
             where_cypher = where_cypher[:-5]
-
-    print(where_cypher)
-    # where_cypher = 'WHERE '
 
     #페이지당 보여줄 로그 개수
     limit = 10
@@ -175,7 +171,6 @@ def get_log_page(request, logType):
 
     # if ed_page < 10:
     #     ed_page=10
-
     page_obj['has_previous'] = True if now_page > 1 else False
     page_obj['previous_page_number']=now_page-1
     page_obj['paginator'] = {'page_range': range(st_page, ed_page+1)}
@@ -191,8 +186,6 @@ def get_log_page(request, logType):
             'total_log': total_log
         }
         return response
-    
-    
     
     response = {
         'page_obj': page_obj,
