@@ -8,63 +8,63 @@
     </h6>
 </div>
 
-<div class="card-body" style="font-size:12px;">
+<div class="card-body" style="font-size:15px;">
     <div class="table-responsive" style="overflow:hidden;">
         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
-               style="table-layout:fixed;text-align:center;">
+                style="table-layout:fixed;text-align:center;font-size:15px;">
             <thead>
             <tr>
-                <th>eventTime</th>
-                <th>eventName</th>
-                <th>eventSource</th>
-                <th>userARN</th>
-                <th>userType</th>
-                <th>userName</th>
-                <th>Region</th>
-                <th>role</th>
-                <th>sourceIP</th>
+                <th>LogType</th>
+                <th>EventTime</th>
+                <th>EventType</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>EventResult</th>
+                <th>Src IP</th>
+                <th>Dst IP</th>
                 <th>Details</th>
             </tr>
             </thead>
             <tfoot>
             <tr>
-                <th>eventTime</th>
-                <th>eventName</th>
-                <th>eventSource</th>
-                <th>userARN</th>
-                <th>userType</th>
-                <th>userName</th>
-                <th>Region</th>
-                <th>role</th>
-                <th>sourceIP</th>
+                <th>LogType</th>
+                <th>EventTime</th>
+                <th>EventType</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>EventResult</th>
+                <th>Src IP</th>
+                <th>Dst IP</th>
                 <th>Details</th>
             </tr>
             </tfoot>
             <tbody>
-            {% if error %}
+            {% if page_obj.log_list %}
+                {%for log in page_obj.log_list%}
+                <tr>
+                    {% for key, value in log.items %}
+                        {% if key != 'id' and key != 'logType' %}
+                            {% if value is None %}
+                                <td>-</td>
+                            {% else %}
+                                <td>{{value}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    <td>
+                        <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#detail-modal"
+                            data-id={{log.id}} data-logtype={{log.logType}}>
+                            Details
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
             <tr>
-                <td colspan="10" style="padding:45px 0;font-size:30px;">{{error}}</td>
+                <td colspan="9" style="font-size:30px">No Data</td>
             </tr>
             {% endif %}
-            {%for log in page_obj.log_list%}
-            <tr>
-                {% for key, value in log.items %}
-                    {% if key != 'id' and key != 'cloud' %}
-                        {% if value is None %}
-                            <td>-</td>
-                        {% else %}
-                            <td>{{value}}</td>
-                        {% endif %}
-                    {% endif %}
-                {% endfor %}
-                <td>
-                    <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#detail-modal"
-                        data-id={{log.id}} data-logtype={{log.cloud}}>
-                        Details
-                    </button>
-                </td>
-            </tr>
-            {% endfor %}
+            
             </tbody>
         </table>
 

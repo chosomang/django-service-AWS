@@ -8,7 +8,8 @@ from django.template.loader import render_to_string
 from M_threatD.src.notification.detection import get_node_json, get_relation_json
 import requests
 import os
-
+import socket
+import json
 from django.contrib.auth.signals import user_logged_out, user_logged_in
 from django.dispatch import receiver
 # LOCAL
@@ -37,10 +38,16 @@ def main_test(request):
         ip = x_forwarded_for.split(',')[0] # 'X-Forwarded-For' header can contain multiple IP addresses
     else:
         ip = request.META.get('REMOTE_ADDR')
-    context = {'test': ip}
+    try:
+        xxx = requests.get('http://169.254.169.254/latest/meta-data/public-ipv4', timeout=2).text
+    except requests.exceptions.RequestException:
+        xxx = '127.0.0.1'
+    context = {'test': ip+'---'+xxx}
+    
     return render(request, 'testing/test.html', context)
 
-
+def test_ajax(request):
+    return HttpResponse(str(dict(request.POST)))
 
 from testing.dockerHandler.handler import DockerHandler
 def trigger(request):

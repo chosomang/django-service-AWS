@@ -51,6 +51,7 @@ $(function () {
 
 /// Search_Filter
 function searchFilter(e) {
+    console.log($('#search').serializeArray())
     $('#log_table').fadeOut('normal')
     if (e == 'reset') {
         data = `page=1&logType=${logType}`
