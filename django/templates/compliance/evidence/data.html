@@ -28,7 +28,7 @@
             <input type="search" id="search_query2" name="search_query2" placeholder="Search...">
             <button class="btn btn-md btn-outline-primary">Search</button>
         
-            <a class="btn btn-md btn-outline-warning" href="/compliance/evidence/data">
+            <a class="btn btn-md btn-outline-warning" href="/compliance/evidence/">
                 Reset
             </a>
         </form>
@@ -230,7 +230,7 @@ $('#add_accept').click(function() {
             }
             if(response === 'success'){
                 alert('Saved Successfully')
-                window.location.href= '/compliance/evidence/data/'
+                window.location.href= '/compliance/evidence/'
             }else if(response === 'already exist'){
                 alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
             }else if(response === 'NULL'){
@@ -442,7 +442,7 @@ $('#mod_accept').click(function() {
             }
             if(response === 'success'){
                 alert('Saved Successfully')
-                window.location.href= '/compliance/evidence/data'
+                window.location.href= '/compliance/evidence/'
             }else if(response === 'already exist'){
                 alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
             }else if(response === 'NULL'){
@@ -476,7 +476,7 @@ function del_data(del_data_name){
             }
             if(response === 'success'){
                 alert('Deleted Successfully')
-                window.location.href= '/compliance/evidence/data/'
+                window.location.href= '/compliance/evidence/'
             } else {
                 alert('Failed To Save. Please Try Again')
             }

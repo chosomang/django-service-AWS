@@ -115,7 +115,7 @@ def del_data(request):
         return JsonResponse({'error': 'Invalid method'}, status=400)
 
 # file 출력
-def file(request):
+def get_evidence_file(request):
     if request.method == 'GET':
         # Ajax GET 요청에서 전달된 파라미터 가져오기
         title = request.GET.get('title', None)
@@ -140,12 +140,12 @@ def file(request):
         return JsonResponse({'error': 'Invalid method'}, status=400)
 
 # file 추가 시, 함수 동작
-def add_file(request):
+def add_evidence_file(request):
     add_file=dict(request.POST.items())
     return HttpResponse(evidence.add_file(add_file))
 
 # file 수정
-def mod_file(request):
+def mod_evidence_file(request):
     if request.method=="POST":
         mod_file=dict(request.POST.items())
 
@@ -159,7 +159,7 @@ def mod_file(request):
         
 
 # file 삭제
-def del_file(request):
+def del_evidence_file(request):
     if request.method=="POST":
         del_file=dict(request.POST.items())
         return HttpResponse(evidence.del_file(del_file))
@@ -247,3 +247,5 @@ def get_policy(request):
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
 
+def get_policy_file():
+    pass
