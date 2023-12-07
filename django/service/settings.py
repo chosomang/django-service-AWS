@@ -101,7 +101,7 @@ MONGODB = {
 
 NEO4J = {
     'HOST': '13.124.121.1',
-    'PORT': '7687',
+    'PORT': '7689',
     'USERNAME': 'neo4j',
     'PASSWORD': 'dbdnjs!23'
 }
