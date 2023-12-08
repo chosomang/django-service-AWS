@@ -1,7 +1,7 @@
 from django.urls import include, path
 from django.conf import settings
 from . import views
-from .src import delete, add, assets_data_add, assets_add, assets_data_delete, assets_delete, assets_file_add
+from .src import delete, add, assets_data_add, assets_add, assets_data_delete, assets_delete, assets_file_add, assets_file_delete
 from django.conf.urls.static import static
 
 urlpatterns = [
@@ -36,5 +36,6 @@ urlpatterns = [
     path('assets_data_delete/', assets_data_delete.delete),
     path('assets_delete/', assets_delete.delete),
     path('file_view/', views.fileView),
-    path('assets_file_add/', assets_file_add.add)
+    path('assets_file_add/', assets_file_add.add),
+    path('assets_file_delete/', assets_file_delete.delete),
 ]

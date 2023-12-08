@@ -1,7 +1,7 @@
 {% load custom_filter %}
 {% load static %} 
 <div style="display: flex; justify-content: space-between; align-items: center;" class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-teiren">Assets File Management</h6>
+        <h6 class="m-0 font-weight-bold text-teiren">Assets Files</h6>
         <button style="float:right;" class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#file_add">File Upload</button>
     </h4>
     <!-- File Upload Modal -->
@@ -66,14 +66,14 @@
              </td>
              <td>
                  <form method="post">
-                     <input type="hidden" name="file_name" id="file_name" value="{{a.fileName}}"/>
+                     <input type="hidden" name="file_name" id="file_name" value="{{file.fileName}}"/>
                      <button type="button" class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#modify_file">modify</button>
                  </form>
              </td>
              <td>
                  <form method="post">
-                     <input type="hidden" name="file_name" id="file_name" value="{{a.fileName}}"/>
-                     <button type="button" class="btn btn-sm btn-teiren" onclick="deleteEvidence(this)">delete</button>
+                     <input type="hidden" name="file_name" id="file_name" value="{{file.fileName}}"/>
+                     <button type="button" class="btn btn-sm btn-teiren" onclick="deleteAssetFile(this)">delete</button>
                  </form>
              </td>
          </tr>
@@ -97,6 +97,20 @@
         }).done(function (response) {
             alert(response);
         });
+    }
+
+    function deleteAssetFile(e){
+        var data=$(e).parent().serialize()
+        $.ajax({
+        url:'/compliance/assets_file_delete/',
+        headers:{
+            'X-CSRFToken': '{{csrf_token}}'
+        },
+        data: data,
+        type: 'post'
+    }).done(function(response){
+        alert(response)
+    })   
     }
 
 </script>
