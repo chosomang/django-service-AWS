@@ -39,7 +39,8 @@ def versionModify(request):
 def assetChange(request):
     if request.method == "POST":
         data = dict(request.POST.items())
-        data.update({'assets':assets_change.asset(data)})
+        result = assets_change.asset(data)
+        data.update(result)
         return render(request, f"compliance/assets_change.html", data)
 
 def fileView(request):
