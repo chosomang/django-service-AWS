@@ -26,7 +26,8 @@ def asset(data):
         m.level as assetLevel,
         m.poc as assetPoC,
         m.user as assetUser,
-        m.date as assetDate
+        m.date as assetDate,
+        id(m) as assetId
     """)
     response = []
     for result in results:

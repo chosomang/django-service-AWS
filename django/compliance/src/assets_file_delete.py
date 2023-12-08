@@ -25,7 +25,7 @@ def delete(request):
     try:
         os.remove(file_path)
         graph.evaluate(delete_evidence)
-        response = "증적 파일이 삭제되었습니다."
+        response = "자산 파일이 삭제되었습니다."
     except:
         response = 'Error'
     finally:

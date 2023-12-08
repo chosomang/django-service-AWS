@@ -29,7 +29,7 @@ def add(request):
         """
         graph.run(add_assets_data)
 
-        response = "자산 데이터가 업로드 되었습니다."
+        response = "자산 카테고리가 업로드 되었습니다."
     except Exception as e:
         response = f'Error: {str(e)}'
     finally:

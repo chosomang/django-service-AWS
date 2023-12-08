@@ -24,7 +24,7 @@ def delete(data):
 
     try:
         graph.evaluate(delete_assets_data)
-        response = "자산이 삭제되었습니다."
+        response = "자산 카테고리가 삭제되었습니다."
     except:
         response = 'Error'
     finally:

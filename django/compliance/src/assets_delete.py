@@ -23,7 +23,7 @@ def delete(data):
 
     try:
         graph.evaluate(delete_assets)
-        response = "증적 파일이 삭제되었습니다."
+        response = "자산이 삭제되었습니다."
     except:
         response = 'Error'
     finally:

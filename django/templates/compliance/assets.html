@@ -53,7 +53,6 @@
                    style="text-align:center;font-size:15px;">
                 <thead>
                     <tr>
-                        <th>check</th>
                         <th>Category</th>
                         <th>Type</th>
                         <th>Serial No</th>
@@ -64,15 +63,11 @@
                         <th>PoC</th>
                         <th>User</th>
                         <th>Upload Date</th>
-                        <th>Modify</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for asset in assets%}
                     <tr>
-                        <td>
-                            <checkbox></checkbox>
-                        </td>
                         <td>{{asset.dataType}}</td>
                         <td>{{asset.assetType}}</td>
                         <td>{{asset.assetNo}}</td>
@@ -83,9 +78,6 @@
                         <td>{{asset.assetPoC}}</td>
                         <td>{{asset.assetUser}}</td>
                         <td>{{asset.assetDate}}</td>
-                        <td>
-
-                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

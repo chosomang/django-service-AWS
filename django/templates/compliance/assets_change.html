@@ -4,10 +4,11 @@
         <h6 class="m-0 font-weight-bold text-teiren">{{dataType}} Assets Management</h6>
         <div class="d-flex justify-content-end">
             <input type="hidden" name="dataName" id="dataName" value="{{dataType}}"/>
-            <button class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#assets_data_modify">Data Modify</button>
-            <button class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#assets_data_delete">Data Delete</button>
+            <button class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#assets_data_modify">Modify {{dataType}}</button>
             <span style="margin-left: 5px; margin-right: 5px;"></span>
-            <button class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#assets_add">Asset Add</button>
+            <button class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#assets_data_delete">Delete {{dataType}}</button>
+            <span style="margin-left: 5px; margin-right: 5px;"></span>
+            <button class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#assets_add">Add {{dataType}} Asset</button>
             <span style="margin-left: 5px; margin-right: 5px;"></span>
             <button class="btn btn-sm btn-teiren">Excel Download</button>
         </div>        
@@ -101,7 +102,7 @@
            style="text-align:center;font-size:15px;">
         <thead>
             <tr>
-                <th>check</th>
+                <th></th>
                 <th>Type</th>
                 <th>Serial No</th>
                 <th>Name</th>
@@ -117,9 +118,10 @@
         </thead>
         <tbody>
             {% for asset in assets%}
+                {% if asset.assetName is not null%}
                 <tr>
-                    <td>
-                        <checkbox></checkbox>
+                    <td width="3%">
+                        <input type="checkbox" name="check" id="check">
                     </td>
                     <td>{{asset.assetType}}</td>
                     <td>{{asset.assetNo}}</td>
@@ -132,40 +134,17 @@
                     <td>{{asset.assetDate}}</td>
                     <td>
                         <input type="hidden" name="dataType" id="dataType" value="{{dataType}}"/>
-                        <button class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#assets_modify">modify</button>
+                        <input type="hidden" name="assetType" id="assetType" value="{{asset.assetType}}"/>
+                        <input type="hidden" name="serialNo" id="serialNo" value="{{asset.assetNo}}"/>
+                        <input type="hidden" name="assetName" id="assetName" value="{{asset.assetName}}"/>
+                        <input type="hidden" name="assetUsage" id="assetUsage" value="{{asset.assetUsage}}"/>
+                        <input type="hidden" name="assetData" id="assetData" value="{{asset.assetData}}"/>
+                        <input type="hidden" name="assetLevel" id="assetLevel" value="{{asset.assetLevel}}"/>
+                        <input type="hidden" name="assetPoC" id="assetPoC" value="{{asset.assetPoC}}"/>
+                        <input type="hidden" name="assetUser" id="assetUser" value="{{asset.assetUser}}"/>
+                        <input type="hidden" name="assetId" id="assetId" value="{{asset.assetId}}"/>
+                        <button class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#assets_modify" onclick="assetsModifyModal(this)">modify</button>
                     </td>
-                    <!-- Modify Assets Modal -->
-                    <div class="modal hide fade card-body" id="assets_modify" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content" style='width:700px; height:auto'>
-                                <div class="modal-header">
-                                    <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify {{asset.assetName}} Asset</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">x</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body card-body" style="font-size:12px;">
-                                    <form id="add_assets_form" enctype="multipart/form-data">
-                                    <div>
-                                        <p>Asset Type: <input type="text" class="form-control" id='assetType' name="assetType" value='{{asset.assetType}}'></p>
-                                        <p>Serial Number: <input type="text" class="form-control" id='serialNo' name="serialNo" value='{{asset.assetNo}}'></p>
-                                        <p>Asset Name: <input type="text" class="form-control" id='assetName' name="assetName" value='{{asset.assetName}}'></p>
-                                        <p>Usage: <input type="text" class="form-control" id='assetUsage' name="assetUsage" value='{{asset.assetUsage}}'></p>
-                                        <p>Data: <input type="text" class="form-control" id='assetData' name="assetData" value='{{asset.assetData}}'></p>
-                                        <p>Level: <input type="text" class="form-control" id='assetLevel' name="assetLevel" value='{{asset.assetLevel}}'></p>
-                                        <p>Person of Contact: <input type="text" class="form-control" id='assetPoC' name="assetPoC" value='{{asset.assetPoC}}'></p>
-                                        <p>User: <input type="text" class="form-control" id='assetUser' name="assetUser" value='{{asset.assetUser}}'></p>
-                                        <input type="hidden" name="dataType" id="dataType" value="{{dataType}}"/>
-                                        {% csrf_token %}
-                                    </div>
-                                    </form>
-                                </div>
-                                <div class="modal-footer" id="modal_footer">
-                                    <button type='submit' id='modify' class="btn btn-md btn-outline-primary" onclick="modifyAssets()">Modify</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <td>
                         <form method="post">
                             <input type="hidden" name="serial_no" id="serial_no" value="{{asset.assetNo}}"/>
@@ -173,9 +152,47 @@
                         </form>
                     </td>
                 </tr>
+                {% else %}
+                <tr>
+                    <td colspan="12">No Registered Assets</td>
+                </tr>
+                {% endif %}
             {% endfor %}
         </tbody>
     </table>
+    </div>
+    <!-- Modify Assets Modal -->
+    <div class="modal hide fade card-body" id="assets_modify" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style='width:700px; height:auto'>
+                <div class="modal-header">
+                    <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify Asset</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">x</span>
+                    </button>
+                </div>
+                <div class="modal-body card-body" style="font-size:12px;">
+                    <form id="modify_assets_form" enctype="multipart/form-data">
+                    <div>
+                        <p>Asset Type: <input type="text" class="form-control" id='assetType' name="assetType" value='{{asset.assetType}}'></p>
+                        <p>Serial Number: <input type="text" class="form-control" id='serialNo' name="serialNo" value='{{asset.assetNo}}'></p>
+                        <p>Asset Name: <input type="text" class="form-control" id='assetName' name="assetName" value='{{asset.assetName}}'></p>
+                        <p>Usage: <input type="text" class="form-control" id='assetUsage' name="assetUsage" value='{{asset.assetUsage}}'></p>
+                        <p>Data: <input type="text" class="form-control" id='assetData' name="assetData" value='{{asset.assetData}}'></p>
+                        <p>Level: <input type="text" class="form-control" id='assetLevel' name="assetLevel" value='{{asset.assetLevel}}'></p>
+                        <p>Person of Contact: <input type="text" class="form-control" id='assetPoC' name="assetPoC" value='{{asset.assetPoC}}'></p>
+                        <p>User: <input type="text" class="form-control" id='assetUser' name="assetUser" value='{{asset.assetUser}}'></p>
+                        <input type="hidden" name="assetId" id="assetId" value="{{asset.assetId}}"/>
+                        <input type="hidden" name="dataType" id="dataType" value="{{dataType}}"/>
+                        {% csrf_token %}
+                    </div>
+                    </form>
+                </div>
+                <div class="modal-footer" id="modal_footer">
+                    <button type='submit' id='modify' class="btn btn-md btn-outline-primary" onclick="modifyAssets()">Modify</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -188,6 +205,13 @@
             type: 'post'
         }).done(function(response){
             alert(response)
+        })
+    }
+
+    function assetsModifyModal(e){
+        var data = $(e.parentNode).find('input')
+        data.each(function(){
+            $(`#assets_modify #${this.name}`).val(this.value)
         })
     }
 

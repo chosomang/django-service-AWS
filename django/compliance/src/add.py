@@ -25,7 +25,8 @@ def add(request):
         poc = data.get('poc', '')
         version = data.get('version', '')
         uploadedFile = request.FILES["uploadedFile"]
-        # Saving the information in the database
+
+        # 디비에 파일 정보 저장
         document = Document(
             title=fileComment,
             uploadedFile=uploadedFile

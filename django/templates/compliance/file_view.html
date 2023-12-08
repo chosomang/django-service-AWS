@@ -52,31 +52,37 @@
      </thead>
      <tbody>
          {% for file in files %}
-         <tr>
-             <td>{{file.fileName}}</td>
-             <td>{{file.fileComment}}</td>
-             <td>{{file.fileVersion}}</td>
-             <td>{{file.filePoC}}</td>
-             <td>{{file.uploadDate}}</td>
-             <td>{{file.fileAuthor}}</td>
-             <td>
-                 <button class="btn btn-sm btn-teiren">
-                     download
-                 </button>
-             </td>
-             <td>
-                 <form method="post">
-                     <input type="hidden" name="file_name" id="file_name" value="{{file.fileName}}"/>
-                     <button type="button" class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#modify_file">modify</button>
-                 </form>
-             </td>
-             <td>
-                 <form method="post">
-                     <input type="hidden" name="file_name" id="file_name" value="{{file.fileName}}"/>
-                     <button type="button" class="btn btn-sm btn-teiren" onclick="deleteAssetFile(this)">delete</button>
-                 </form>
-             </td>
-         </tr>
+            {% if file.fileName is not null %}
+            <tr>
+                <td>{{file.fileName}}</td>
+                <td>{{file.fileComment}}</td>
+                <td>{{file.fileVersion}}</td>
+                <td>{{file.filePoC}}</td>
+                <td>{{file.uploadDate}}</td>
+                <td>{{file.fileAuthor}}</td>
+                <td>
+                    <button class="btn btn-sm btn-teiren">
+                        download
+                    </button>
+                </td>
+                <td>
+                    <form method="post">
+                        <input type="hidden" name="file_name" id="file_name" value="{{file.fileName}}"/>
+                        <button type="button" class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#modify_file">modify</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="post">
+                        <input type="hidden" name="file_name" id="file_name" value="{{file.fileName}}"/>
+                        <button type="button" class="btn btn-sm btn-teiren" onclick="deleteAssetFile(this)">delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9">No Uploaded Files</td>
+            </tr>
+            {% endif %}
          {% endfor %}
      </tbody>
  </table>

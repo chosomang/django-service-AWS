@@ -24,6 +24,8 @@ def asset():
         m.poc as assetPoC,
         m.user as assetUser,
         m.date as assetDate
+    ORDER BY
+        dataType asc
     """)
     response = []
     for result in results:

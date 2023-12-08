@@ -26,6 +26,7 @@ def modify(request):
         assetPoC = data.get('assetPoC','')
         assetUser = data.get('assetUser','')
         dataType = data.get('dataType','')
+        assetId = data.get('assetId','')
 
         # Add current timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -33,12 +34,21 @@ def modify(request):
         # Create or update the node with properties
         add_assets = f"""
         MATCH (a:Compliance:Evidence:Product{{name:'Asset Manage'}})-[:DATA]->(d:Compliance:Evidence:Data{{name:'{dataType}'}})
-        MERGE (n:Compliance:Evidence:Asset{{type:'{assetType}', serial_no:'{serialNo}', name:'{assetName}', usage:'{assetUsage}', data:'{assetData}', level:'{assetLevel}', poc:'{assetPoC}', user:'{assetUser}', date:'{timestamp}'}})
-        MERGE (d)-[:ASSET]->(n)
+        MATCH (d)-[:ASSET]->(n:Compliance:Evidence:Asset)
+        WHERE id(n) = {assetId}
+        SET
+            n.type = '{assetType}',
+            n.serial_no = '{serialNo}',
+            n.name = '{assetName}',
+            n.usage = '{assetUsage}',
+            n.data = '{assetData}',
+            n.level = '{assetLevel}',
+            n.poc = '{assetPoC}',
+            n.user = '{assetUser}'
         """
         graph.run(add_assets)
 
-        response = "자산이 업로드 되었습니다."
+        response = "자산이 수정 되었습니다."
     except Exception as e:
         response = f'Error: {str(e)}'
     finally:
