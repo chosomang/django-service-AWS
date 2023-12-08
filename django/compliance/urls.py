@@ -33,6 +33,7 @@ urlpatterns = [
     path('integration_add/', views.add_integration),
 
     path('policy/', views.get_policy),
-    path('policy/file/', views.get_policy_file)
-
+    path('policy/file/', views.get_policy_data),
+    path('policy/policy_add/', views.add_policy),
+    path('policy/data_add/', views.add_policy_data)
 ]

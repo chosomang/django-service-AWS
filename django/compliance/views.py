@@ -220,32 +220,62 @@ def get_policy(request):
         search_query2 = request.GET.get('search_query2', None)
 
         if search_query1 and search_query2:
-            articles_of_association=policy.get_articles_of_association(search_query1, search_query2)
-            regulation=policy.get_regulation(search_query1, search_query2)
-            guidelines=policy.get_guidelines(search_query1, search_query2)
-            rules=policy.get_rules(search_query1, search_query2)
-            document=policy.get_document(search_query1, search_query2)
-            etc=policy.get_etc(search_query1, search_query2)
+            policy_data=policy.get_policy(search_query1, search_query2)
         else:
-            articles_of_association=policy.get_articles_of_association()
-            regulation=policy.get_regulation()
-            guidelines=policy.get_guidelines()
-            rules=policy.get_rules()
-            document=policy.get_document()
-            etc=policy.get_etc()
+            policy_data=policy.get_policy()
 
         context={
-        'articles_of_association': articles_of_association,
-        'regulation':regulation,
-        'guidelines':guidelines,
-        'rules':rules,
-        'document':document,
-        'etc':etc,
+        'policy':policy_data,
         }
 
         return render(request, f"compliance/policy/policy.html", context)
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
 
-def get_policy_file():
-    pass
+def get_policy_data(request):
+    if request.method == 'GET':
+        # Ajax GET 요청에서 전달된 파라미터 가져오기
+        policy_name = request.GET.get('policy_name', None)
+        data_name = request.GET.get('data_name', None)
+
+        data=policy.get_policy_data(policy_name, data_name)
+        file_list=evidence.get_file(data_name)
+        
+        context={
+            'policy':policy_name,
+            'data': data,
+            'file_list': file_list,
+        }
+
+        if policy_name:
+            return render(request, f"compliance/policy/file.html", context)
+        else:
+            # title이 없을 경우 에러 응답
+            return JsonResponse({'error': 'Missing title parameter'}, status=400)
+    else:
+        # GET 이외의 메소드에 대한 처리
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+
+def add_policy(request):
+    if request.method=="POST":
+        policy_name=request.POST.get('policy_name', None)
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.add_policy(policy_name))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+def add_policy_data(request):
+    if request.method=="POST":
+        data=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.add_policy_data(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
