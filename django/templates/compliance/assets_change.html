@@ -1,0 +1,204 @@
+{% load custom_filter %}
+{% load static %} 
+<div style="display: flex; justify-content: space-between; align-items: center;" class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-teiren">{{dataType}} Assets Management</h6>
+        <div>
+            <button class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#assets_data_delete">Data Delete</button>
+            <span style="margin-left: 5px; margin-right: 3px;"></span>
+            <button style="float:right;" class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#assets_add">Asset Add</button>
+        </div>
+        
+    </h4>
+    <!-- Upload Asset Modal -->
+    <div class="modal hide fade card-body" id="assets_add" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style='width:700px; height:auto'>
+                <div class="modal-header">
+                    <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Upload {{dataType}} Asset</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">x</span>
+                    </button>
+                </div>
+                <div class="modal-body card-body" style="font-size:12px;">
+                    <form id="add_assets_form" enctype="multipart/form-data">
+                    <div>
+                        <p>Asset Type: <input type="text" class="form-control" id='assetType' name="assetType" value='' required></p>
+                        <p>Serial Number: <input type="text" class="form-control" id='serialNo' name="serialNo" value='' placeholder="Enter a serial number of asset"></p>
+                        <p>Asset Name: <input type="text" class="form-control" id='assetName' name="assetName" value='' placeholder="Enter a Comment of File"></p>
+                        <p>Usage: <input type="text" class="form-control" id='assetUsage' name="assetUsage" value='' placeholder="ex. 개발용 Database"></p>
+                        <p>Data: <input type="text" class="form-control" id='assetData' name="assetData" value='' placeholer="ex. 자산 내역"></p>
+                        <p>Level: <input type="text" class="form-control" id='assetLevel' name="assetLevel" value='' placeholder="Enter asset security level"></p>
+                        <p>Person of Contact: <input type="text" class="form-control" id='assetPoC' name="assetPoC" value='' placeholder="ex. 데이터팀 이현경"></p>
+                        <p>User: <input type="text" class="form-control" id='assetUser' name="assetUser" value=''></p>
+                        <input type="hidden" name="dataType" id="dataType" value="{{dataType}}"/>   
+                        {% csrf_token %}
+                    </div>
+                    </form>
+                </div>
+                <div class="modal-footer" id="modal_footer">
+                    <button type='submit' id='add' class="btn btn-md btn-outline-primary" onclick="addAssets()">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Delete Assets Data Modal -->
+    <div class="modal hide fade card-body" id="assets_data_delete" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style='width:700px; height:auto'>
+                <div class="modal-header">
+                    <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Delete {{dataType}} Asset</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">x</span>
+                    </button>
+                </div>
+                <div class="modal-body card-body" style="font-size:15px;">
+                    <div>
+                        <p>Data Type: {{dataType}}</p>
+                        <p>등록되어 있는 자산 목록이 모두 삭제됩니다. 삭제하시겠습니까?</p>
+                    </div>
+                </div>
+                <div class="modal-footer" id="modal_footer">
+                    <button id='add' class="btn btn-md btn-outline-primary" onclick="deleteAssetData('{{dataType}}')">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <div class="card-body" style="font-size:15px;">
+    <div class="table-responsive" style="overflow:hidden;">
+    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+           style="text-align:center;font-size:15px;">
+        <thead>
+            <tr>
+                <th>check</th>
+                <th>Type</th>
+                <th>Serial No</th>
+                <th>Name</th>
+                <th>USage</th>
+                <th>Data</th>
+                <th>Level</th>
+                <th>PoC</th>
+                <th>User</th>
+                <th>Upload Date</th>
+                <th>Modify</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asset in assets%}
+                <tr>
+                    <td>
+                        <checkbox></checkbox>
+                    </td>
+                    <td>{{asset.assetType}}</td>
+                    <td>{{asset.assetNo}}</td>
+                    <td>{{asset.assetName}}</td>
+                    <td>{{asset.assetUsage}}</td>
+                    <td>{{asset.assetData}}</td>
+                    <td>{{asset.assetLevel}}</td>
+                    <td>{{asset.assetPoC}}</td>
+                    <td>{{asset.assetUser}}</td>
+                    <td>{{asset.assetDate}}</td>
+                    <td>
+                        <input type="hidden" name="dataType" id="dataType" value="{{dataType}}"/>
+                        <input type="hidden" name="assetType" id="assetType" value="{{asset.assetType}}"/>
+                        <button class="btn btn-sm btn-teiren" data-toggle="modal" data-target="#assets_modify">modify</button>
+                    </td>
+                    <td>
+                        <form method="post">
+                            <input type="hidden" name="serial_no" id="serial_no" value="{{asset.assetNo}}"/>
+                            <button type="button" class="btn btn-sm btn-teiren" onclick="deleteAssets(this)">delete</button>
+                        </form>
+                    </td>
+                    <!-- Modify Assets Modal -->
+                    <div class="modal hide fade card-body" id="assets_modify" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style='width:700px; height:auto'>
+                                <div class="modal-header">
+                                    <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify {{asset.assetName}} Asset</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">x</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body card-body" style="font-size:12px;">
+                                    <form id="add_assets_form" enctype="multipart/form-data">
+                                    <div>
+                                        <p>Asset Type: <input type="text" class="form-control" id='assetType' name="assetType" value='' placeholder="{{asset.assetType}}"></p>
+                                        <p>Serial Number: <input type="text" class="form-control" id='serialNo' name="serialNo" value='' placeholder="{{asset.assetNo}}"></p>
+                                        <p>Asset Name: <input type="text" class="form-control" id='assetName' name="assetName" value='' placeholder="{{asset.assetName}}"></p>
+                                        <p>Usage: <input type="text" class="form-control" id='assetUsage' name="assetUsage" value='' placeholder="{{asset.assetUsage}}"></p>
+                                        <p>Data: <input type="text" class="form-control" id='assetData' name="assetData" value='' placeholer="{{asset.assetData}}"></p>
+                                        <p>Level: <input type="text" class="form-control" id='assetLevel' name="assetLevel" value='' placeholder="{{asset.assetLevel}}"></p>
+                                        <p>Person of Contact: <input type="text" class="form-control" id='assetPoC' name="assetPoC" value='' placeholder="{{asset.assetPoC}}"></p>
+                                        <p>User: <input type="text" class="form-control" id='assetUser' name="assetUser" value='' placeholder="{{asset.assetUser}}"></p>
+                                        <input type="hidden" name="dataType" id="dataType" value="{{dataType}}"/>   
+                                        {% csrf_token %}
+                                    </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer" id="modal_footer">
+                                    <button type='submit' id='modify' class="btn btn-md btn-outline-primary" onclick="modifyAssets()">Modify</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<script>
+    function addAssets(){
+        var data = $('#add_assets_form').serialize()
+        $.ajax({
+            url: '/compliance/assets_add/',
+            data: data,
+            type: 'post'
+        }).done(function(response){
+            alert(response)
+        })
+    }
+
+    function deleteAssetData(dataType){
+        $.ajax({
+            url: '/compliance/assets_data_delete/',
+            headers:{
+                'X-CSRFToken': '{{csrf_token}}'
+            },
+            data:{
+                dataType:dataType
+            },
+            type: 'post'
+        }).done(function(response){
+            alert(response)
+        })
+    }
+
+    function modifyAssets(){
+        var data = $('#modify_assets_form').serialize()
+        $.ajax({
+            url: '/compliance/assets_modify/',
+            data: data,
+            type: 'post'
+        }).done(function(response){
+            alert(response)
+        })
+    }
+
+    function deleteAssets(e){
+        var data=$(e).parent().serialize()
+        console.log(data)
+        $.ajax({
+        url:'/compliance/assets_delete/',
+        headers:{
+            'X-CSRFToken': '{{csrf_token}}'
+        },
+        data: data,   
+        type: 'post'
+    }).done(function(response){
+        alert(response)
+    })   
+    }
+</script>

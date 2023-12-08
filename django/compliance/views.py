@@ -7,7 +7,7 @@ import os
 import json
 from django.http import FileResponse
 from common.risk.v1.notification.alert import check_topbar_alert
-from .src import evidence, lists, lists_2, version_modify
+from .src import evidence, lists, lists_2, version_modify, assets_change, file_view
 from . import models
 
 
@@ -36,10 +36,22 @@ def versionModify(request):
         data.update({'compliance':version_modify.version(data)})
         return render(request, f"compliance/version_list.html", data)
 
+def assetChange(request):
+    if request.method == "POST":
+        data = dict(request.POST.items())
+        data.update({'assets':assets_change.asset(data)})
+        return render(request, f"compliance/assets_change.html", data)
+
+def fileView(request):
+    if request.method == "POST":
+        data = dict(request.POST.items())
+        data.update({'files':file_view.view(data)})
+        return render(request, f"compliance/file_view.html", data)
+
 #Assets lists - 현경
 def assets_view(request):
 
-    context= assets.view()
+    context= assets.asset()
     return render(request, f"compliance/assets.html", context)
 
 # Data 리스트 출력 페이지

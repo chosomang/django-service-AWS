@@ -9,10 +9,12 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 
-def asset():
-
+def asset(data):
+    dataType = data['dataType']
+    
     results = graph.run(f"""
-    MATCH (c:Evidence:Compliance:Product{{name:'Asset Manage'}})-[:DATA]->(n:Evidence:Compliance:Data)-[:ASSET]->(m:Evidence:Compliance:Asset)
+    MATCH (c:Evidence:Compliance:Product{{name:'Asset Manage'}})-[:DATA]->(n:Evidence:Compliance:Data{{name:'{dataType}'}})
+    OPTIONAL MATCH (n)-[:ASSET]->(m:Evidence:Compliance:Asset)
     RETURN
         n.name as dataType,
         m.type as assetType,
@@ -29,13 +31,4 @@ def asset():
     for result in results:
         response.append(dict(result.items()))
 
-
-    data_list = graph.evaluate(f"""
-        MATCH (c:Evidence:Compliance:Product{{name:'Asset Manage'}})-[:DATA]->(n:Evidence:Compliance:Data)
-        where n.name <> 'File'
-        with n.name as dataType order by dataType asc
-        RETURN
-            collect(dataType) as dataType
-    """)
-    
-    return {'assets': response, 'data_list': data_list}
+    return response 
