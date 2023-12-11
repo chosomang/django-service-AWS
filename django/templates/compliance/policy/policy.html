@@ -23,7 +23,6 @@
         
         <form id="form" role="search">
             <select id="search_query1" name="search_query1">
-                <option value="policy">Policy Name</option>
                 <option value="data">Data name</option>
             </select>
 
@@ -37,19 +36,26 @@
     </div>
 </div>
 
+<div class="row">
 
 {% for p in policy%}
+<div class="col-md-4 "  style="height: 500px;">
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h4 class="m-0 font-weight-bold text-teiren">
-            {{p.policy.name}}
-            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_add"  style="font-size:0.7vw"
-                data-policy-name="{{p.policy.name}}">Add</button>
-        </h4>
+        <div class="row">
+            <div class="col-8">
+                <h4 class="m-0 font-weight-bold text-teiren">
+                    {{p.policy.name}}
+                </h4>
+            </div>
+            <div class="col-4 text-right">
+                <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_add" data-policy-name="{{p.policy.name}}">+</button>
+            </div>
+        </div>
     </div>
     
     <div class="card-body" style="font-size:15px;">
-        <div class="table-responsive" style="overflow:hidden;">
+        <div class="table-responsive overflow-auto" style="max-height: 350px; overflow:hidden;">
             <table class="table table-bordered" id="dataTable" cellspacing="0"
                 style="table-layout:fixed;text-align:center;font-size:15px;">
                 <thead>
@@ -71,13 +77,13 @@
                                 <form method="GET" action="/compliance/policy/file/">
                                     <input type="hidden" name="policy_name" value="{{ p.policy.name }}"/>
                                     <input type="hidden" name="data_name" value="{{ data.name }}"/>
-                                    <button type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw">바로가기</button>
+                                    <button type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw">>></button>
                                 </form>
                             </td>
                             <td>
                                 <button type="button" class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#data_mod"
-                                data-name="{{data.name}}" data-comment="{{data.comment}}" data-author="{{data.author}}">Mod</button>
-                                <button type="button" class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_data('{{data.name}}')">Del</button>
+                                data-policy-name="{{p.policy.name}}" data-name="{{data.name}}">Mod</button>
+                                <button type="button" class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_data('{{p.policy.name}}','{{data.name}}')">Del</button>
                             </td>
                         </tr>
 
@@ -87,8 +93,9 @@
         </div>
     </div>
 </div>
+</div>
 {% endfor %}
-
+</div>
 
 <!-- Add Policy Modal -->
 <div class="modal hide fade card-body" id="policy_add" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
@@ -143,12 +150,90 @@
     </div>
 </div>
 
+<!-- Mod Data Modal -->
+<div class="modal hide fade card-body" id="data_mod" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <div>
+                    <input class="form-control" name="last_name" type="hidden"><br><br>
+                    Policy Name: <input class="form-control" name="policy_name" type="text" readonly><br><br>
+                    Data Name: <input class="form-control" name="mod_name" type="text"><br><br>
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' id='mod_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='mod_accept' class="btn btn-md btn-outline-primary" value="Modify">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 <script>
-    
+
+$('#data_mod').on('shown.bs.modal', function (e) {
+    var button = $(e.relatedTarget);
+    var last_name = button.data('name');
+    var data_name = button.data('name'); 
+    var policy_name = button.data('policy-name'); 
+
+    // 모달 내부 필드에 데이터 표시
+    $('input[name="last_name"]').val(last_name);
+    $('input[name="mod_name"]').val(data_name);
+    $('input[name="policy_name"]').val(policy_name);
+});
+
+$('#mod_accept').click(function() {
+    // Call your Ajax function here
+    var last_name=$('input[name="last_name"]').val();
+    var mod_name = $('input[name="mod_name"]').val();
+    var policy_name=$('input[name="policy_name"]').val();
+
+
+    $.ajax({
+        url: '/compliance/policy/data_mod/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'policy_name':policy_name,
+            'last_name':last_name,
+            'mod_name': mod_name
+        },
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Saved Successfully')
+                window.location.href= '/compliance/policy/'
+            }else if(response === 'already exist'){
+                alert('Data is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
+            }else if(response === 'NULL'){
+                alert('Data must be entered. Try Again')
+            }
+            else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+});
+
 $('#data_add').on('shown.bs.modal', function (e) {
-    var button = $(e.relatedTarget); // 클릭된 버튼
-    var policy_name = button.data('policy-name'); // data-name 속성의 값
+    var button = $(e.relatedTarget); 
+    var policy_name = button.data('policy-name'); 
 
 
     // 모달 내부 필드에 데이터 표시
@@ -231,6 +316,36 @@ $('#add_data_accept').click(function() {
         }
     })
 })
+
+function del_data(policy_name, data_name){
+    $.ajax({
+        url: '/compliance/policy/data_del/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'policy_name':policy_name,
+            'data_name': data_name
+        },
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Deleted Successfully')
+                window.location.href= '/compliance/policy/'
+            } else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+}
+
+
 </script>
 {% endblock %}
 

@@ -14,11 +14,12 @@ urlpatterns = [
     path('evidence/', views.data),
     path('evidence/data_add/', views.add_data),
     path('evidence/data_mod/', views.mod_data),
-    path('evidence/data_del/', views.del_data),
+    path('evidence/data_del/', views.del_evidence_data),
     path('evidence/file/', views.get_evidence_file),
     path('evidence/file_add/', views.add_evidence_file),
     path('evidence/file_mod/', views.mod_evidence_file),
     path('evidence/file_del/', views.del_evidence_file),
+    path('evidence/file_download/', views.file_download),
     path('evidence/com_add/', views.add_com),
     path('evidence/get_compliance', views.get_compliance),
     path('evidence/get_version', views.get_version),
@@ -35,5 +36,8 @@ urlpatterns = [
     path('policy/', views.get_policy),
     path('policy/file/', views.get_policy_data),
     path('policy/policy_add/', views.add_policy),
-    path('policy/data_add/', views.add_policy_data)
+    path('policy/data_add/', views.add_policy_data),
+    path('policy/file_add/', views.add_policy_file),
+    path('policy/data_mod/', views.mod_policy_data),
+    path('policy/data_del/', views.del_policy_data)
 ]

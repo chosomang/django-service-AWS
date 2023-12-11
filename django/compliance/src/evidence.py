@@ -220,8 +220,7 @@ def mod_data(dict):
         else:
             raise Exception
     except Exception:
-        return author
-        #return 'fail'
+        return 'fail'
 
 
 # data 삭제

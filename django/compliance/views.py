@@ -10,6 +10,7 @@ from common.risk.v1.notification.alert import check_topbar_alert
 from .src import evidence, lists, lists_2, version_modify, policy
 from . import models
 from .models import Document
+from urllib.parse import quote
 
 
 # Compliance
@@ -103,7 +104,7 @@ def mod_data(request):
     
 
 # Data 삭제
-def del_data(request):
+def del_evidence_data(request):
     if request.method=="POST":
         del_data=dict(request.POST.items())
 
@@ -144,12 +145,12 @@ def get_evidence_file(request):
 def add_evidence_file(request):
     if request.method == 'POST':
         add_file = request.POST.dict()
-        uploaded_file = request.FILES.get("add_file")  # 수정: "add_file"에서 "file"로 변경
-        file_comment = add_file.get('add_comment', '')
+        uploaded_file = request.FILES.get("add_file")
+        file_name = add_file.get('add_name', '')
 
         # Saving the information in the database
         document = Document(
-            title=file_comment,
+            title=file_name,
             uploadedFile=uploaded_file
         )
         document.save()
@@ -289,6 +290,45 @@ def add_policy_data(request):
         try:
             #이걸 JsonResponse로 어케 바꾸지
             return HttpResponse(policy.add_policy_data(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+def file_download(request):
+    pass
+
+def add_policy_file(request):
+    if request.method=="POST":
+        data=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.add_policy_file(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+def del_policy_data(request):
+    if request.method=="POST":
+        data=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.del_policy_data(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+def mod_policy_data(request):
+    if request.method=="POST":
+        data=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.mod_policy_data(data))
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     else:
