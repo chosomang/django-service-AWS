@@ -166,6 +166,30 @@ def add_policy_file(dict):
     except Exception:
         return 'fail'
     
+def del_policy_file(dict):
+    policy_name=dict['policy_name']
+    data_name=dict['data_name']
+    file_name=dict['file_name']
+
+    if not data_name or not policy_name or not file_name:
+        return 'fail'
+    
+    #하위 노드가 있을 경우 하위 노드(파일)까지 모두 삭제, 아니면 Data만 삭제
+    cypher=f"""
+        MATCH (:Evidence:Compliance)-[:PRODUCT]->(product:Product{{name:'Policy Manage'}})-[:POLICY]->(p:Policy{{name:'{policy_name}'}})-[:DATA]->(:Data{{name:'{data_name}'}})-[:FILE]->(f:File{{name:'{file_name}'}})
+        DETACH DELETE f
+        RETURN count(f)
+    """
+
+    try:
+        if graph.evaluate(cypher) >= 1:
+            return 'success'
+        else:
+            raise Exception
+    except Exception:
+        return 'fail'
+
+
 def del_policy_data(dict):
     policy_name=dict['policy_name']
     data_name=dict['data_name']

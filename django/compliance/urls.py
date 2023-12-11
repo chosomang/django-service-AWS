@@ -37,7 +37,9 @@ urlpatterns = [
     path('policy/file/', views.get_policy_data),
     path('policy/policy_add/', views.add_policy),
     path('policy/data_add/', views.add_policy_data),
-    path('policy/file_add/', views.add_policy_file),
     path('policy/data_mod/', views.mod_policy_data),
-    path('policy/data_del/', views.del_policy_data)
+    path('policy/data_del/', views.del_policy_data),
+    path('policy/file_add/', views.add_policy_file),
+    path('policy/file_del/', views.del_policy_file)
+
 ]

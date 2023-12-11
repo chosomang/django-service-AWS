@@ -276,7 +276,6 @@ function fetchProductSelected(){
         data: {},
         success: function (response) {
             var product_list = response['product_list'];
-            console.log(product_list)
 
             for (var i = 0; i < product_list.length; i++) {
                 var product = product_list[i];
@@ -384,7 +383,6 @@ function updateArticle() {
             "version_selected": version_selected.value
         },
         success: function (response) {
-            console.log(response);
             var article_list = response['article_list'];
 
             article_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
@@ -399,7 +397,6 @@ function updateArticle() {
                 var article = '['+article_list[i]['no']+'] '+article_list[i]['name'];
                 var optionElement = document.createElement('option');
                 optionElement.value = article_list[i]['no']; // 실제 전달되는 값은 no만
-                console.log(article);
                 optionElement.text = article;
                 article_selected.add(optionElement);
             }
@@ -417,10 +414,6 @@ $('#mod_accept').click(function() {
     var mod_name = $('input[name="mod_name"]').val();
     var mod_comment = $('input[name="mod_comment"]').val();
     var mod_author = $('input[name="mod_author"]').val();
-
-    console.log('last_name: ', last_name);
-    console.log('name: ', mod_name);
-    console.log('comment: ', mod_comment);
 
 
     $.ajax({

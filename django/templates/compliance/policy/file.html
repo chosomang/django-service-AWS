@@ -98,9 +98,9 @@
                             <td>{{f.upload_date}}</td>
                             <td>
                                 <button class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#file_mod" 
-                                data-data-name="{{title}}" data-name="{{f.name}}" data-comment="{{f.commnt}}"
+                                data-policy-name="{{policy}}" data-name="{{data.0.data.name}}" data-comment="{{f.commnt}}"
                                 data-poc="{{f.poc}}" data-author="{{f.author}}" data-last-update="{{f.upload_date}}">Mod</button>           
-                                <button class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_file('{{title}}','{{f.name}}')">삭제</button>
+                                <button class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_file('{{policy}}', '{{data.0.data.name}}','{{f.name}}')">삭제</button>
                             </td>
                         </tr>
                     {% endfor %}
@@ -232,13 +232,13 @@ $('#add_accept').click(function() {
             'poc': poc
         },        success: function(response){
             if(response.startsWith('\n<meta')){
-                location.reload() //이전 목록 페이지로 가야 되는데 어떻게 하는지 모르겠음
+                location.reload() 
             }
             if(response === 'success'){
                 alert('Saved Successfully')
                 location.reload()
             }else if(response === 'already exist'){
-            alert('file name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
+            alert('file name is already exist. Try Again') 
             }else if(response === 'NULL'){
                 alert('Data name must be entered. Try Again')
             }
@@ -300,14 +300,15 @@ $('#mod_accept').click(function() {
 });
 
 
-function del_file(data_name, file_name){
+function del_file(policy_name, data_name, file_name){    
     $.ajax({
-        url: '/compliance/evidence/file_del/',
+        url: '/compliance/policy/file_del/',
         headers: {
             'X-CSRFToken': "{{ csrf_token }}"
         },
         type: 'POST',
         data: {
+            'policy_name': policy_name,
             'data_name': data_name,
             'file_name': file_name
         },
@@ -319,8 +320,7 @@ function del_file(data_name, file_name){
                 alert('Deleted Successfully')
                 location.reload()
             } else {
-                //alert('Failed To Save. Please Try Again')
-                alert(response)
+                alert('Failed To Save. Please Try Again')
             }
         },
         error : function(xhr,errmsg,err) {

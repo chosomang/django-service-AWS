@@ -333,3 +333,15 @@ def mod_policy_data(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+def del_policy_file(request):
+    if request.method=="POST":
+        data=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.del_policy_file(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
