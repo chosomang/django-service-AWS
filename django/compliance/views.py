@@ -9,6 +9,7 @@ from django.http import FileResponse
 from common.risk.v1.notification.alert import check_topbar_alert
 from .src import evidence, lists, lists_2, version_modify, policy
 from . import models
+from .models import Document
 
 
 # Compliance
@@ -141,8 +142,21 @@ def get_evidence_file(request):
 
 # file 추가 시, 함수 동작
 def add_evidence_file(request):
-    add_file=dict(request.POST.items())
-    return HttpResponse(evidence.add_file(add_file))
+    if request.method == 'POST':
+        add_file = request.POST.dict()
+        uploaded_file = request.FILES.get("add_file")  # 수정: "add_file"에서 "file"로 변경
+        file_comment = add_file.get('add_comment', '')
+
+        # Saving the information in the database
+        document = Document(
+            title=file_comment,
+            uploadedFile=uploaded_file
+        )
+        document.save()
+
+        return HttpResponse(evidence.add_file(add_file))
+    else:
+        return HttpResponse("Invalid request method")
 
 # file 수정
 def mod_evidence_file(request):

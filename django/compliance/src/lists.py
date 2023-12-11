@@ -7,7 +7,7 @@ host = settings.NEO4J['HOST']
 port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
-graph = Graph(f"bolt://{host}:7689", auth=(username, password))
+graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 
 def version():
 
