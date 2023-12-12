@@ -10,7 +10,6 @@ from common.risk.v1.notification.alert import check_topbar_alert
 from .src import evidence, lists, lists_2, version_modify, policy
 from . import models
 from .models import Document
-from urllib.parse import quote
 
 
 # Compliance
@@ -35,7 +34,7 @@ def versionModify(request):
         return render(request, f"compliance/version_list.html", data)
 
 # Data 리스트 출력 페이지
-def data(request):
+def get_evidence_data(request):
     if request.method == "GET":
         search_query1 = request.GET.get('search_query1', None)
         search_query2 = request.GET.get('search_query2', None)
@@ -77,7 +76,7 @@ def get_article(request):
         return JsonResponse({'error': 'Invalid method'}, status=400)
     
 # Data 추가
-def add_data(request):
+def add_evidence_data(request):
     if request.method=="POST":
         data=dict(request.POST.items())
    
@@ -90,7 +89,7 @@ def add_data(request):
         return JsonResponse({'error': 'Invalid method'}, status=400)
     
 # Data 수정
-def mod_data(request):
+def mod_evidence_data(request):
     if request.method=="POST":
         data=dict(request.POST.items())
    
@@ -295,9 +294,6 @@ def add_policy_data(request):
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
     
-def file_download(request):
-    pass
-
 def add_policy_file(request):
     if request.method=="POST":
         data=dict(request.POST.items())
