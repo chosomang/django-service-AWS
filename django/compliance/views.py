@@ -297,6 +297,16 @@ def add_policy_data(request):
 def add_policy_file(request):
     if request.method=="POST":
         data=dict(request.POST.items())
+
+        uploaded_file = request.FILES.get("add_file")
+        file_name = data.get('add_name', '')
+
+        # Saving the information in the database
+        document = Document(
+            title=file_name,
+            uploadedFile=uploaded_file
+        )
+        document.save()
    
         try:
             #이걸 JsonResponse로 어케 바꾸지
