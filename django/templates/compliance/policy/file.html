@@ -132,7 +132,7 @@
                     
                     Upload file:
                     image 파일 전체, pdf, 엑셀(xlsx, xls, csv), 한글파일(hwp, hwpx), 파워포인트(ppt, pptx), 워드(docx, doc) 형식만 업로드 가능합니다.
-                    <input name="add_file" type="file" accept="image/*, .pdf, .xlsx, .xls, .hwp, .hwpx, .ppt, .pptx, .csv, .docx, .doc"><br><br>
+                    <input name="file" type="file" accept="image/*, .pdf, .xlsx, .xls, .hwp, .hwpx, .ppt, .pptx, .csv, .docx, .doc"><br><br>
                 </div>
             </div>
             <div class="modal-footer" id="modal_footer">
@@ -179,24 +179,21 @@
 <script>
 
 $('#file_mod').on('shown.bs.modal', function (e) {
-    var button = $(e.relatedTarget); // 클릭된 버튼
-    var data_name = button.data('data-name'); // data-name 속성의 값
-    var last_name = button.data('name');    // 변경 전 file name
-    var last_update = button.data('last-update');    // 변경 전 file name
-    var file_name = button.data('name');    // 변경 후 file name
-    var file_comment = button.data('comment'); 
-    var file_author = button.data('author'); 
-    var file_poc = button.data('poc'); 
+    var button = $(e.relatedTarget);
 
+   var data = {
+    'data_name': button.data('data-name'),
+    'last_name': button.data('name'),
+    'last_update': button.data('last-update'),
+    'file_name': button.data('name'),
+    'file_comment': button.data('comment'),
+    'file_author': button.data('author'),
+    'file_poc': button.data('poc')
+    };
 
-    // 모달 내부 필드에 데이터 표시
-    $('input[name="data_name"]').val(data_name);
-    $('input[name="last_name"]').val(last_name);
-    $('input[name="last_update"]').val(last_update);
-    $('input[name="mod_name"]').val(file_name);
-    $('input[name="mod_comment"]').val(file_comment);
-    $('input[name="mod_poc"]').val(file_poc);
-
+    for (var key in data) {
+        $('input[name="' + key + '"]').val(data[key]);
+    }
 });
 
 $('#file_add').on('shown.bs.modal', function (e) {
@@ -261,14 +258,14 @@ $('#add_accept').click(function() {
 })
 
 $('#mod_accept').click(function() {
-    // Call your Ajax function here
-    var data_name=$('input[name="data_name"]').val();
-    var last_name=$('input[name="last_name"]').val();
-    var mod_name = $('input[name="mod_name"]').val();
-    var mod_comment = $('input[name="mod_comment"]').val();
-    var mod_author = $('input[name="mod_author"]').val();
-    var mod_poc = $('input[name="mod_poc"]').val();
-
+    var formData = {
+        'data_name': $('input[name="data_name"]').val(),
+        'last_name': $('input[name="last_name"]').val(),
+        'mod_name': $('input[name="mod_name"]').val(),
+        'mod_comment': $('input[name="mod_comment"]').val(),
+        'mod_author': $('input[name="mod_author"]').val(),
+        'mod_poc': $('input[name="mod_poc"]').val()
+    };
 
     $.ajax({
         url: '/compliance/evidence/file_mod/',
@@ -276,14 +273,7 @@ $('#mod_accept').click(function() {
             'X-CSRFToken': "{{ csrf_token }}"
         },
         type: 'POST',
-        data: {
-            'data_name':data_name,
-            'last_name':last_name,
-            'mod_name': mod_name,
-            'mod_comment': mod_comment,
-            'mod_author': mod_author,
-            'mod_poc': mod_poc
-        },
+        data: formData,
         success: function(response){
             if(response.startsWith('\n<meta')){
                 location.reload()
@@ -292,13 +282,12 @@ $('#mod_accept').click(function() {
                 alert('Modify Successfully')
                 location.reload()
             }else if(response === 'already exist'){
-                alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
+                alert('Name is already exist. Try Again')
             }else if(response === 'NULL'){
                 alert('Name must be entered. Try Again')
             }
             else {
-                alert(response)
-                //alert('Failed To Save. Please Try Again')
+                alert('Failed To Save. Please Try Again')
             }
         },
         error : function(xhr,errmsg,err) {
@@ -308,41 +297,35 @@ $('#mod_accept').click(function() {
 });
 
 
-function del_file(policy_name, data_name, file_name){    
+function del_file(policy_name, data_name, file_name) {
+    var formData = {
+        'policy_name': policy_name,
+        'data_name': data_name,
+        'file_name': file_name
+    };
+
     $.ajax({
         url: '/compliance/policy/file_del/',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
+        headers: {'X-CSRFToken': "{{ csrf_token }}"},
         type: 'POST',
-        data: {
-            'policy_name': policy_name,
-            'data_name': data_name,
-            'file_name': file_name
-        },
-        success: function(response){
-            if(response.startsWith('\n<meta')){
-                location.reload()
-            }
-            if(response === 'success'){ 
-                alert('Deleted Successfully')
-                location.reload()
+        data: formData,
+        success: function(response) {
+            if (response.startsWith('\n<meta')) {
+                location.reload();
             } else {
-                alert('Failed To Save. Please Try Again')
+                if (response === 'success') {
+                    alert('Deleted Successfully');
+                } else {
+                    alert('Failed To Save. Please Try Again');
+                }
+                location.reload();
             }
         },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
+        error: function(xhr, errmsg, err) {
+            console.log(xhr.status + ": " + xhr.responseText);
         }
-    })
+    });
 }
-
-function download_file(file_name){
-    console.log(file_name)
-}
-
-   
-
 </script>
 
 {% endblock %}
