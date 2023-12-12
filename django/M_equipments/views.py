@@ -16,8 +16,6 @@ def integration_config_ajax(request, actionType):
         data = dict(request.POST.items())
         if actionType == 'modal':
             return render(request, 'M_equipment/configuration/modal.html', data)
-        elif actionType == 'check':
-            return 
         elif actionType == 'delete':
             context = integration.delete_integration(data)
         elif actionType == 'trigger':
