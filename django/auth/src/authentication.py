@@ -4,6 +4,7 @@ from django.contrib.auth.signals import user_logged_out
 from django.dispatch import receiver
 from datetime import datetime, date
 import requests
+import hashlib
 
 # AWS
 host = settings.NEO4J['HOST']
@@ -22,7 +23,7 @@ def login_account(request, srcip):
         if 1 == graph.evaluate(f"{cypher} RETURN COUNT(a)"):
             if 5 <= graph.evaluate(f"{cypher} RETURN a.failCount"):
                 return 'fail', 'User Id Forbidden. Please Contact Administrator'
-            if 1 == graph.evaluate(f"{cypher} WHERE a.userPassword = '{request['user_password']}' RETURN COUNT(a)"):
+            if 1 == graph.evaluate(f"{cypher} WHERE a.userPassword = '{hashlib.sha256(request['user_password'].encode()).hexdigest()}' RETURN COUNT(a)"):
                 login_success(request['user_name'], srcip)
                 userName = graph.evaluate(f"{cypher} RETURN a.userName")
                 return userName, request['user_password']
