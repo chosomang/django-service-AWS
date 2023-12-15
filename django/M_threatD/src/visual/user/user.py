@@ -1,7 +1,7 @@
 from django.shortcuts import HttpResponse
 from django.conf import settings
 from py2neo import Graph
-from TeirenSIEM.risk.alert.detection import get_relation_json, get_node_json
+from M_threatD.src.notification.detection import get_relation_json, get_node_json
 import json
 
 ## LOCAL
