@@ -11,7 +11,7 @@ password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
 def neo4j_graph(request):
-    if isinstance(request, dict) :
+    if type(request) == dict:
         data = get_data(request)
         details = get_log_details(request)
         context = {'graph': json.dumps(data), 'details': details }
@@ -53,23 +53,19 @@ def get_node_json(node, cloud):
                     value = value.replace('\'', '[',1)
                     value = value.replace('\'', ']',1)
                 data[key] = value
-    else:
-        if node.has_label('Flow'):
-            data['label'] = 'Flow'
-            data['name'] = property['flowName']
-        if node.has_label('Date'):
-            data['label'] = 'Date'
-        if node.has_label('Account'):
-            data['label'] = 'Account'
-            data['score'] = 700
-        if node.has_label('Between'):
-            data['label'] = 'Between'
-            property = dict(sorted(property.items(), key=operator.itemgetter(1), reverse=True))
-        if node.has_label('Role'):
-            data['label'] = 'Role'
-        if node.has_label('Rule'):
-            data['label'] = 'Rule'
-            data['name'] = property['ruleName']
+    else: 
+        for label in list(node.labels):
+            if label in ['Flow', 'Date', 'Account', 'Rule', 'Role', 'Between']:
+                data['label'] = label
+                if label == 'Flow':
+                    data['name'] = property['flowName']
+                elif label == 'Account':
+                    data['score'] = 700
+                elif label == 'Between':
+                    property = dict(sorted(property.items(), key=operator.itemgetter(1), reverse=True))
+                elif label == 'Rule':
+                    data['name'] = property['ruleName']
+                break
         for key, value in property.items():
             if key == 'name':
                 value = str(value)

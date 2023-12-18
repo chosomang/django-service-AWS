@@ -51,7 +51,7 @@ def get_user_visuals():
 
 # 사용자 중심 분석 그래프 시각화
 def user_graph(request):
-    if isinstance(request, dict) :
+    if type(request) == dict:
         data = get_user_static_data(request)
         data += get_user_dynamic_data(request)
         table = get_user_table(request)

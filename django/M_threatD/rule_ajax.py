@@ -51,7 +51,7 @@ def add_rule_section(request, section):
         if 'flow' in section:
             if section == 'flow_check':
                 flow_check = add.get_flow_check(context)
-                if isinstance(flow_check, str):
+                if type(flow_check) == str:
                     return HttpResponse(flow_check)
                 context.update(flow_check)
             else:

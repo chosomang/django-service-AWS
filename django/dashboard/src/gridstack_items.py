@@ -41,7 +41,7 @@ def logTotal(request):
     """
     log_total = graph.evaluate(cypher)
     context = {"total": format(log_total, ",")}
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/logTotal.html',context, request['request'])
     response = {'w':2, 'h':8, 'content': render_to_string('dashboard/items/logTotal.html',context, request)}
     return JsonResponse(response)
@@ -54,7 +54,7 @@ def integrationTotal(request):
     """
     total = graph.evaluate(cypher)
     context = {'integration': total}
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/integrationTotal.html',context, request['request'])
     response = {'w':2, 'h':8, 'content': render_to_string('dashboard/items/integrationTotal.html',context, request)}
     return JsonResponse(response)
@@ -67,7 +67,7 @@ def threatlogTotal(request):
     '''
     total = graph.evaluate(cypher)
     context = {'threat': total}
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/threatlogTotal.html',context, request['request'])
     response = {'w':2, 'h':8, 'content': render_to_string('dashboard/items/threatlogTotal.html',context, request)}
     return JsonResponse(response)
@@ -89,7 +89,7 @@ def threatRatio(request):
     else:
         threat_ratio = threat_total/log_total
     context = {"threat_ratio": math.ceil(threat_ratio*10)/10}
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/threatRatio.html',context, request['request'])
     response = {'w':2, 'h':8, 'content': render_to_string('dashboard/items/threatRatio.html',context, request)}
     return JsonResponse(response)
@@ -128,7 +128,7 @@ def threatUser(request):
         color.append(color_list[i])
     user_threat = {'name': user_threat[0], 'count': user_threat[1], 'color': color}
     context = {'user_threat': json.dumps(user_threat)}
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/threatUser.html',context, request['request'])
     response = {'w':3, 'h':23, 'content': render_to_string('dashboard/items/threatUser.html',context, request)}
     return JsonResponse(response)
@@ -152,7 +152,7 @@ def threatEquipment(request):
         equip_color.append(get_log_color(result['equip']))
     equip_threat = {'name': equip_name, 'count': equip_count, 'color': equip_color}
     context = {'equip_threat': json.dumps(equip_threat)}
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/threatEquipment.html',context, request['request'])
     response = {'w':3, 'h':23, 'content': render_to_string('dashboard/items/threatEquipment.html',context, request)}
     return JsonResponse(response)
@@ -177,7 +177,7 @@ def threatIp(request):
         color.append(color_list[i])
     ip_country = {'name': ip_country[0], 'count': ip_country[1], 'color': color}
     context = {'ip_country': json.dumps(ip_country)}
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/threatIp.html',context, request['request'])
     response = {'w':3, 'h':23, 'content': render_to_string('dashboard/items/threatIp.html',context, request)}
     return JsonResponse(response)
@@ -205,7 +205,7 @@ def threatRule(request):
         color.append(get_log_color(result['equip']))
     rule_detected_count = {'name': name, 'count': count, 'color': color}
     context = {'rule_detected_count': json.dumps(rule_detected_count)}
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/threatRule.html',context, request['request'])
     response = {'w':3, 'h':23, 'content': render_to_string('dashboard/items/threatRule.html',context, request)}
     return JsonResponse(response)
@@ -251,7 +251,7 @@ def threatSenario(request):
     color = ['#1cc88a', '#f6c23e', '#fd7e14', '#e74a3b']
     average = {'degree': degree[average-1], 'color': color[average-1]}
     context = {'senario': {'average': json.dumps(average), 'count': (data)}}
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/threatSenario.html',context, request['request'])
     response = {'w':2, 'h':23, 'content': render_to_string('dashboard/items/threatSenario.html',context, request)}
     return JsonResponse(response)
@@ -297,7 +297,7 @@ def threatLevel(request):
     color = ['#1cc88a', '#f6c23e', '#fd7e14', '#e74a3b']
     average = {'degree': degree[average-1], 'color': color[average-1]}
     context = {'senario': {'average': json.dumps(average), 'count': (data)}}
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/threatLevel.html',context, request['request'])
     response = {'w':2, 'h':23, 'content': render_to_string('dashboard/items/threatLevel.html',context, request)}
     return JsonResponse(response)
@@ -305,7 +305,7 @@ def threatLevel(request):
 # 최근 수집 로그 Overview
 def recentCollectedOverview(request):
     context = get_threat_month('collected')
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/recentCollectedOverview.html',context, request['request'])
     response = {'w':4, 'h':27, 'content': render_to_string('dashboard/items/recentCollectedOverview.html',context, request)}
     return JsonResponse(response)
@@ -313,7 +313,7 @@ def recentCollectedOverview(request):
 # 위협 로그 Overview
 def threatDetectionOverview(request):
     context = get_threat_month('threat')
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/threatDetectionOverview.html',context, request['request'])
     response = {'w':4, 'h':27, 'content': render_to_string('dashboard/items/threatDetectionOverview.html',context, request)}
     return JsonResponse(response)
@@ -434,42 +434,42 @@ def recentDetection(request):
         data['form'] = form_dict
         data_list.append(data)
     context = {'recent_threat': data_list}
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/recentDetection.html',context, request['request'])
     response = {'w':8, 'h':33, 'x':5, 'content':render_to_string('dashboard/items/recentDetection.html', context, request)}
     return JsonResponse(response)
 
 # Graph Visual
 def graphitem(request):
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/graphitem.html',{}, request['request'])
     response = {'w':4, 'h':56, 'x':0,'content':render_to_string('dashboard/items/graphitem.html', {}, request)}
     return JsonResponse(response)
 
 # CPU 사용량
 def cpu(request):
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/cpu.html',{}, request['request'])
     response = {'w':2, 'h':23, 'content':render_to_string('dashboard/items/cpu.html',{},request)}
     return JsonResponse(response)
 
 # Memory 사용량
 def memory(request):
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/memory.html',{}, request['request'])
     response = {'w':2, 'h':23, 'content':render_to_string('dashboard/items/memory.html',{},request)}
     return JsonResponse(response)
 
 # DISK 사용량
 def disk(request):
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/disk.html',{}, request['request'])
     response = {'w':2, 'h':23, 'content':render_to_string('dashboard/items/disk.html',{},request)}
     return JsonResponse(response)
 
 # Network 사용량
 def network(request):
-    if isinstance(request, dict):
+    if type(request) == dict:
         return render_to_string('dashboard/items/network.html',{}, request['request'])
     response = {'w':2, 'h':23, 'content':render_to_string('dashboard/items/network.html',{},request)}
     return JsonResponse(response)

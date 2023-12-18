@@ -20,7 +20,7 @@ def account_config(request, config_type):
         data = dict(request.POST.items())
         if config_type == 'verify':
             context = account.verify_account(data)
-            if not isinstance(context, str):
+            if type(context) != str:
                 return render(request, f"{HTML_FILE_PATH}/account/edit.html", context)
         elif config_type == 'edit':
             context = account.edit_account(data)
