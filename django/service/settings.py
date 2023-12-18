@@ -81,6 +81,7 @@ TEMPLATES = [
     },
 ]
 WSGI_APPLICATION = 'service.wsgi.application'
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
@@ -99,11 +100,19 @@ MONGODB = {
     'LOCAL': 'local'
 }
 
+# NEO4J = {
+#     'HOST': '13.124.121.1',
+#     'PORT': '7689',
+#     'USERNAME': 'neo4j',
+#     'PASSWORD': 'dbdnjs!23'
+# }
+
+#BoB TESTING
 NEO4J = {
     'HOST': '13.124.121.1',
-    'PORT': '7689',
+    'PORT': '7687',
     'USERNAME': 'neo4j',
-    'PASSWORD': 'dbdnjs!23'
+    'PASSWORD': '1am^Ne04jUs2r!'
 }
 
 # For Hong
