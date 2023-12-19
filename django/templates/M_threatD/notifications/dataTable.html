@@ -1,0 +1,71 @@
+<thead>
+    <tr>
+        <th>Status</th>
+        <th>Resource</th>
+        <th>Event Time</th>
+        <th>Detected Rule Comment</th>
+        <th>Detected Event</th>
+        <th>Severity</th>
+        <th>Source Ip</th>
+        <th>Detection No</th>
+        <th>Details</th>
+    </tr>
+</thead>
+<tfoot>
+    <tr>
+        <th>Status</th>
+        <th>Resource</th>
+        <th>Event Time</th>
+        <th>Detected Rule Comment</th>
+        <th>Detected Event</th>
+        <th>Severity</th>
+        <th>Source Ip</th>
+        <th>Detection No</th>
+        <th>Details</th>
+    </tr>
+</tfoot>
+<tbody>
+    {% if data %}
+        {% for result in data %}
+            {% if 'alert' in result %}
+            <tr class="text-danger">
+                <td style="font-weight:900" width="200"><i class="fa-solid fa-eye-slash fa-bounce"></i></td>
+            {% else %}
+            <tr>
+                <td class="text-teiren" style="font-weight:900" width="200"><i class="fa-solid fa-circle-check"></i></td>
+            {% endif %}
+            {% for key, value in result.items %}
+                {% if key != 'form' %}
+                    {% if key == 'detectedAction' %}
+                        <td align="left" width="1000">{{value}}</td>
+                    {% elif key == 'eventTime_format' or key == 'actionDisplayName' %}
+                        <td width="200">{{value}}</td>
+                    {% elif key == 'cloud'%}
+                        <td width="200">{{value}}</td>
+                    {% elif key == 'level'%}
+                        <td width="180">
+                            <div class="color-box color-box-{{value.1}}">{{value.0}}</div>
+                        </td>
+                    {% elif key == 'alert' %}
+                    {% else %}
+                        <td>{{value}}</td>  
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            <td width="300">
+                <form method="POST" action="/threat/notifications/details/">
+                    {% csrf_token %}
+                    {% for key, value in result.form.items %}
+                        <input type="hidden" name="{{key}}" value="{{value}}">
+                    {% endfor %}
+                    {% if 'alert' in result %}
+                        <button class="btn btn-md btn-danger ">Details</button>
+                    {% else %}
+                        <button class="btn btn-md btn-teiren ">Details</button>
+                    {% endif %}
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    {% endif %}
+</tbody>

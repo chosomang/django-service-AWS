@@ -1,0 +1,166 @@
+<div class="searchcard shadow mb-4">
+    <form id="search">
+        <div class="searchcard-body py-3">
+            <select class="btn-select" name="main_search_key">
+                <option value="logType">Resource</option>
+                <option value="comment">Detected Rule Comment</option>
+                <option value="comment">Detected Event</option>
+                <option value="sourceIp">Source Ip</option>
+            </select>
+            <input class="search-input" name="main_search_value" placeholder="Search"/>
+            <button class="btn-search" type="button" onClick="searchFilter(1)">
+                <span class="material-symbols-outlined">
+                    search
+                </span>
+            </button>
+            <button class="btn-collapse" type="button">
+                <span class="material-symbols-outlined" style="font-size:30px">
+                    expand_more
+                </span>
+            </button>
+        </div>
+        <div class="collapsecard" style="display:none;">
+            <div class="searchcard-collapse pb-3" style="display:none;">
+                <div class="collapsebox">
+                    <div class="searchbox">
+                        <div class="searchbox-header">
+                            Resource
+                        </div>
+                        <div class="w-75">
+                            <input class="searchbox-input dropdown-toggle" placeholder="Resource">
+                            <ul class="search-dropdown-menu shadow" style="overflow:hidden scroll;">
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input logType" type="checkbox" name="logType" value="all" onclick="selectAll(this, 'logType')">All
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input logType" type="checkbox" name="logType" value="regex" onclick="selectcheck(this, 'logType')">Regex
+                                    </label>
+                                </li>
+                                {%for logType in logType_list %}
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input logType" type="checkbox" name="logType" value="{{logType}}" onclick="selectcheck(this, 'logType')">{{logType}}
+                                    </label>
+                                </li>
+                                {%endfor%}
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="logType_regex" class="regexbox" style="display: none;">
+                        <input name="logType_regex" class="regex-input" placeholder="Resource Regex">
+                    </div>
+                </div>
+                <div class="collapsebox">
+                    <div class="searchbox">
+                        <div class="searchbox-header">
+                            Event Time
+                        </div>
+                        <div class="calandar">
+                            <input class="calandar-input" type="date" name="eventTime_date_start">
+                            <span style="font-size:14px;">~</span>
+                            <input class="calandar-input" type="date" name="eventTime_date_end">
+                        </div>
+                    </div>
+                </div>
+                <div class="collapsebox">
+                    <div class="searchbox">
+                        <div class="searchbox-header">
+                            Rule Comment
+                        </div>
+                        <div class="w-75">
+                            <input class="searchbox-input dropdown-toggle" placeholder="Rule Comment">
+                            <ul class="search-dropdown-menu shadow" style="overflow:hidden scroll;">
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input comment" type="checkbox" name="comment" value="all" onclick="selectAll(this, 'comment')">All
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input comment" type="checkbox" name="comment" value="regex" onclick="selectcheck(this, 'comment')">Regex
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="comment_regex" class="regexbox" style="display: none;">
+                        <input name="comment_regex" class="regex-input" placeholder="Rule Comment Regex">
+                    </div>
+                </div>
+            </div>
+            <div class="searchcard-collapse pb-3" style="display:none;">
+                <div class="collapsebox">
+                    <div class="searchbox">
+                        <div class="searchbox-header">
+                            Detected Event
+                        </div>
+                        <div class="w-75">
+                            <input class="searchbox-input dropdown-toggle" placeholder="Detected Event">
+                            <ul class="search-dropdown-menu shadow" style="overflow:hidden scroll;">
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input logType" type="checkbox" name="logType" value="all" onclick="selectAll(this, 'logType')">All
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input logType" type="checkbox" name="logType" value="regex" onclick="selectcheck(this, 'logType')">Regex
+                                    </label>
+                                </li>
+                                {%for logType in logType_list %}
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input logType" type="checkbox" name="logType" value="{{logType}}" onclick="selectcheck(this, 'logType')">{{logType}}
+                                    </label>
+                                </li>
+                                {%endfor%}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapsebox">
+                    <div class="searchbox">
+                        <div class="searchbox-header">
+                            On/Off
+                        </div>
+                        <div class="w-75">
+                            <input class="searchbox-input dropdown-toggle" placeholder="On/Off">
+                            <ul class="search-dropdown-menu shadow" style="overflow:hidden scroll;">
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input on_off" type="checkbox" name="on_off" value="all" onclick="selectAll(this, 'on_off')">All
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input on_off" type="checkbox" name="on_off" value="1" onclick="selectcheck(this, 'on_off')">On
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input on_off" type="checkbox" name="on_off" value="0" onclick="selectcheck(this, 'on_off')">Off
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-reset" type="button" onClick="searchFilter('reset')">
+                    <span class="material-symbols-outlined">
+                        restart_alt
+                    </span>
+                    Reset
+                </button>
+                <button class="btn-info disabled" type="button" onClick="searchFilter('reset')">
+                    <span class="material-symbols-outlined">
+                        info
+                    </span>
+                    Info
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

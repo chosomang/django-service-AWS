@@ -23,7 +23,7 @@ password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
 def get_alert_logs():
-    cypher = '''
+    cypher = """
     MATCH (l:Log)-[d:DETECTED|FLOW_DETECTED]->(r:Rule)
     WHERE
         d.alert = 1 AND d.alert IS NOT NULL
@@ -31,14 +31,14 @@ def get_alert_logs():
         HEAD([label IN labels(r) WHERE label <> 'Rule']) AS logType,
         l.eventTime as eventTime,
         l.eventTime AS eventTime_format,
-        r.ruleComment as detectedAction,
-        l.eventName as actionDisplayName,
+        r.ruleComment as ruleComment,
+        l.eventName as eventName,
         CASE
             WHEN r.level = 1 THEN ['LOW', 'success']
             WHEN r.level = 2 THEN ['MID', 'warning']
             WHEN r.level = 3 THEN ['HIGH', 'caution']
             ELSE ['CRITICAL', 'danger']
-        END AS level,
+        END AS severity,
         CASE
             WHEN l.sourceIPAddress IS NOT NULL THEN l.sourceIPAddress
             WHEN l.sourceIp IS NOT NULL THEN l.sourceIp
@@ -49,7 +49,7 @@ def get_alert_logs():
         r.ruleName+'#'+id(d) AS rule_name,
         ID(d) as id
     ORDER BY eventTime DESC, r.level DESC
-    '''
+    """
     results = graph.run(cypher)
     data = check_alert_logs()
     filter = ['logType', 'detected_rule', 'eventTime', 'rule_name', 'id', 'rule_class']
@@ -68,7 +68,6 @@ def get_alert_logs():
     return context
 
 def check_alert_logs():
-    global graph
     cypher = """
     MATCH (l:Log)-[d:DETECTED|FLOW_DETECTED]->(r:Rule)
     WHERE
@@ -77,14 +76,14 @@ def check_alert_logs():
     HEAD([label IN labels(r) WHERE label <> 'Rule']) AS logType,
         l.eventTime as eventTime,
         l.eventTime AS eventTime_format,
-        r.ruleComment as detectedAction,
-        l.eventName as actionDisplayName,
+        r.ruleComment as ruleComment,
+        l.eventName as eventName,
         CASE
             WHEN r.level = 1 THEN ['LOW', 'success']
             WHEN r.level = 2 THEN ['MID', 'warning']
             WHEN r.level = 3 THEN ['HIGH', 'caution']
             ELSE ['CRITICAL', 'danger']
-        END AS level,
+        END AS severity,
         CASE
             WHEN l.sourceIPAddress IS NOT NULL THEN l.sourceIPAddress
             WHEN l.sourceIp IS NOT NULL THEN l.sourceIp
@@ -113,9 +112,64 @@ def check_alert_logs():
         data.append(detail)
     return data
 
+# Filtered alerts
+def get_filtered_alerts():
+    cypher = """
+    MATCH (l:Log)-[d:DETECTED|FLOW_DETECTED]->(r:Rule)
+    WHERE
+        d.alert = 1 AND d.alert IS NOT NULL
+    WITH
+        HEAD([label IN labels(r) WHERE label <> 'Rule']) AS logType,
+        l.eventTime as eventTime,
+        l.eventTime AS eventTime_format,
+        r.ruleComment as detectedAction,
+        l.eventName as actionDisplayName,
+        CASE
+            WHEN r.level = 1 THEN ['LOW', 'success']
+            WHEN r.level = 2 THEN ['MID', 'warning']
+            WHEN r.level = 3 THEN ['HIGH', 'caution']
+            ELSE ['CRITICAL', 'danger']
+        END AS level,
+        CASE
+            WHEN l.sourceIPAddress IS NOT NULL THEN l.sourceIPAddress
+            WHEN l.sourceIp IS NOT NULL THEN l.sourceIp
+            ELSE '-'
+        END AS sourceIp,
+        r.ruleName as detected_rule,
+        r.ruleClass as rule_class,
+        r.ruleName+'#'+id(d) AS rule_name,
+        ID(d) as id
+    ORDER BY eventTime DESC, r.level DESC
+    RETURN *
+    """
+    results = graph.run(cypher)
+    data = check_filtered_alerts()
+    filter = ['logType', 'detected_rule', 'eventTime', 'rule_name', 'id', 'rule_class']
+    for result in results:
+        detail = dict(result.items())
+        form = {}
+        for key in filter:
+            if key != 'logType' and key != 'rule_name':
+                value = detail.pop(key)
+            else:
+                value = detail[key]
+            form[key] = value
+        detail['form'] = form
+        data.append(detail)
+    context = {'data': data}
+    return context
+
+def check_filtered_alerts():
+    data = []
+    return data
+
+
+def get_filter_list():
+
+    response = {}
+    return response
 # Top Bar 알림
 def check_topbar_alert():
-    global graph
     cypher = """
     MATCH (r:Rule)<-[d:DETECTED|FLOW_DETECTED]-()
     WHERE d.alert = 0 OR d.alert IS NULL
@@ -174,19 +228,14 @@ def send_alert_mail(rule, log, rel_id):
 # 위협 알림 확인 후 Alert Off
 def alert_off(request):
     if 'alert' in request:
-        detected_rule = request['detected_rule']
-        logType = request['logType']
-        eventTime = request['eventTime']
-        id = request['id']
-        cypher = f"""
-        MATCH (r:Rule:{logType} {{ruleName:'{detected_rule}'}})<-[d:DETECTED|FLOW_DETECTED]-(l:Log:{logType} {{eventTime:'{eventTime}'}})
+        graph.evaluate(f"""
+        MATCH (r:Rule:{request['logType']} {{ruleName:'{request['detected_rule']}'}})<-[d:DETECTED|FLOW_DETECTED]-(l:Log:{request['logType']} {{eventTime:'{request['eventTime']}'}})
         WHERE
             d.alert IS NOT NULL AND
             d.alert = 0 AND
-            ID(d) = {id}
+            ID(d) = {request['id']}
         SET d.alert = 1
         RETURN count(d.alert)
-        """
-        graph.evaluate(cypher)
+        """)
     return request
 
