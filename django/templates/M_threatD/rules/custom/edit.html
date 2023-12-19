@@ -130,7 +130,7 @@
         </div>
     </div>
 </div>
-<script src="{% static '/M_threatD/js/editRule/static.js' %}"></script>
+<script src="{% static '/M_threatD/js/rule/editRule/static.js' %}"></script>
 {% elif dynamic %}
 <div class="col-xl">
     <div class="mb-4">
@@ -281,5 +281,5 @@
     var wheres = '{{dynamic.wheres|safe}}'
     var logType = '{{log_type}}'
 </script>
-<script src="{% static '/M_threatD/js/editRule/dynamic.js' %}"></script>
+<script src="{% static '/M_threatD/js/rule/editRule/dynamic.js' %}"></script>
 {% endif %}
