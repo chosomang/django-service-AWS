@@ -1,3 +1,18 @@
+function getCookie(name = 'csrftoken') {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 //체크박스 전체선택
 function selectAll(selectAll, type) {
     $('input.'+type).each(function(){
@@ -99,7 +114,81 @@ $('.searchbox-input').on('input', function() {
 
 /// Search_Filter
 function searchFilter(e){
-    console.log($('#search').serializeArray())
+    var custom_rules = ''
+    var default_rules = ''
+    $.ajax({
+        url: 'custom/filter/',
+        headers:{
+            'X-CSRFToken': getCookie()
+        },
+        data:$('#search').serializeArray(),
+        type: 'post'
+    }).done(function(response){
+        custom_rules = response
+    })
+    $.ajax({
+        url: 'default/filter/',
+        headers:{
+            'X-CSRFToken': getCookie()
+        },
+        data:$('#search').serializeArray(),
+        type: 'post'
+    }).done(function(response){
+        default_rules = response
+    })
+    $("#dataTable_default").fadeOut()
+    $("#dataTable_custom").fadeOut()
+    setTimeout(function(){
+        updateRules(default_rules, custom_rules)
+    }, 300)
+}
+
+function updateRules(default_rules, custom_rules){
+    $("#dataTable_custom").DataTable().destroy();
+    $("#dataTable_default").DataTable().destroy();
+    $('#dataTable_custom').html(custom_rules)
+    $('#dataTable_default').html(default_rules)
+    
+    $("#dataTable_custom").DataTable({
+        //데이터 테이블 0번째 인덱스부터 거꾸로 정렬(최신순 정렬)
+        order: [
+            [0, 'asc']
+        ],
+        columnDefs: [{
+            targets: 4,
+            type: 'threat-level'
+        },
+        {
+            targets: 5,
+            type: 'threat-on-off'
+        }],
+        ordering: true,
+        // 표시 건수기능 숨기기
+        lengthChange: false,
+        // 검색 기능 숨기기
+        searching: false,
+    });
+    $("#dataTable_default").DataTable({
+        //데이터 테이블 0번째 인덱스부터 거꾸로 정렬(최신순 정렬)
+        order: [
+            [0, 'asc']
+        ],
+        columnDefs: [{
+            targets: 4,
+            type: 'threat-level'
+        },
+        {
+            targets: 5,
+            type: 'threat-on-off'
+        }],
+        ordering: true,
+        // 표시 건수기능 숨기기
+        lengthChange: false,
+        // 검색 기능 숨기기
+        searching: false,
+    });
+    $("#dataTable_default").fadeIn()
+    $("#dataTable_custom").fadeIn()
 }
 
 
