@@ -8,6 +8,10 @@ def rule_details(request, resourceType, logType, ruleType):
         context = {ruleType: default.get_rule_details(dict(request.POST.items()), ruleType)}
         return render(request, f"M_threatD/rules/{ruleType}/details.html", context)
 
+## Rule dataTable Update
+def rule_update(request, resourceType, logType, ruleType):
+    context = default.get_filtered_rules(logType, ruleType, dict(request.POST))
+    return render(request, f"M_threatD/rules/{ruleType}/dataTable.html", context)
 # #############################################
 
 ### Rule Edit

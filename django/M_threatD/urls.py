@@ -17,6 +17,9 @@ urlpatterns = [
 ]
 
 urlpatterns +=[
+    # Update Rule Table
+    path('rules/<resourceType>/<logType>/<ruleType>/filter/', rule_ajax.rule_update),
+
     # Detail Modal
     path('rules/<resourceType>/<logType>/<ruleType>/details/', rule_ajax.rule_details),
 

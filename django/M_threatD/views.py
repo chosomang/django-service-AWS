@@ -30,6 +30,7 @@ def rules_view(request, resourceType, logType):
         logType = (' ').join(logType.split('_')).title()
     context.update({'logType': logType})
     context.update({'resourceType': resourceType})
+    context.update(default.get_filter_list(logType))
     return render(request, f"M_threatD/rules/rule.html", context)
 
 

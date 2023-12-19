@@ -41,6 +41,33 @@ def get_all_rules():
     response = {'rules': data}
     return response
 
+# List Filters
+def get_filter_list(logType):
+    ruleType_list = graph.evaluate(f"""
+    MATCH (r:Rule:{logType.split('_')[0].capitalize()})
+    WITH
+        CASE
+            WHEN r.ruleClass = 'dynamic' THEN 'Dynamic'
+            WHEN r.eventSource IS NULL THEN 'All'
+            WHEN r.ruleClass IS NULL OR r.ruleClass = 'static' THEN split(r.eventSource,'.')[0]
+            ELSE split(r.eventSource, '.')[0]
+        END AS ruleType
+    RETURN COLLECT(DISTINCT(ruleType))
+    """)
+
+    ruleName_list = graph.evaluate(f"""
+    MATCH (r:Rule:{logType.split('_')[0].capitalize()})
+    WHERE r.ruleName IS NOT NULL
+    RETURN COLLECT(DISTINCT(r.ruleName))
+    """)
+    
+    response = {
+        'ruleType_list': ruleType_list,
+        'ruleName_list': ruleName_list
+    }
+
+    return response
+
 # List Default Rules
 def get_default_rules(logType):
     cypher= f"""
@@ -97,6 +124,65 @@ def get_custom_rules(logType):
     for result in results:
         data.append(dict(result.items()))
     response = {'custom': data}
+    return response
+
+# Filtered Rules
+def get_filtered_rules(logType, ruleType, request:dict):
+    filter_dict = {}
+    for key, value in request.items():
+        if key == 'severity':
+            print(value)
+        if value[0] == '' or value[0] == 'all' or key == 'main_search_value' or key.endswith('regex') or key in filter_dict:
+            continue
+        elif key.startswith('main'):
+            if request['main_search_value'][0] != '':
+                filter_dict[value[0]] = ['regex',f".*{request['main_search_value'][0]}.*"]
+            continue
+        elif value[0] == 'regex':
+            value.append(request[f'{key}_regex'][0])
+        filter_dict[key] = value
+    
+    where_cypher = 'WHERE '
+    if ruleType == 'default':
+        for key, value in filter_dict.items():
+            where_cypher += "AND " if len(where_cypher) != 6 else ""
+            if value[0] == 'regex':
+                where_cypher += f"{key} =~ '{value[1]}' "
+            else:
+                for val in value:
+                    if key in ['severity','on_off']:
+                        where_cypher += f"{key} = {val} "
+                    else:
+                        where_cypher += f"{key} = '{val}' "
+
+    cypher= f"""
+    MATCH (r:Rule:{logType.split('_')[0].capitalize()} {{ruleType: '{ruleType}'}})
+    WITH
+        id(r) as id,
+        CASE
+            WHEN r.ruleClass = 'dynamic' THEN 'Dynamic'
+            WHEN r.eventSource IS NULL THEN 'All'
+            WHEN r.ruleClass IS NULL OR r.ruleClass = 'static' THEN split(r.eventSource,'.')[0]
+            ELSE split(r.eventSource, '.')[0]
+        END as ruleType,
+        r.ruleName as ruleName,
+        r.ruleComment as comment,
+        CASE
+            WHEN r.level = 1 THEN ['LOW', 'success']
+            WHEN r.level = 2 THEN ['MID', 'warning']
+            WHEN r.level = 3 THEN ['HIGH', 'caution']
+            ELSE ['CRITICAL', 'danger']
+        END AS severity,
+        r.on_off as on_off
+    {where_cypher if len(where_cypher) > 6 else ''}
+    RETURN
+        id, ruleType AS type, ruleName AS name, comment, severity AS level, on_off
+    """
+    results = graph.run(cypher)
+    data = []
+    for result in results:
+        data.append(dict(result.items()))
+    response = {f'{ruleType}': data}
     return response
 
 # Rule On Off
