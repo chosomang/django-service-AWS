@@ -51,7 +51,7 @@
                     <tbody>
                         {% if data %}
                             {% for result in data %}
-                                {% if 'alert' in result %}
+                                {% if result.alert == 0 %}
                                 <tr class="text-danger">
                                     <td style="font-weight:900" width="200"><i class="fa-solid fa-eye-slash fa-bounce"></i></td>
                                 {% else %}
@@ -115,7 +115,7 @@
         }
     };
 
-    $.fn.dataTable.ext.type.order['alert-check-pre'] = function(data) {
+    {% comment %} $.fn.dataTable.ext.type.order['alert-check-pre'] = function(data) {
         switch(data) {
             case '<i class="fa-solid fa-eye-slash fa-bounce"></i>':
                 return 1;
@@ -124,7 +124,7 @@
             default:
                 return 3;
         }
-    };
+    }; {% endcomment %}
 
     $("#dataTable").DataTable({
         //데이터 테이블 0번째 인덱스부터 거꾸로 정렬(최신순 정렬)
@@ -132,9 +132,6 @@
             [0, 'asc']
         ],
         columnDefs: [{
-            targets:0,
-            type: 'alert-check'
-        },{
             targets: 5,
             type: 'threat-level'
         }],

@@ -15,7 +15,7 @@ def notification_view(request, threat):
             context.update(detection.neo4j_graph(context))
             return render(request, f"M_threatD/notifications/{threat}.html", context)
         elif threat == 'filter':
-            context = (notification.get_alert_logs())
+            context = (notification.get_alert_logs(dict(request.POST)))
             return HttpResponse(context)
             # return render(request, f"M_threatD/notifications/{threat}.html", context)
     else:
