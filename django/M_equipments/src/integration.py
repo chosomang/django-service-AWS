@@ -123,6 +123,7 @@ def container_trigger_off(integration_node, aws_config):
     else:
         client = DockerHandler()
         res = client.stop_container(container_id)
+        res = client.remove_container(container_id)
         result = {
             'status': 'delete',
             'message': res
