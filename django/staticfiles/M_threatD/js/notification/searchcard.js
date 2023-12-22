@@ -113,84 +113,48 @@ $('.searchbox-input').on('input', function() {
 
 
 /// Search_Filter
-function searchFilter(e){
-    var custom_rules = ''
-    var default_rules = ''
-    console.log($('#search').serializeArray(),)
-    return 0
-    $.ajax({
-        url: 'custom/filter/',
-        headers:{
-            'X-CSRFToken': getCookie()
-        },
-        data:$('#search').serializeArray(),
-        type: 'post'
-    }).done(function(response){
-        custom_rules = response
-    })
-    $.ajax({
-        url: 'default/filter/',
-        headers:{
-            'X-CSRFToken': getCookie()
-        },
-        data:$('#search').serializeArray(),
-        type: 'post'
-    }).done(function(response){
-        default_rules = response
-    })
-    $("#dataTable_default").fadeOut()
-    $("#dataTable_custom").fadeOut()
-    setTimeout(function(){
-        updateRules(default_rules, custom_rules)
-    }, 300)
-}
+function searchFilter(page, order=null){
+    console.log($('#search').serializeArray())
+    if (page == 'reset') {
+        var checkbox = $('#search input[type="checkbox"]')
+        checkbox.each(function () {
+            this.checked = false
+        })
+        $('.calandar-input').val('')
+        $('.search-input')[0].value = ''
+        $('.regexbox').slideUp('fast')
+        $('.regexbox input').val('')
+        page = 1
+    }
 
-function updateRules(default_rules, custom_rules){
-    $("#dataTable_custom").DataTable().destroy();
-    $("#dataTable_default").DataTable().destroy();
-    $('#dataTable_custom').html(custom_rules)
-    $('#dataTable_default').html(default_rules)
-    
-    $("#dataTable_custom").DataTable({
-        //데이터 테이블 0번째 인덱스부터 거꾸로 정렬(최신순 정렬)
-        order: [
-            [0, 'asc']
-        ],
-        columnDefs: [{
-            targets: 4,
-            type: 'threat-level'
+    if (order){
+        $("input[name='order_key']").val(order[0])
+        $("input[name='order_value']").val(order[1])
+    }
+
+    if ($("input[name='order_key']").val() === ''){
+        order = []
+    } else {
+        order = [$("input[name='order_key']").val(), $("input[name='order_value']").val()]
+    }
+
+    var filter = $('#search').serializeArray()
+    $.ajax({
+        url:'/threat/notifications/filter/',
+        headers:{
+            'X-CSRFToken': getCookie()
         },
-        {
-            targets: 5,
-            type: 'threat-on-off'
-        }],
-        ordering: true,
-        // 표시 건수기능 숨기기
-        lengthChange: false,
-        // 검색 기능 숨기기
-        searching: false,
-    });
-    $("#dataTable_default").DataTable({
-        //데이터 테이블 0번째 인덱스부터 거꾸로 정렬(최신순 정렬)
-        order: [
-            [0, 'asc']
-        ],
-        columnDefs: [{
-            targets: 4,
-            type: 'threat-level'
+        data:{
+            filter:JSON.stringify(filter),
+            order: order,
+            page: page
         },
-        {
-            targets: 5,
-            type: 'threat-on-off'
-        }],
-        ordering: true,
-        // 표시 건수기능 숨기기
-        lengthChange: false,
-        // 검색 기능 숨기기
-        searching: false,
-    });
-    $("#dataTable_default").fadeIn()
-    $("#dataTable_custom").fadeIn()
+        traditional:true,
+        type:'post'
+    }).done(function(response){
+        $('#data').html(response)
+    })
+    return 0
 }
 
 

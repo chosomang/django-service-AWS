@@ -1,0 +1,16 @@
+.order-div{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 10%;
+}
+
+.order-btn{
+    border: none;
+    background-color: transparent;
+    margin: -10px 10px;
+}
+
+.order-btn i{
+    height:1px;
+}

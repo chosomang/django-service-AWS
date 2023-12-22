@@ -16,13 +16,14 @@ def notification_view(request, threat):
             return render(request, f"M_threatD/notifications/{threat}.html", context)
         elif threat == 'filter':
             context = (notification.get_alert_logs(dict(request.POST)))
-            return HttpResponse(context)
-            # return render(request, f"M_threatD/notifications/{threat}.html", context)
+            return render(request, f"M_threatD/notifications/dataTable.html", context)
     else:
         if threat == 'details':
             return HttpResponseRedirect('/threat/notifications/logs/')
-    context = (notification.get_alert_logs())
-    return render(request, f"M_threatD/notifications/{threat}.html", context)
+        else:
+            context = (notification.get_alert_logs({}))
+            context.update(notification.get_filter_list())
+            return render(request, f"M_threatD/notifications/{threat}.html", context)
 
 # Rules
 @login_required
