@@ -1,7 +1,7 @@
 from django.urls import include, path
 from django.conf import settings
 from . import views
-from .src import delete, add
+from .src import delete, add, assets_data_add, assets_add, assets_data_delete, assets_delete, assets_file_add, assets_file_delete, assets_modify, assets_data_modify, assets_file_modify
 from django.conf.urls.static import static
 
 urlpatterns = [
@@ -23,10 +23,23 @@ urlpatterns = [
     path('evidence/get_version', views.get_version),
     path('evidence/get_article', views.get_article),
     path('evidence/organization', views.organization),
+    path('assets/', views.assets_view),
 
     # path('evidence/', views.evidence_view),
     # path('evidence_2/', views.evidence_view_2),
     path('delete/', delete.delete),
     path('add/', add.add),
-    path('version_modify/', views.versionModify)
+    path('version_modify/', views.versionModify),
+    path('assets_change/', views.assetChange),
+    path('assets_data_add/', assets_data_add.add),
+    path('assets_add/', assets_add.add),
+    path('assets_data_delete/', assets_data_delete.delete),
+    path('assets_delete/', assets_delete.delete),
+    path('file_view/', views.fileView),
+    path('assets_file_add/', assets_file_add.add),
+    path('assets_file_delete/', assets_file_delete.delete),
+    path('assets_modify/', assets_modify.modify),
+    path('assets_data_modify/', assets_data_modify.modify),
+    path('assets_file_modify/', assets_file_modify.modify)
+
 ]

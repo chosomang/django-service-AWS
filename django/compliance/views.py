@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.decorators import login_required
-from .src import evidence, lists
+from .src import evidence, lists, assets
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 import os
 import json
 from django.http import FileResponse
 from common.risk.v1.notification.alert import check_topbar_alert
-from .src import evidence, lists, lists_2, version_modify
+from .src import evidence, lists, lists_2, version_modify, assets_change, file_view
 from . import models
 
 
@@ -18,19 +18,42 @@ def compliance_view(request):
 
 # Compliance lists - 현경
 def lists_view(request):
-
     context= lists.version()
     return render(request, f"compliance/lists.html", context)
 
 # Compliance lists_2 - 현경
 def lists_view_2(request):
-    return render(request, f"compliance/lists_2.html")
+    data = dict(request.POST.items())
+    result = lists_2.test(data)
+    data.update(result)
+    return render(request, f"compliance/lists_2.html", data)
 
 def versionModify(request):
     if request.method == "POST":
         data = dict(request.POST.items())
+        if "article" in data :
+            return HttpResponse(version_modify.comply(data))
         data.update({'compliance':version_modify.version(data)})
         return render(request, f"compliance/version_list.html", data)
+
+def assetChange(request):
+    if request.method == "POST":
+        data = dict(request.POST.items())
+        result = assets_change.asset(data)
+        data.update(result)
+        return render(request, f"compliance/assets_change.html", data)
+
+def fileView(request):
+    if request.method == "POST":
+        data = dict(request.POST.items())
+        data.update({'files':file_view.view(data)})
+        return render(request, f"compliance/file_view.html", data)
+
+#Assets lists - 현경
+def assets_view(request):
+
+    context= assets.asset()
+    return render(request, f"compliance/assets.html", context)
 
 # Data 리스트 출력 페이지
 def data(request):

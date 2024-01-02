@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
+{% load custom_filter %}
 {% load static %}
 
 {% block content %}
 <!-- Begin Page Content -->
-<h1>ISMS-P</h1>
+<h1 class="text-teiren" style="font-weight: bold;">ISMS-P</h1><br>
+<h4>System in which the Internet Promotion Agency or certification authority proves that a series of measures and activities
+    to protect information and personal information meet the certification criteria</h4><br>
+<h6 class="text-teiren" style="font-weight: bold;">항목 별로 세부 사항과 증적을 관리해 보아용 냔냐냔</h6>
 
 <br>
 <!--단일 변수 출력-->
@@ -11,20 +15,18 @@
 <br>
 
 <div class="d-flex text-center mb-2">
-    <!-- <div>
-        <span>Cloud</span>
         <br>
-        <select id="com_cloud" name="com_cloud" class="btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5; width:100%;">
-            <option value="2023-10-31">2023-10-31</option>
-            <option value="2023-04-22">2023-04-22</option>
-            <option value="2019-01-01">2019-01-01</option>
-        </select>
-    </div> -->
-        <span>Version</span>
-        <br>
+        <label for="com_version">Choose Version:</label>
         <select id="com_version" name="com_version" class="btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5; width:100%;">
             {% for a in version_list %}
             <option value="{{a}}">{{a}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="com_product">Choose Product:</label>
+        <select id="com_product" name="com_product" class="btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5; width:100%;">
+            {% for a in product_list %}
+            <option value="{{a.productName}}">{{a.productName}}</option>
             {% endfor %}
         </select>
     <div>
@@ -45,6 +47,7 @@
                 <th>Article</th>
                 <th>Comment</th>
                 <th>준수 여부</th>
+                <th>사내 정책</th>
                 <th>Last Update</th>
                 <th>Details</th>
             </tr>
@@ -56,6 +59,7 @@
                 <th>Article</th>
                 <th>Comment</th>
                 <th>준수 여부</th>
+                <th>사내 정책</th>
                 <th>Last Update</th>
                 <th>Details</th>
             </tr>
@@ -69,9 +73,19 @@
                     <td>{{com.sectionNo}} {{com.sectionName}}</td>
                     <td>{{com.articleNo}}. {{com.articleName}}</td>
                     <td width="40%">{{com.articleComment}}</td>
-                    <td>
-                        checkbox
+                    <td style="width:4%">
+                        <select name="com_score" class="com_score btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5; width:100%;">
+                            <option value="{{com.complyScore}}" selected>{{com.complyScore}}</option>
+                            {% make_list 0 1 2 as score %}
+                            {% for option_value in score %}
+                                {% if option_value != com.complyScore %}
+                                    <option value="{{option_value}}" >{{option_value}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" class="com_article" value="{{com.articleNo}}">
                     </td>
+                    <td>사내 정책</td>
                     <td>date</td>
                     <td>
                         <form  method="POST" action="/compliance/lists_2/">
@@ -93,6 +107,7 @@
 <script>
     function versionModify(){
         var version = $('#com_version').val()
+        var product = $('#com_product').val()
         $('#com_table').fadeOut('normal')
         $.ajax({
             url:'/compliance/version_modify/',
@@ -100,7 +115,8 @@
                 'X-CSRFToken': '{{csrf_token}}'
             },
             data:{
-                version: version
+                version: version,
+                product: product
             },
             type: 'post'
         }).done(function(response){
@@ -110,6 +126,31 @@
         })
         
     }
+
+    $('.com_score').on('change', function(){
+        var value = this.value
+        var article = $(this.parentNode).find('.com_article').val()
+        var product = $('#com_product').val()
+        var version = $('#com_version').val()
+        console.log(article, product, version)
+    
+    $.ajax({
+    url:'/compliance/version_modify/',
+    headers:{
+        'X-CSRFToken': '{{csrf_token}}'
+    },
+    data:{
+        version: version,
+        product: product,
+        article : article,
+        value :value
+    },
+    type: 'post'
+    }).done(function(response){
+        console.log(response)
+    })
+
+    })
 
 </script>
 

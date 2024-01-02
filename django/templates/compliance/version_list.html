@@ -1,3 +1,4 @@
+{% load custom_filter %}
 {% load static %} 
     <div class="table-responsive" style="overflow:hidden;">
         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
@@ -9,6 +10,7 @@
                 <th>Article</th>
                 <th>Comment</th>
                 <th>준수 여부</th>
+                <th>사내 정책</th>
                 <th>Last Update</th>
                 <th>Details</th>
             </tr>
@@ -20,6 +22,7 @@
                 <th>Article</th>
                 <th>Comment</th>
                 <th>준수 여부</th>
+                <th>사내 정책</th>
                 <th>Last Update</th>
                 <th>Details</th>
             </tr>
@@ -36,9 +39,19 @@
                     <td>{{com.sectionNo}} {{com.sectionName}}</td>
                     <td>{{com.articleNo}} {{com.articleName}}</td>
                     <td>{{com.articleComment}}</td>
-                    <td>
-                        checkbox
+                    <td style="width:4%">
+                        <select name="com_score" class="com_score btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5; width:100%;">
+                            <option value="{{com.complyScore}}" selected>{{com.complyScore}}</option>
+                            {% make_list 0 1 2 as score %}
+                            {% for option_value in score %}
+                                {% if option_value != com.complyScore %}
+                                    <option value="{{option_value}}" >{{option_value}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" class="com_article" value="{{com.articleNo}}">
                     </td>
+                    <td>사내 정책</td>
                     <td>date</td>
                     <td>
                         <form  method="POST" action="/compliance/lists_2/">
@@ -56,5 +69,32 @@
             </tbody>
         </table>
     </div>
+
+<script>
+    $('.com_score').on('change', function(){
+        var value = this.value
+        var article = $(this.parentNode).find('.com_article').val()
+        var product = $('#com_product').val()
+        var version = $('#com_version').val()
+        console.log(article, product, version)
+    
+    $.ajax({
+    url:'/compliance/version_modify/',
+    headers:{
+        'X-CSRFToken': '{{csrf_token}}'
+    },
+    data:{
+        version: version,
+        product: product,
+        article : article,
+        value :value
+    },
+    type: 'post'
+    }).done(function(response){
+        console.log(response)
+    })
+
+    })
+</script>
 
 

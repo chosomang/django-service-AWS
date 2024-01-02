@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Begin Page Content -->
+<h1 class="text-teiren" style="font-weight: bold;">Assets Management</h1><br><br>
+
+<div class="d-flex text-center mb-2">
+    {% for asset in data_list %}
+    <button class="btn btn-md btn-teiren" style="border-radius: 0%;" onclick="assetChange('{{asset}}')">
+        {{asset}}
+    </button>
+    {% endfor %}
+    <button class="btn btn-md btn-teiren" style="border-radius: 0%;" onclick="fileView('File')">
+        File
+    </button>
+    <button class="btn btn-md" style="border-radius: 0%; background-color: #FEF4F5;" data-toggle="modal" data-target="#add_data">
+        +
+    </button>
+    <!--Add Asset Data Modal -->
+    <div class="modal hide fade card-body" id="add_data" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style='width:700px; height:auto'>
+                <div class="modal-header">
+                    <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Asset Type</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">x</span>
+                    </button>
+                </div>
+                <div class="modal-body card-body" style="font-size:12px;">
+                    <form id="addData_form" enctype="multipart/form-data">
+                    <div>
+                        <p>Data: <input type="text" class="form-control" id='assetData' name="assetData" value=''></p>
+                        <p>Data Comment: <input type="text" class="form-control" id='dataComment' name="dataComment" value='' placeholder="Enter a Comment of Data"></p>
+                        {% csrf_token %}
+                    </div>
+                </div>
+                <div class="modal-footer" id="modal_footer">
+                    <input type='submit' id='add' class="btn btn-md btn-outline-primary" value="Add">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card shadow mb-4" id="asset_table">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-teiren">Total Assets Management</h6>
+    </div>
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                   style="text-align:center;font-size:15px;">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th>Serial No</th>
+                        <th>Name</th>
+                        <th>Usage</th>
+                        <th>Data</th>
+                        <th>Level</th>
+                        <th>PoC</th>
+                        <th>User</th>
+                        <th>Upload Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in assets%}
+                    <tr>
+                        <td>{{asset.dataType}}</td>
+                        <td>{{asset.assetType}}</td>
+                        <td>{{asset.assetNo}}</td>
+                        <td>{{asset.assetName}}</td>
+                        <td>{{asset.assetUsage}}</td>
+                        <td>{{asset.assetData}}</td>
+                        <td>{{asset.assetLevel}}</td>
+                        <td>{{asset.assetPoC}}</td>
+                        <td>{{asset.assetUser}}</td>
+                        <td>{{asset.assetDate}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function assetChange(dataType){
+        $('#asset_table').hide()
+        $.ajax({
+            url:'/compliance/assets_change/',
+            headers:{
+                'X-CSRFToken': '{{csrf_token}}'
+            },
+            data:{
+                dataType:dataType
+            },
+            type: 'post'
+        }).done(function(response){
+            console.log(response)
+            $('#asset_table').html(response)
+            $('#asset_table').show()
+        })
+    }
+
+    function fileView(dataType){
+        console.log(dataType)
+        $('#asset_table').hide()
+        $.ajax({
+            url:'/compliance/file_view/',
+            headers:{
+                'X-CSRFToken': '{{csrf_token}}'
+            },
+            data: {
+                dataType : dataType
+            },
+            type: 'post'
+        }).done(function(response){
+            console.log(response)
+            $('#asset_table').html(response)
+            $('#asset_table').show()
+        })
+    }
+
+    $('#addData_form').on('submit', function(e){
+        e.preventDefault();
+
+        var formData = new FormData(this)
+        
+        $.ajax({
+            url: '/compliance/assets_data_add/',
+            headers: {
+                'X-CSRFToken': '{{csrf_token}}'
+            },
+            data: formData,
+            type: 'post',
+            processData: false,  // Important!
+            contentType: false,  // Important!
+            success: function(response) {
+                alert(response);
+            }
+        });
+    })
+</script>
+
+{% endblock %}
+
+
