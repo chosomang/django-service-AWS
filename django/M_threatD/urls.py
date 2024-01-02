@@ -6,6 +6,7 @@ urlpatterns = [
     # Risk Management
     ## alert
     path('notifications/<threat>/', views.notification_view),
+    # test
     # ## rules
     path('rules/<cloud>/', views.rules_view),
     ## visuals
