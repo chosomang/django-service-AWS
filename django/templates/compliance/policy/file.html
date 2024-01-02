@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Begin Page Content -->
+
+<div class="locationbar ml-2">
+    <span>Compliance &nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;증적관리&nbsp;&nbsp;>&nbsp;&nbsp;</span>
+    <span class="current">{{policy}} <span>
+</div>
+
+<!-- Page Heading -->
+<h2 class="h2 font-weight-bold mb-2 text-gray-800 ml-2">{{policy}} - {{data.0.data.name}}</h2>
+<p class="h4 mb-4 ml-2">You can perform file and version management on the {{policy}} at once.</p>    
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-teiren">Data Overview</h4>
+    </div>
+    
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                style="table-layout:fixed;text-align:center;font-size:15px;">
+                <tbody>
+                    {%for d in data%}
+                    <tr>
+                        <th>Name</th>
+                        <td data-name="{{d.data.name}}"> {{d.data.name}}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Comment</th>
+                        <td>{{d.data.comment}}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Product</th>
+                        <td>Policy Manage</td>
+                    </tr>
+
+                    <tr>
+                        <th>Author</th>
+                        <td>{{d.data.author}}</td>
+                    </tr>
+
+
+                    <tr>
+                        <th>Last Update Time</th>
+                        <td>{{d.data.last_update}}</td>
+                    </tr>
+                    {% endfor %}
+
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-teiren">Current Evidence Preview</h4>
+    </div>
+
+    <h2> 즌비증~</h2>
+
+    <div class="card-header py-3 row">
+        <h4 class="m-0 font-weight-bold text-teiren">Evidence Version Manage</h4>
+        <button class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#file_add" data-policy-name="{{policy}}" data-data-name="{{data.0.data.name}}">Add File</button>           
+    </div>
+
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive" style="overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                style="table-layout:fixed;text-align:center;font-size:15px;">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>name</th>
+                        <th>comment</th>
+                        <th>download</th>
+                        <th>poc</th>
+                        <th>author</th>
+                        <th>upload</th>
+                        <th>func</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for f in file_list%}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{f.name}}</td>
+                            <td>{{f.comment}}</td>
+                            <td><button id="downloadBtn" class="btn btn-md btn-teiren"  style="font-size:0.7vw" onclick="download_file('{{f.name}}')">Download</button></td>
+                            <td>{{f.poc}}</td>
+                            <td>{{f.author}}</td>
+                            <td>{{f.upload_date}}</td>
+                            <td>
+                                <button class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#file_mod" 
+                                data-policy-name="{{policy}}" data-name="{{data.0.data.name}}" data-comment="{{f.commnt}}"
+                                data-poc="{{f.poc}}" data-author="{{f.author}}" data-last-update="{{f.upload_date}}">Mod</button>           
+                                <button class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_file('{{policy}}', '{{data.0.data.name}}','{{f.name}}')">삭제</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- Add File Modal -->
+<div class="modal hide fade card-body" id="file_add" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add File</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <div>
+                    Policy Name: <input class="form-control" name="policy_name" type="text" readonly><br><br>
+                    Data Name: <input class="form-control" name="data_name" type="text" readonly><br><br>
+                    * File Name: <input class="form-control" name="add_name" type="text"><br><br>
+                    File Comment: <input class="form-control" name="add_comment" type="text"><br><br>
+                    Author: <input class="form-control" name="add_author" type="text"><br><br>
+                    POC: <input class="form-control" name="add_poc" type="text"><br><br>
+                    
+                    Upload file:
+                    image 파일 전체, pdf, 엑셀(xlsx, xls, csv), 한글파일(hwp, hwpx), 파워포인트(ppt, pptx), 워드(docx, doc) 형식만 업로드 가능합니다.
+                    <input name="file" type="file" accept="image/*, .pdf, .xlsx, .xls, .hwp, .hwpx, .ppt, .pptx, .csv, .docx, .doc"><br><br>
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' id='add_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='add_accept' class="btn btn-md btn-outline-primary" value="Save">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Mod File Modal -->
+<div class="modal hide fade card-body" id="file_mod" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify File</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>``
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <div>
+                    <input class="form-control" name="last_name" type="hidden"><br><br>
+                    Data Name: <input class="form-control" name="data_name" type="text" readonly><br><br>
+                    Last Update(Auto Change): <input class="form-control" name="last_update" type="text" readonly><br><br>
+                    File Name: <input class="form-control" name="mod_name" type="text"><br><br>
+                    File Comment: <input class="form-control" name="mod_comment" type="text"><br><br>
+                    File Author: <input class="form-control" name="mod_author" type="text"><br><br>
+                    File Poc: <input class="form-control" name="mod_poc" type="text"><br><br>
+
+                    <!-- Relation Compliance를 추가할 수 있는 코드를 아래 제작해야 함-->
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' id='mod_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='mod_accept' class="btn btn-md btn-outline-primary" value="Modify">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+
+$('#file_mod').on('shown.bs.modal', function (e) {
+    var button = $(e.relatedTarget);
+
+   var data = {
+    'data_name': button.data('data-name'),
+    'last_name': button.data('name'),
+    'last_update': button.data('last-update'),
+    'file_name': button.data('name'),
+    'file_comment': button.data('comment'),
+    'file_author': button.data('author'),
+    'file_poc': button.data('poc')
+    };
+
+    for (var key in data) {
+        $('input[name="' + key + '"]').val(data[key]);
+    }
+});
+
+$('#file_add').on('shown.bs.modal', function (e) {
+    var button = $(e.relatedTarget); // 클릭된 버튼
+    var policy_name = button.data('policy-name'); 
+    var data_name = button.data('data-name'); // data-name 속성의 값
+   
+    $('input[name="policy_name"]').val(policy_name);
+    $('input[name="data_name"]').val(data_name);
+});
+
+$('#add_accept').click(function() {
+    var policy_name = $('input[name="policy_name"]').val();
+    var data_name = $('input[name="data_name"]').val();
+    var name = $('input[name="add_name"]').val();
+    var comment = $('input[name="add_comment"]').val();
+    var author = $('input[name="add_author"]').val();
+    var poc = $('input[name="add_poc"]').val();
+
+    // FormData 객체 생성
+    var formData = new FormData();
+    formData.append('policy_name', policy_name);
+    formData.append('data_name', data_name);
+    formData.append('name', name);
+    formData.append('comment', comment);
+    formData.append('author', author);
+    formData.append('poc', poc);
+
+    // 파일 필드 추가
+    var fileInput = $('input[name="add_file"]')[0];
+    formData.append('add_file', fileInput.files[0]);
+
+    $.ajax({
+        url: '/compliance/policy/file_add/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,  
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload() 
+            }
+            if(response === 'success'){
+                alert('Saved Successfully')
+                location.reload()
+            }else if(response === 'already exist'){
+            alert('file name is already exist. Try Again') 
+            }else if(response === 'NULL'){
+                alert('Data name must be entered. Try Again')
+            }
+            else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+})
+
+$('#mod_accept').click(function() {
+    var formData = {
+        'data_name': $('input[name="data_name"]').val(),
+        'last_name': $('input[name="last_name"]').val(),
+        'mod_name': $('input[name="mod_name"]').val(),
+        'mod_comment': $('input[name="mod_comment"]').val(),
+        'mod_author': $('input[name="mod_author"]').val(),
+        'mod_poc': $('input[name="mod_poc"]').val()
+    };
+
+    $.ajax({
+        url: '/compliance/evidence/file_mod/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: formData,
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Modify Successfully')
+                location.reload()
+            }else if(response === 'already exist'){
+                alert('Name is already exist. Try Again')
+            }else if(response === 'NULL'){
+                alert('Name must be entered. Try Again')
+            }
+            else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+});
+
+
+function del_file(policy_name, data_name, file_name) {
+    var formData = {
+        'policy_name': policy_name,
+        'data_name': data_name,
+        'file_name': file_name
+    };
+
+    $.ajax({
+        url: '/compliance/policy/file_del/',
+        headers: {'X-CSRFToken': "{{ csrf_token }}"},
+        type: 'POST',
+        data: formData,
+        success: function(response) {
+            if (response.startsWith('\n<meta')) {
+                location.reload();
+            } else {
+                if (response === 'success') {
+                    alert('Deleted Successfully');
+                } else {
+                    alert('Failed To Save. Please Try Again');
+                }
+                location.reload();
+            }
+        },
+        error: function(xhr, errmsg, err) {
+            console.log(xhr.status + ": " + xhr.responseText);
+        }
+    });
+}
+</script>
+
+{% endblock %}
+

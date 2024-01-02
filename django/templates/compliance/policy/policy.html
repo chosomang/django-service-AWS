@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Begin Page Content -->
+<div class="locationbar ml-2">
+    <span>Compliance &nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;</span>
+    <span class="current">Policy Manage<span>
+
+</div>
+
+
+<!-- Page Heading -->
+<h2 class="h2 font-weight-bold mb-2 text-gray-800 ml-2">
+    Policy Manage
+    <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#policy_add"  style="font-size:0.7vw">Add</button>
+</h2>
+
+<p class="h4 mb-4 ml-2">You can manage the entire Policy at once.</p>    
+
+<div class="card shadow mb-4" id="search_table">
+    <div class="card-body" style="font-size:15px;">
+        
+        <form id="form" role="search">
+            <select id="search_query1" name="search_query1">
+                <option value="data">Data name</option>
+            </select>
+
+            <input type="search" id="search_query2" name="search_query2" placeholder="Search...">
+            <button class="btn btn-md btn-outline-primary">Search</button>
+        
+            <a class="btn btn-md btn-outline-warning" href="/compliance/policy/">
+                Reset
+            </a>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+
+{% for p in policy%}
+<div class="col-md-4 "  style="height: 500px;">
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <div class="row">
+            <div class="col-8">
+                <h4 class="m-0 font-weight-bold text-teiren">
+                    {{p.policy.name}}
+                </h4>
+            </div>
+            <div class="col-4 text-right">
+                <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_add" data-policy-name="{{p.policy.name}}">+</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body" style="font-size:15px;">
+        <div class="table-responsive overflow-auto" style="max-height: 350px; overflow:hidden;">
+            <table class="table table-bordered" id="dataTable" cellspacing="0"
+                style="table-layout:fixed;text-align:center;font-size:15px;">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Files</th>
+                        <th>func</th>
+                    </tr>
+                    </thead>
+                
+                <tbody>
+                    {% for data in p.data%}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{data.name}}</td>
+                            <td>
+                                
+                                <form method="GET" action="/compliance/policy/file/">
+                                    <input type="hidden" name="policy_name" value="{{ p.policy.name }}"/>
+                                    <input type="hidden" name="data_name" value="{{ data.name }}"/>
+                                    <button type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw">>></button>
+                                </form>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#data_mod"
+                                data-policy-name="{{p.policy.name}}" data-name="{{data.name}}">Mod</button>
+                                <button type="button" class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_data('{{p.policy.name}}','{{data.name}}')">Del</button>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+{% endfor %}
+</div>
+
+<!-- Add Policy Modal -->
+<div class="modal hide fade card-body" id="policy_add" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Policy</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <div>
+                    Policy Name: <input class="form-control" name="add_policy_name" type="text"><br><br>
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' id='add_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='add_policy_accept' class="btn btn-md btn-outline-primary" value="Save">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Add Data Modal -->
+<div class="modal hide fade card-body" id="data_add" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Policy Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <div>
+                    Policy Name: <input class="form-control" name="add_data_policy_name" type="text" readonly><br><br>
+                    Data Name: <input class="form-control" name="add_data_name" type="text"><br><br>
+                    Comment: <input class="form-control" name="add_data_comment" type="text"><br><br>
+                    Author: <input class="form-control" name="add_data_author" type="text"><br><br>
+                    ※ The last update time is automatically saved after the modification.
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' id='add_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='add_data_accept' class="btn btn-md btn-outline-primary" value="Save">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Mod Data Modal -->
+<div class="modal hide fade card-body" id="data_mod" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <div>
+                    <input class="form-control" name="last_name" type="hidden"><br><br>
+                    Policy Name: <input class="form-control" name="policy_name" type="text" readonly><br><br>
+                    Data Name: <input class="form-control" name="mod_name" type="text"><br><br>
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' id='mod_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='mod_accept' class="btn btn-md btn-outline-primary" value="Modify">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+$('#data_mod').on('shown.bs.modal', function (e) {
+    var button = $(e.relatedTarget);
+    var last_name = button.data('name');
+    var data_name = button.data('name'); 
+    var policy_name = button.data('policy-name'); 
+
+    // 모달 내부 필드에 데이터 표시
+    $('input[name="last_name"]').val(last_name);
+    $('input[name="mod_name"]').val(data_name);
+    $('input[name="policy_name"]').val(policy_name);
+});
+
+$('#mod_accept').click(function() {
+    // Call your Ajax function here
+    var last_name=$('input[name="last_name"]').val();
+    var mod_name = $('input[name="mod_name"]').val();
+    var policy_name=$('input[name="policy_name"]').val();
+
+
+    $.ajax({
+        url: '/compliance/policy/data_mod/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'policy_name':policy_name,
+            'last_name':last_name,
+            'mod_name': mod_name
+        },
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Saved Successfully')
+                window.location.href= '/compliance/policy/'
+            }else if(response === 'already exist'){
+                alert('Data is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
+            }else if(response === 'NULL'){
+                alert('Data must be entered. Try Again')
+            }
+            else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+});
+
+$('#data_add').on('shown.bs.modal', function (e) {
+    var button = $(e.relatedTarget); 
+    var policy_name = button.data('policy-name'); 
+
+
+    // 모달 내부 필드에 데이터 표시
+    $('input[name="add_data_policy_name"]').val(policy_name);
+});
+
+$('#add_policy_accept').click(function() {
+    // Call your Ajax function here
+    var policy_name = $('input[name="add_policy_name"]').val();
+    
+
+    $.ajax({
+        url: '/compliance/policy/policy_add/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'policy_name': policy_name,
+        },        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Saved Successfully')
+                location.reload()
+            }else if(response === 'already exist'){
+            alert('Policy name is already exist. Try Again') 
+            }else if(response === 'NULL'){
+                alert('Policy name must be entered. Try Again')
+            }
+            else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+})
+
+$('#add_data_accept').click(function() {
+    // Call your Ajax function here
+    var policy_name = $('input[name="add_data_policy_name"]').val();
+    var data_name = $('input[name="add_data_name"]').val();
+    var data_comment = $('input[name="add_data_comment"]').val();
+    var data_author = $('input[name="add_data_author"]').val();
+
+    console.log(data_author)
+
+    $.ajax({
+        url: '/compliance/policy/data_add/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'policy_name': policy_name,
+            'data_name': data_name,
+            'data_comment': data_comment,
+            'data_author': data_author,
+        },        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Saved Successfully')
+                location.reload()
+            }else if(response === 'already exist'){
+            alert('Data name is already exist. Try Again') 
+            }else if(response === 'NULL'){
+                alert('Data name must be entered. Try Again')
+            }
+            else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+})
+
+function del_data(policy_name, data_name){
+    $.ajax({
+        url: '/compliance/policy/data_del/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: {
+            'policy_name':policy_name,
+            'data_name': data_name
+        },
+        success: function(response){
+            if(response.startsWith('\n<meta')){
+                location.reload()
+            }
+            if(response === 'success'){
+                alert('Deleted Successfully')
+                window.location.href= '/compliance/policy/'
+            } else {
+                alert('Failed To Save. Please Try Again')
+            }
+        },
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); 
+        }
+    })
+}
+
+
+</script>
+{% endblock %}
+

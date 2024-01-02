@@ -7,8 +7,9 @@ import os
 import json
 from django.http import FileResponse
 from common.risk.v1.notification.alert import check_topbar_alert
-from .src import evidence, lists, lists_2, version_modify, assets_change, file_view
+from .src import evidence, lists, lists_2, version_modify, assets_change, file_view, policy
 from . import models
+from .models import Document
 
 
 # Compliance
@@ -56,17 +57,20 @@ def assets_view(request):
     return render(request, f"compliance/assets.html", context)
 
 # Data 리스트 출력 페이지
-def data(request):
-    search_query1 = request.GET.get('search_query1', None)
-    search_query2 = request.GET.get('search_query2', None)
+def get_evidence_data(request):
+    if request.method == "GET":
+        search_query1 = request.GET.get('search_query1', None)
+        search_query2 = request.GET.get('search_query2', None)
 
-    if search_query1 and search_query2:
-        data_list = evidence.get_data(search_query1, search_query2)
+        if search_query1 and search_query2:
+            data_list = evidence.get_data(search_query1, search_query2)
+        else:
+            data_list = evidence.get_data()
+        context = {'data_list': data_list}
+
+        return render(request, "compliance/evidence/data.html", context)
     else:
-        data_list = evidence.get_data()
-    context = {'data_list': data_list}
-
-    return render(request, "compliance/evidence/data.html", context)
+        return JsonResponse({'error': 'Invalid method'}, status=400)
 
 def get_compliance(request):
     if request.method == "POST":
@@ -95,7 +99,7 @@ def get_article(request):
         return JsonResponse({'error': 'Invalid method'}, status=400)
     
 # Data 추가
-def add_data(request):
+def add_evidence_data(request):
     if request.method=="POST":
         data=dict(request.POST.items())
    
@@ -108,7 +112,7 @@ def add_data(request):
         return JsonResponse({'error': 'Invalid method'}, status=400)
     
 # Data 수정
-def mod_data(request):
+def mod_evidence_data(request):
     if request.method=="POST":
         data=dict(request.POST.items())
    
@@ -122,7 +126,7 @@ def mod_data(request):
     
 
 # Data 삭제
-def del_data(request):
+def del_evidence_data(request):
     if request.method=="POST":
         del_data=dict(request.POST.items())
 
@@ -135,7 +139,7 @@ def del_data(request):
         return JsonResponse({'error': 'Invalid method'}, status=400)
 
 # file 출력
-def file(request):
+def get_evidence_file(request):
     if request.method == 'GET':
         # Ajax GET 요청에서 전달된 파라미터 가져오기
         title = request.GET.get('title', None)
@@ -160,12 +164,25 @@ def file(request):
         return JsonResponse({'error': 'Invalid method'}, status=400)
 
 # file 추가 시, 함수 동작
-def add_file(request):
-    add_file=dict(request.POST.items())
-    return HttpResponse(evidence.add_file(add_file))
+def add_evidence_file(request):
+    if request.method == 'POST':
+        add_file = request.POST.dict()
+        uploaded_file = request.FILES.get("add_file")
+        file_name = add_file.get('add_name', '')
+
+        # Saving the information in the database
+        document = Document(
+            title=file_name,
+            uploadedFile=uploaded_file
+        )
+        document.save()
+
+        return HttpResponse(evidence.add_file(add_file))
+    else:
+        return HttpResponse("Invalid request method")
 
 # file 수정
-def mod_file(request):
+def mod_evidence_file(request):
     if request.method=="POST":
         mod_file=dict(request.POST.items())
 
@@ -179,7 +196,7 @@ def mod_file(request):
         
 
 # file 삭제
-def del_file(request):
+def del_evidence_file(request):
     if request.method=="POST":
         del_file=dict(request.POST.items())
         return HttpResponse(evidence.del_file(del_file))
@@ -196,13 +213,164 @@ def add_com(request):
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
     
-def organization(request):
-    return render(request, f"compliance/evidence/organization.html")
+# Compliance lists_2 - 현경
+def integration(request):
+    if request.method == 'GET':
+        # Ajax GET 요청에서 전달된 파라미터 가져오기
+        product_list=evidence.get_product()
+        
+        context={
+            'product_list':product_list
+        }
 
+        if product_list:
+            return render(request, f"compliance/integration.html", context)
+        else:
+            # title이 없을 경우 에러 응답
+            return JsonResponse({'error': 'Missing title parameter'}, status=400)
+    else:
+        # GET 이외의 메소드에 대한 처리
+        return JsonResponse({'error': 'Invalid method'}, status=400)
 
-# def addSection(request, sectionType):
-#     context = dict(request.POST.items())
-#     if context['version'] == '1':
-#         context = addSection.addSection(data)
-#     return render(request, f"compliance/section/{sectionType}.html", context)
+# Data 추가
+def add_integration(request):
+    if request.method=="POST":
+        product=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(evidence.add_integration(product))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+  
+def get_product(request):
+    if request.method=="POST":
+        product_list = evidence.get_product()
+        json_data = json.dumps({"product_list" :product_list})    
+        return HttpResponse(json_data, content_type='application/json')
 
+def get_policy(request):
+    if request.method == "GET":
+        search_query1 = request.GET.get('search_query1', None)
+        search_query2 = request.GET.get('search_query2', None)
+
+        if search_query1 and search_query2:
+            policy_data=policy.get_policy(search_query1, search_query2)
+        else:
+            policy_data=policy.get_policy()
+
+        context={
+        'policy':policy_data,
+        }
+
+        return render(request, f"compliance/policy/policy.html", context)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+
+def get_policy_data(request):
+    if request.method == 'GET':
+        # Ajax GET 요청에서 전달된 파라미터 가져오기
+        policy_name = request.GET.get('policy_name', None)
+        data_name = request.GET.get('data_name', None)
+
+        data=policy.get_policy_data(policy_name, data_name)
+        file_list=evidence.get_file(data_name)
+        
+        context={
+            'policy':policy_name,
+            'data': data,
+            'file_list': file_list,
+        }
+
+        if policy_name:
+            return render(request, f"compliance/policy/file.html", context)
+        else:
+            # title이 없을 경우 에러 응답
+            return JsonResponse({'error': 'Missing title parameter'}, status=400)
+    else:
+        # GET 이외의 메소드에 대한 처리
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+
+def add_policy(request):
+    if request.method=="POST":
+        policy_name=request.POST.get('policy_name', None)
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.add_policy(policy_name))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+def add_policy_data(request):
+    if request.method=="POST":
+        data=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.add_policy_data(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+def add_policy_file(request):
+    if request.method=="POST":
+        data=dict(request.POST.items())
+
+        uploaded_file = request.FILES.get("add_file")
+        file_name = data.get('add_name', '')
+
+        # Saving the information in the database
+        document = Document(
+            title=file_name,
+            uploadedFile=uploaded_file
+        )
+        document.save()
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.add_policy_file(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+def del_policy_data(request):
+    if request.method=="POST":
+        data=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.del_policy_data(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+def mod_policy_data(request):
+    if request.method=="POST":
+        data=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.mod_policy_data(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
+    
+def del_policy_file(request):
+    if request.method=="POST":
+        data=dict(request.POST.items())
+   
+        try:
+            #이걸 JsonResponse로 어케 바꾸지
+            return HttpResponse(policy.del_policy_file(data))
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=400)
