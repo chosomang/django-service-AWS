@@ -24,17 +24,10 @@
                             {% csrf_token %}
                             <div class="form-group">
                                 <span class="material-symbols-outlined ml-auto">
-                                    badge
-                                </span>
-                                <input type="text" class="form-control form-control-user"
-                                    name="user_name" value="{{user_name}}" placeholder="User Name">
-                            </div>
-                            <div class="form-group">
-                                <span class="material-symbols-outlined ml-auto">
                                     person
                                     </span>
                                 <input type="text" class="form-control form-control-user" 
-                                    name="user_id" value="{{user_id}}" placeholder="User ID">
+                                    name="user_name" value="{{user_name}}" placeholder="User ID">
                             </div>
                             <div class="form-group">
                                 <span class="material-symbols-outlined ml-auto">
@@ -45,17 +38,17 @@
                             </div>
                             <div class="form-group">
                                 <span class="material-symbols-outlined ml-auto">
+                                    password
+                                </span>
+                                <input type="password" class="form-control form-control-user"
+                                    name="password_verification" placeholder="Password Verification">
+                            </div>
+                            <div class="form-group">
+                                <span class="material-symbols-outlined ml-auto">
                                     mail
                                     </span>
                                 <input type="text" class="form-control form-control-user"
                                     name="email_add" value="{{email_add}}" placeholder="Email">
-                            </div>
-                            <div class="form-group">
-                                <span class="material-symbols-outlined ml-auto">
-                                    phone_iphone
-                                    </span>
-                                <input type="text" class="form-control form-control-user"
-                                    name="phone_no" value="{{phone_no}}" placeholder="Phone Number">
                             </div>
                             <div class="divider"></div>
                             <input type="submit" value="Sign Up" class="btn btn-teiren btn-user btn-block font-weight-bold">

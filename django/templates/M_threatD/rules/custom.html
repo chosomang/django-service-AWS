@@ -33,7 +33,7 @@
                         <form>
                             <input type="hidden" name="rule_name" value="{{ rule.name }}">
                             <input type="hidden" name="rule_type" value="{{ rule.type }}">
-                            <input type='hidden' name='cloud' value='{{cloud}}'>
+                            <input type='hidden' name='log_type' value="{{logType}}">
                             <input type="hidden" name="on_off" value="{{ rule.on_off }}">
                             {% if rule.on_off == 1 %}
                             <input type="button" value="  On  " class="btn btn-teiren btn-md text-center"
@@ -47,11 +47,11 @@
                     </td>
                     <td style="width: 7%">
                         <form>
-                            <input type='hidden' name='address' value="/threat/rules/custom/details/">
+                            <input type='hidden' name='address' value="custom/details/">
                             <input type='hidden' name='rule_name' value="{{ rule.name }}">
                             <input type='hidden' name='rule_type' value="{{ rule.type }}">
                             <input type='hidden' name='rule_id' value="{{ rule.id }}">
-                            <input type='hidden' name='cloud' value='{{cloud}}'>
+                            <input type='hidden' name='log_type' value="{{logType}}">
                             <input type='hidden' name='on_off' value="{{ rule.on_off }}">
                             <input type='button' onclick="ruleDetails(this.parentNode)"
                                 class="btn btn-teiren btn-md" style="overflow:hidden;"
@@ -64,7 +64,7 @@
         </tbody>
     </table>
 </div>
-<button onclick='addRuleModal("{{cloud}}")' class='btn btn-teiren btn-md btn-block'>Add Rule</button>
+<button onclick='addRuleModal("{{logType}}")' class='btn btn-teiren btn-md btn-block'>Add Rule</button>
 <script type="text/javascript">
     $(function() {
         $.fn.dataTable.ext.type.order['threat-level-pre'] = function(data) {
@@ -81,14 +81,13 @@
                     return 5;
             }
         };
-        $.fn.dataTable.ext.type.order['alert-check-pre'] = function(data) {
-            switch(data) {
-                case '<i class="fa-solid fa-eye-slash fa-bounce"></i>':
-                    return 1;
-                case '<i class="fa-solid fa-circle-check"></i>':
-                    return 2;
-                default:
-                    return 3;
+        $.fn.dataTable.ext.type.order['threat-on-off-pre'] = function(data) {
+            if (data.includes(`name="on_off" value="1"`)){
+                return 1
+            } else if (data.includes(`name="on_off" value="0"`)){
+                return 2
+            } else {
+                return 3
             }
         };
         $("#dataTable_custom").DataTable({
@@ -99,8 +98,16 @@
             columnDefs: [{
                 targets: 4,
                 type: 'threat-level'
+            },
+            {
+                targets: 5,
+                type: 'threat-on-off'
             }],
             ordering: true,
+            // 표시 건수기능 숨기기
+            lengthChange: false,
+            // 검색 기능 숨기기
+            searching: false,
         });
     });
 </script>

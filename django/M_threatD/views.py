@@ -10,22 +10,27 @@ from django.http import JsonResponse, HttpResponseRedirect
 @login_required
 def notification_view(request, threat):
     if request.method == 'POST':
-        if request.POST['cloud'] == 'Aws':
-            context = notification.alert_off(dict(request.POST.items()))
-            context.update(detection.neo4j_graph(context))
+        context = notification.alert_off(dict(request.POST.items()))
+        context.update(detection.neo4j_graph(context))
         return render(request, f"M_threatD/notifications/{threat}.html", context)
     else:
         if threat == 'details':
-            return HttpResponseRedirect('/alert/logs/')
+            return HttpResponseRedirect('/threat/notifications/logs/')
     context = (notification.get_alert_logs())
     return render(request, f"M_threatD/notifications/{threat}.html", context)
 
 # Rules
 @login_required
-def rules_view(request, cloud):
-    context = default.get_custom_rules(cloud)
-    context.update(default.get_default_rules(cloud))
-    context.update({'cloud': cloud.capitalize()})
+def rules_view(request, resourceType, logType):
+    context = default.get_custom_rules(logType)
+    context.update(default.get_default_rules(logType))
+    if resourceType == 'cloud':
+        logType = (' ').join(logType.split('_')).upper()
+    else:
+        logType = (' ').join(logType.split('_')).title()
+    context.update({'logType': logType})
+    context.update({'resourceType': resourceType})
+    context.update(default.get_filter_list(logType))
     return render(request, f"M_threatD/rules/rule.html", context)
 
 

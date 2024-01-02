@@ -13,14 +13,14 @@ function getCookie(name = 'csrftoken') {
     return cookieValue;
 }
 
-function addRuleModal(cloud) {
+function addRuleModal(logType) {
     $.ajax({
         url: 'add/',
         headers:{
             'X-CSRFToken': getCookie()
         },
         data: {
-            cloud: cloud
+            logType: logType
         },
         type: 'post'
     }).done(function(data) {
@@ -29,9 +29,9 @@ function addRuleModal(cloud) {
     $('#rule-modal').modal('show');
 }
 
-function ruleDetails(event) {
-    var url = event.address.value
-    var data = $(event).serialize()
+function ruleDetails(e) {
+    var url = e.address.value
+    var data = $(e).serialize()
     $.ajax({
         url: url,
         headers:{
@@ -45,6 +45,7 @@ function ruleDetails(event) {
         $('#detail_body').html('fail')
     })
 }
+
 function editRuleModal() {
     var data = $('#edit_modal_form').serialize()
     $('#edit_message').slideUp('normal')
@@ -77,7 +78,7 @@ function deleteRuleAction(event) {
         data: data,
         type: 'post'
     }).done(function(data) {
-        if (data == '정책 삭제 완료') {
+        if (data == 'Deleted Successfully') {
             $('.modal').modal('hide')
             alert(data)
             window.location.reload()
@@ -85,12 +86,12 @@ function deleteRuleAction(event) {
             alert(data)
         }
     }).fail(function() {
-        alert('다시 시도해주세요')
+        alert('Failed To Delete. Please Try Again')
     })
 }
 
-function ruleOnOff(event) {
-    var data = $(event.parentNode).serialize()
+function ruleOnOff(e) {
+    var data = $(e.parentNode).serialize()
     $.ajax({
         url: 'on_off/',
         headers:{
@@ -99,15 +100,19 @@ function ruleOnOff(event) {
         data: data,
         type: 'post'
     }).done(function(on_off) {
-        $(event.parentNode.on_off).val(on_off)
+        if (on_off === '2'){
+            alert('Failed Rule On/Off. Please Try Again')
+            return 0
+        }
+        $(e.parentNode.on_off).val(on_off)
         if (on_off == '1') {
-            $(event).val('  On  ')
-            $(event).css('background-color', '')
-            $(event).css('border-color', '')
+            $(e).val('  On  ')
+            $(e).css('background-color', '')
+            $(e).css('border-color', '')
         } else {
-            $(event).val('  Off  ')
-            $(event).css('background-color', '#D3D3D3')
-            $(event).css('border-color', '#D3D3D3')
+            $(e).val('  Off  ')
+            $(e).css('background-color', '#D3D3D3')
+            $(e).css('border-color', '#D3D3D3')
         }
     })
 }

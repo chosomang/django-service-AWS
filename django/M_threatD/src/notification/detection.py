@@ -11,7 +11,7 @@ password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
 def neo4j_graph(request):
-    if isinstance(request, dict) :
+    if type(request) == dict:
         data = get_data(request)
         details = get_log_details(request)
         context = {'graph': json.dumps(data), 'details': details }
@@ -53,23 +53,19 @@ def get_node_json(node, cloud):
                     value = value.replace('\'', '[',1)
                     value = value.replace('\'', ']',1)
                 data[key] = value
-    else:
-        if node.has_label('Flow'):
-            data['label'] = 'Flow'
-            data['name'] = property['flowName']
-        if node.has_label('Date'):
-            data['label'] = 'Date'
-        if node.has_label('Account'):
-            data['label'] = 'Account'
-            data['score'] = 700
-        if node.has_label('Between'):
-            data['label'] = 'Between'
-            property = dict(sorted(property.items(), key=operator.itemgetter(1), reverse=True))
-        if node.has_label('Role'):
-            data['label'] = 'Role'
-        if node.has_label('Rule'):
-            data['label'] = 'Rule'
-            data['name'] = property['ruleName']
+    else: 
+        for label in list(node.labels):
+            if label in ['Flow', 'Date', 'Account', 'Rule', 'Role', 'Between']:
+                data['label'] = label
+                if label == 'Flow':
+                    data['name'] = property['flowName']
+                elif label == 'Account':
+                    data['score'] = 700
+                elif label == 'Between':
+                    property = dict(sorted(property.items(), key=operator.itemgetter(1), reverse=True))
+                elif label == 'Rule':
+                    data['name'] = property['ruleName']
+                break
         for key, value in property.items():
             if key == 'name':
                 value = str(value)
@@ -79,7 +75,7 @@ def get_node_json(node, cloud):
             if 'errorMessage' in key:
                 value = value.replace('\'', '[',1)
                 value = value.replace('\'', ']',1)
-            if key == 'date':
+            if key == 'date' or key == 'userName':
                 value = str(value)
                 data['name'] = value
             data[key] = value
@@ -110,10 +106,10 @@ def get_log_details(request):
 def get_static(request):
     detected_rule = request['detected_rule']
     eventTime = request['eventTime']
-    cloud = request['cloud']
+    logType = request['logType']
     id = request['id']
     cypher = f"""
-    MATCH (rule:Rule:{cloud}{{ruleName: '{detected_rule}'}})<-[detect:DETECTED]-(log:Log:{cloud}{{eventTime:'{eventTime}'}})
+    MATCH (rule:Rule:{logType}{{ruleName: '{detected_rule}'}})<-[detect:DETECTED]-(log:Log:{logType}{{eventTime:'{eventTime}'}})
     WHERE ID(detect) = {id}
     WITH rule, detect, log
     OPTIONAL MATCH p=(log)<-[:ACTED*6]-(:Log)
@@ -170,7 +166,7 @@ def get_static(request):
     for result in results:
         data = dict(result)
         for node in data['nodes']:
-            response.append(get_node_json(node, cloud))
+            response.append(get_node_json(node, logType))
         for relation in data['relations']:
             response.append(get_relation_json(relation))
     return response
@@ -179,10 +175,10 @@ def get_static(request):
 def get_dynamic(request):
     detected_rule = request['detected_rule']
     eventTime = request['eventTime']
-    cloud = request['cloud']
+    logType = request['logType']
     id = request['id']
     cypher = f"""
-    MATCH (rule:Rule:{cloud}{{ruleName:'{detected_rule}'}})<-[detected:FLOW_DETECTED]-(log:Log:{cloud}{{eventTime:'{eventTime}'}})-[check_rel:CHECK]->(check:Flow)
+    MATCH (rule:Rule:{logType}{{ruleName:'{detected_rule}'}})<-[detected:FLOW_DETECTED]-(log:Log:{logType}{{eventTime:'{eventTime}'}})-[check_rel:CHECK]->(check:Flow)
     WHERE ID(detected) = {id} AND check_rel.path = detected.path
     WITH log, detected, rule, check_rel, check
     MATCH p=(log)<-[flow_rel:FLOW* {{path: detected.path}}]-(flow)-[check_rels:CHECK{{path:detected.path}}]->(checks:Flow)
@@ -204,6 +200,8 @@ def get_dynamic(request):
     WITH log, nodes, relations, path, flow, flow2,
         CASE 
             WHEN flow2 IS NULL THEN 'diff'
+            WHEN flow.userName = flow2.userName THEN 'same'
+            WHEN flow.userName <> flow2.userName THEN 'diff'
             WHEN flow.userIdentity_arn <> flow2.userIdentity_arn THEN 'diff'
             WHEN flow.userIdentity_type = flow2.userIdentity_type THEN 'same'
             WHEN flow.userIdentity_type <> flow.userIdentity_type THEN 'diff'
@@ -215,6 +213,8 @@ def get_dynamic(request):
             MATCH (flow)-[:FLOW {{path:path}}]->(flow2)
             WITH flow, flow2, path,
                 CASE
+                    WHEN flow.userName = flow2.userName THEN 'same'
+                    WHEN flow.userName <> flow2.userName THEN 'diff'
                     WHEN flow.userIdentity_arn <> flow2.userIdentity_arn THEN 'diff'
                     WHEN flow.userIdentity_arn = flow2.userIdentity_arn THEN 'same'
                     WHEN flow.userIdentity_type = flow2.userIdentity_type THEN 'same'
@@ -226,14 +226,27 @@ def get_dynamic(request):
                 \\\"
                     MATCH (flow)<-[:ACTED*]-(date:Date)<-[date_rel:DATE]-(account:Account)
                     WITH flow, date, date_rel, account, flow2
-                    MATCH (flow)<-[:ACTED*]-(mid:Log)
-                    WITH flow, date, date_rel, account, mid.eventName as eventName, COUNT(mid) as cnt, flow2
-                    WITH flow, date, date_rel, account, SUM(cnt) as total, flow2,
-                        apoc.map.fromPairs(COLLECT([eventName,cnt])) as prop
-                    CALL apoc.create.vNode(['Between'], apoc.map.merge(prop,{{name:total}})) YIELD node AS analysis
-                    CALL apoc.create.vRelationship(date,'BETWEEN',{{}}, analysis) YIELD rel AS analyze1
-                    CALL apoc.create.vRelationship(analysis,'BETWEEN',{{}}, flow) YIELD rel AS analyze2
-                    WITH flow, flow2, [date, analysis, account] as nodes, [date_rel, analyze1, analyze2] as relations
+                    OPTIONAL MATCH (flow)<-[:ACTED*]-(mid:Log)
+                    WITH flow, flow2, date, date_rel, account, COLLECT(mid) as mids
+                    CALL apoc.do.when(
+                        SIZE(mids) > 0,
+                        \\\\\\"
+                            UNWIND mids as mid
+                            WITH flow, date, date_rel, account, mid.eventName as eventName, COUNT(mid) as cnt
+                            WITH flow, date, date_rel, account, SUM(cnt) as total,
+                                apoc.map.fromPairs(COLLECT([eventName,cnt])) as prop
+                            CALL apoc.create.vNode(['Between'], apoc.map.merge(prop,{{name:total}})) YIELD node AS analysis
+                            CALL apoc.create.vRelationship(date,'BETWEEN',{{}}, analysis) YIELD rel AS analyze1
+                            CALL apoc.create.vRelationship(analysis,'BETWEEN',{{}}, flow) YIELD rel AS analyze2
+                            RETURN [date, analysis, account] as nodes, [date_rel, analyze1, analyze2] as relations
+                        \\\\\\",
+                        \\\\\\"
+                            MATCH (flow)<-[acted_rel:ACTED]-(date)
+                            RETURN [date, account] as nodes, [date_rel, acted_rel] as relations
+                        \\\\\\",
+                        {{flow:flow, date:date, date_rel:date_rel, account:account, mids:mids}}
+                    ) YIELD value
+                    WITH flow, flow2, value.nodes as nodes, value.relations as relations
                     OPTIONAL MATCH (flow)-[assumed:ASSUMED]->(role:Role)
                     WITH flow, flow2,
                         CASE
@@ -247,10 +260,10 @@ def get_dynamic(request):
                     OPTIONAL MATCH p=(flow)-[:ACTED|NEXT*]->(flow2)
                     WITH flow, flow2, nodes, relations, NODES(p) as mid
                     CALL apoc.do.when(
-                        SIZE(mid) <= 2,
+                        SIZE(mid) <= 5,
                         \\\\\\"
-                            MATCH (flow)-[acted:ACTED]->(flow2)
-                            RETURN [flow] as nodes, [acted] as relations
+                            MATCH p=(flow)-[acted:ACTED|NEXT*]->(flow2)
+                            RETURN NODES(p) as nodes, acted as relations
                         \\\\\\",
                         \\\\\\"
                             MATCH p=(flow)-[:ACTED|NEXT*]->(flow2)
@@ -319,6 +332,8 @@ def get_dynamic(request):
             WITH flow, flow2,
                 CASE
                     WHEN flow.userIdentity_arn IS NULL AND flow2.userIdentity_arn IS NULL THEN 'same'
+                    WHEN flow.userName = flow2.userName THEN 'same'
+                    WHEN flow.userName <> flow2.userName THEN 'diff'
                     WHEN flow.userIdentity_arn = flow2.userIdentity_arn THEN 'same'
                     WHEN flow.userIdentity_type = flow2.userIdentity_type THEN 'same'
                     WHEN flow.userIdentity_type <> flow2.userIdentity_type THEN 'diff'
@@ -380,6 +395,8 @@ def get_dynamic(request):
     MATCH (log)<-[:FLOW {{path:path}}]-(flow)
     WITH log, nodes, relations,
         CASE
+            WHEN log.userName = flow.userName THEN 'same'
+            WHEN log.userName <> flow.userName THEN 'diff'
             WHEN log.userIdentity_arn <> flow.userIdentity_arn THEN 'diff'
             WHEN log.userIdentity_arn = flow.userIdentity_arn THEN 'same'
             WHEN log.userIdentity_type = flow.userIdentity_type THEN 'same'
@@ -436,7 +453,7 @@ def get_dynamic(request):
     for result in results:
         data = dict(result)
         for node in data['nodes']:
-            response.append(get_node_json(node, cloud))
+            response.append(get_node_json(node, logType))
         for relation in data['relations']:
             response.append(get_relation_json(relation))
     return response
@@ -461,22 +478,34 @@ def get_relation_json(relation):
 def get_static_details(request):
     detected_rule = request['detected_rule']
     eventTime = request['eventTime']
-    cloud = request['cloud']
+    logType = request['logType']
     id = request['id']
     cypher = f"""
-    MATCH p=(rule:Rule:{cloud}{{ruleName:'{detected_rule}'}})<-[detected:DETECTED|FLOW_DETECTED]-(log:Log:{cloud} {{eventTime:'{eventTime}'}})
+    MATCH p=(rule:Rule:{logType}{{ruleName:'{detected_rule}'}})<-[detected:DETECTED|FLOW_DETECTED]-(log:Log:{logType} {{eventTime:'{eventTime}'}})
     WHERE ID(detected) = {id}
     WITH log
     MATCH p=(log)<-[:ACTED*..15]-(:Log)
     WITH NODES(COLLECT(p)[-1]) AS nodes, log
     UNWIND nodes as node
+    WITH DISTINCT(node), log
     RETURN
         ID(node) AS id,
         node.eventTime as eventTime,
-        node.eventName as productName,
-        split(node.eventSource, '.')[0] as actionType,
-        node.eventType as resultType,
-        node.sourceIPAddress as sourceIP,
+        node.eventName as eventName,
+        CASE
+            WHEN node.eventSource IS NOT NULL THEN split(node.eventSource, '.')[0]
+            ELSE '-'
+        END AS eventType,
+        CASE
+            WHEN node.eventType IS NOT NULL THEN node.eventType
+            WHEN node.eventResult IS NOT NULL THEN node.eventResult
+            ELSE '-'
+        END AS eventResult,
+        CASE
+            WHEN node.sourceIPAddress IS NOT NULL THEN node.sourceIPAddress
+            WHEN node.sourceIp IS NOT NULL THEN node.sourceIp
+            ELSE '-'
+        END AS sourceIP,
         CASE
             WHEN ID(node) = ID(log) THEN 'detected'
             ELSE 'normal'
@@ -487,7 +516,13 @@ def get_static_details(request):
     response = []
     for result in results:
         node = dict(result.items())
-        node['cloud'] = cloud
+        node['logType'] = logType
+        if logType in ['Aws', 'Ncp', 'Nhn', 'Kt']:
+            node['resourceType'] = 'cloud'
+        elif logType in ['Teiren', 'Officekeeper']:
+            node['resourceType'] = 'solution'
+        else:
+            node['resourceType'] = 'system'
         response.append(node)
     return response
 
@@ -495,10 +530,10 @@ def get_static_details(request):
 def get_dynamic_details(request):
     detected_rule = request['detected_rule']
     eventTime = request['eventTime']
-    cloud = request['cloud']
+    logType = request['logType']
     id = request['id']
     cypher = f"""
-    MATCH p=(rule:Rule:{cloud}{{ruleName:'{detected_rule}'}})<-[detected:DETECTED|FLOW_DETECTED]-(log:Log:{cloud} {{eventTime:'{eventTime}'}})
+    MATCH p=(rule:Rule:{logType}{{ruleName:'{detected_rule}'}})<-[detected:DETECTED|FLOW_DETECTED]-(log:Log:{logType} {{eventTime:'{eventTime}'}})
     WHERE ID(detected) = {id}
     WITH log, detected.path as path
     MATCH (log)<-[:FLOW*{{path:path}}]-(flow)
@@ -508,6 +543,8 @@ def get_dynamic_details(request):
     OPTIONAL MATCH (flow)<-[:FLOW{{path:path}}]-(flow2)
     WITH path, flow, flow2, flows,
         CASE
+            WHEN flow.userName = flow2.userName THEN 'same'
+            WHEN flow.userName <> flow2.userName THEN 'diff'
             WHEN flow.userIdentity_arn = flow2.userIdentity_arn THEN 'same'
             WHEN flow.userIdentity_arn <> flow2.userIdentity_arn THEN 'diff'
             WHEN flow.userIdentity_type = flow2.userIdentity_type THEN 'same'
@@ -523,6 +560,8 @@ def get_dynamic_details(request):
             OPTIONAL MATCH (flow)-[:FLOW{{path:path}}]->(flow3)
             WITH nodes, flow,
                 CASE
+                    WHEN flow.userName = flow3.userName THEN 'same'
+                    WHEN flow.userName <> flow3.userName THEN 'diff'
                     WHEN flow.userIdentity_arn = flow3.userIdentity_arn THEN 'same'
                     WHEN flow.userIdentity_arn <> flow3.userIdentity_arn THEN 'diff'
                     WHEN flow.userIdentity_type = flow3.userIdentity_type THEN 'same'
@@ -554,6 +593,8 @@ def get_dynamic_details(request):
             OPTIONAL MATCH (flow)-[:FLOW{{path:path}}]->(flow3)
             WITH nodes, flow, flow3, path,
                 CASE
+                    WHEN flow.userName = flow3.userName THEN 'same'
+                    WHEN flow.userName <> flow3.userName THEN 'diff'
                     WHEN flow.userIdentity_arn = flow3.userIdentity_arn THEN 'same'
                     WHEN flow.userIdentity_arn <> flow3.userIdentity_arn THEN 'diff'
                     WHEN flow.userIdentity_type = flow3.userIdentity_type THEN 'same'
@@ -577,18 +618,44 @@ def get_dynamic_details(request):
         ",
         {{flow:flow, path:path, flow2:flow2}}
     ) YIELD value
-    UNWIND value.nodes as node
-    WITH COLLECT(DISTINCT(node)) as nodes, flows
-    UNWIND flows as flow
-    WITH flows + nodes as nodes, COLLECT(ID(flow)) as ids
+    WITH flows, value.nodes as nodes
+    CALL apoc.do.when(
+        SIZE(nodes) < 1,
+        "
+            UNWIND flows as flow
+            WITH flows as nodes, COLLECT(ID(flow)) as ids
+            RETURN nodes, ids
+        ",
+        "
+            UNWIND nodes as node
+            WITH COLLECT(DISTINCT(node)) as nodes, flows
+            UNWIND flows as flow
+            WITH flows + nodes as nodes, COLLECT(ID(flow)) as ids
+            RETURN nodes, ids
+        ",
+        {{flows:flows, nodes:nodes}}
+    ) YIELD value
+    WITH value.nodes as nodes, value.ids as ids
     UNWIND nodes as node
+    WITH DISTINCT(node), ids
     RETURN
         ID(node) AS id,
         node.eventTime as eventTime,
-        node.eventName as productName,
-        split(node.eventSource, '.')[0] as actionType,
-        node.eventType as resultType,
-        node.sourceIPAddress as sourceIP,
+        node.eventName as eventName,
+        CASE
+            WHEN node.eventSource IS NOT NULL THEN split(node.eventSource, '.')[0]
+            ELSE '-'
+        END AS eventType,
+        CASE
+            WHEN node.eventType IS NOT NULL THEN node.eventType
+            WHEN node.eventResult IS NOT NULL THEN node.eventResult
+            ELSE '-'
+        END AS eventResult,
+        CASE
+            WHEN node.sourceIPAddress IS NOT NULL THEN node.sourceIPAddress
+            WHEN node.sourceIp IS NOT NULL THEN node.sourceIp
+            ELSE '-'
+        END AS sourceIP,
         CASE 
             WHEN ID(node) IN ids THEN 'detected'
             ELSE 'normal'
@@ -599,6 +666,12 @@ def get_dynamic_details(request):
     response = []
     for result in results:
         node = dict(result.items())
-        node['cloud'] = cloud
+        node['logType'] = logType
+        if logType in ['Aws', 'Ncp', 'Nhn', 'Kt']:
+            node['resourceType'] = 'cloud'
+        elif logType in ['Teiren', 'Officekeeper']:
+            node['resourceType'] = 'solution'
+        else:
+            node['resourceType'] = 'system'
         response.append(node)
     return response

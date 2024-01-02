@@ -27,26 +27,28 @@ def delete_rule(request):
     else:
         if isinstance(delete_check:=delete_static_rule(request),str):
             return delete_check
-    return '정책 삭제 완료'
+    return 'Deleted Successfully'
 
 def delete_static_rule(request):
-    cloud = request['cloud']
+    logType = request['log_type']
     ruleName = request['og_rule_name'] if 'og_rule_name' in request else request['rule_name']
     cypher = f"""
-    MATCH (rule:Rule:{cloud} {{ruleName:'{ruleName}'}})
+    MATCH (rule:Rule:{logType} {{ruleName:'{ruleName}'}})
     DETACH DELETE rule
+    RETURN ID(rule)
     """
     try:
-        graph.evaluate(cypher)
+        nodeId = graph.evaluate(cypher)
+        graph.evaluate(f"MERGE (r:Rule {{status: 'Delete', nodeId:{nodeId}}})")
         return 1
     except:
-        return '정책 수정 실패. 다시 시도해주세요.'
+        return 'Failed To Delete. Please Try Again'
 
 def delete_dynamic_rule(request):
-    cloud = request['cloud']
+    logType = request['log_type']
     ruleName = request['og_rule_name'] if 'og_rule_name' in request else request['rule_name']
     cypher = f"""
-    MATCH (rule:Rule:{cloud} {{ruleName:'{ruleName}'}})
+    MATCH (rule:Rule:{logType} {{ruleName:'{ruleName}'}})
     UNWIND KEYS(rule) as keys
     WITH rule, keys
     WHERE keys =~ 'flow.*'
@@ -80,11 +82,13 @@ def delete_dynamic_rule(request):
         {{flow_rels:flow_rels}}
     )YIELD value
     DETACH DELETE rule, flow
+    RETURN ID(rule)
     """
     try:
-        graph.evaluate(cypher)
+        nodeId = graph.evaluate(cypher)
+        graph.evaluate(f"MERGE (r:Rule {{status: 'Delete', nodeId:{nodeId}}})")
         return 1
     except:
-        return '정책 수정 실패. 다시 시도해주세요.'
+        return 'Failed To Delete. Please Try Again'
     
 

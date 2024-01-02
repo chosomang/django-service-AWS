@@ -11,7 +11,7 @@
                     <div class="col-12 py-3 auth-input">
                         <div class="auth-text">
                             <h5> Visualize The Invisible</h5>
-                            <span class="text-teiren font-weight-bold">TEIREN CLOUD</span>
+                            <span class="text-teiren font-weight-bold">TEIREN CLOUD {{data}}</span>
                         </div>
                         <form id='login_form' class="user" method=post>
                             {% csrf_token %}
@@ -20,14 +20,14 @@
                                     person
                                 </span>
                                 <input type="text" class="form-control form-control-user"
-                                    name="user_id" value="{{user_id}}" placeholder='User ID'>
+                                    name="user_name" value="{{user_name}}" placeholder='User ID'>
                             </div>
                             <div class="form-group">
                                 <span class="material-symbols-outlined ml-auto">
                                     key
                                 </span>
                                 <input type="password" class="form-control form-control-user"
-                                    name="user_password" value="{{user_password}}" placeholder="User Password">
+                                    name="user_password" placeholder="User Password">
                             </div>
                             <div class="divider"></div>
                             <div class="auth-btn">
@@ -44,3 +44,10 @@
         </div>
     </div>
 </body>
+{% if error %}
+    <script>
+        $(function(){
+            alert('{{error}}')
+        })
+    </script>
+{% endif %}

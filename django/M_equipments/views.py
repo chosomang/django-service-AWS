@@ -5,38 +5,33 @@ from .src import integration
 
 # Integration
 @login_required
-def integration_view(request):
-    context = integration.list_integration()
-    
-    return render(request, "M_equipment/integration.html", context)
-
-@login_required
-def integration_page(request, equipment):
-    if equipment == 'delete':
-        if request.method == 'POST':
-            data = dict(request.POST.items())
-            context = integration.delete_integration(data)
-            return HttpResponse(context)
-    if equipment == 'configuration':
+def integration_view(request, pageType):
+    if pageType == 'configuration':
         context = integration.list_integration()
-        return render(request, f"M_equipment/{equipment}.html", context)
-    return render(request, f"M_equipment/{equipment}.html")
+        return render(request, f"M_equipment/{pageType}.html", context)
+    return render(request, f"M_equipment/{pageType}.html")
 
-def integration_check_ajax(request, equipment):
-    if request.method == 'POST':
-        context = integration.integration_check(request)
-        
-        return JsonResponse(context)
-
-def integration_insert_ajax(request, equipment):
-    if request.method == 'POST':
-        context = integration.integration_insert(request)
-        
-        return HttpResponse(context)
-
-def integration_collection_ajax(request, equipment):
+def integration_config_ajax(request, actionType):
     if request.method == 'POST':
         data = dict(request.POST.items())
-        context = integration.container_trigger(data, equipment)
-        
+        if actionType == 'modal':
+            return render(request, 'M_equipment/configuration/modal.html', data)
+        elif actionType == 'delete':
+            context = integration.delete_integration(data)
+        elif actionType == 'trigger':
+            context = integration.container_trigger(data)
         return JsonResponse(context)
+
+@login_required
+def registration_page(request, equipment, logType):
+    context = {'logType': logType}
+    return render(request, f"M_equipment/registration/{equipment}.html", context)
+
+def integration_registration_ajax(request, equipment, logType, actionType):
+    if request.method == 'POST':
+        if actionType == 'check':
+            context = integration.integration_check(request, equipment, logType)
+            return JsonResponse(context)
+        elif actionType == 'insert':
+            context = integration.integration_insert(request, equipment)
+            return HttpResponse(context)

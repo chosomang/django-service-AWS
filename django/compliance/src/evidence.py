@@ -7,7 +7,7 @@ host = settings.NEO4J['HOST']
 port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
-graph = Graph(f"bolt://{host}:7688", auth=(username, password))
+graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
 # 전체 컴플라이언스 리스트 가져오기 (Evidence 노드 제외)
 def get_compliance():
@@ -383,6 +383,62 @@ def del_file(dict):
             raise Exception
     except Exception:
         return 'fail'
+
+def get_category_list():
+    results = graph.run("""
+    MATCH (c:Category:Compliance:Evidence)
+    RETURN
+        c.name AS name,
+        c.comment AS comment
+    """)
+    response = []
+    for result in results:
+        data = dict(result.items())
+        response.append(data)
+    return response
+
+def get_evidence_data(dataName):
+    try:
+        cypher = f"""
+        MATCH (c:Category:Compliance:Evidence)-[:DATA]->(d:Compliance:Data:Evidence)
+        WHERE c.name='{dataName}'
+        """
+        response = graph.run(f"{cypher} RETURN c.name AS cateName, c.comment As cateComment LIMIT 1").data()[0]
+    except:
+        response = {}
+    
+    data_list=[]
+    results = graph.run(f"""{cypher}
+    RETURN
+        d.name AS name,
+        d.comment AS comment,
+        d.version_date AS version,
+        d.author AS author,
+        d.file AS file
+    """)
+    for result in results:
+        data_list.append(dict(result.items()))
+    
+    law_list = []
+    results = graph.run(f"""
+    MATCH (com:Compliance)-[:VERSION]->(ver:Version)-[:CHAPTER]->(chap:Chapter)-[:SECTION]->(sec:Section)-[:ARTICLE]->(arti:Article)<-[:EVIDENCE]-(evi:Evidence)
+    WHERE evi.name="{dataName}"
+    RETURN 
+        com.no AS comNo,
+        com.name AS comName,
+        ver.date AS verDate,
+        chap.no AS chapNo,
+        chap.name AS chapName,
+        sec.no AS secNo,
+        sec.name AS secName,
+        arti.no AS articleNo,
+        arti.name AS articleName
+        ORDER BY arti.no
+    """)
+    for result in results:
+        law_list.append(dict(result.items()))
+    response.update({'data_list': data_list, 'law_list': law_list})
+    return response
 
 
 

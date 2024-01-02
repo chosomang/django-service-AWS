@@ -32,16 +32,18 @@ function ruleEditAction(event){
         $('#temp').remove()
         $('#loader').remove()
         alert(data)
-        if (data == '정책 추가 완료'){
+        if (data == 'Added Rule Successfully'){
             $('.modal').modal('hide')
             window.location.reload()
         }
     }).fail(function(data){
-        alert('다시 시도해주세요')
+        $('#temp').remove()
+        $('#loader').remove()
+        alert('Failed To Add Rule. Please Try Again')
     })
 }
 
-function addProperty(cloud){
+function addProperty(logType){
     var count = $('#properties').find('.prop').length + 1
     $.ajax({
         url:'/threat/custom/add/static_slot/',
@@ -51,7 +53,7 @@ function addProperty(cloud){
         type: 'post',
         data:{
             count: count,
-            cloud: cloud
+            log_type: logType
         }
     }).done(function(data){
         $('#properties').append(data)

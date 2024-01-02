@@ -3,17 +3,19 @@
 {% block head %}
 <!-- Page Essential -->
 <link rel="stylesheet" href="{% static '/css/tab_table.css' %}">
+<link rel="stylesheet" href="{% static '/M_threatD/css/searchcard.css' %}">
 {% endblock %}
 {% block content %}
 <div class="locationbar ml-2">
-    <span>Threat Management &nbsp;&nbsp;>&nbsp;&nbsp;Rule configuration &nbsp;&nbsp;>&nbsp;&nbsp; </span>
-    <span class="current">{{cloud|upper}} Rules<span>
+    <span>Threat Management &nbsp;&nbsp;>&nbsp;&nbsp;Rule configuration &nbsp;&nbsp;>&nbsp;&nbsp;{{resourceType|title}} Rules &nbsp;&nbsp;>&nbsp;&nbsp;</span>
+    <span class="current">{{logType}} Rules<span>
 </div>
 <div>
     <div>
-        <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{cloud|upper}} Rules</h6>
-        <p class="h6 mb-4 ml-2">Configure {{cloud|upper}} Rule Sets In Detail</p>
+        <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{logType}} Rules</h6>
+        <p class="h6 mb-4 ml-2">Configure {{logType}} Rule Sets In Detail</p>
     </div>
+    {% include "./searchcard.html" %}
     <div class="tabs">
         <input type="radio" id="modal-tab1" name="tab-control-modal" checked>
         <input type="radio" id="modal-tab2" name="tab-control-modal">
@@ -23,9 +25,9 @@
                     <span>Custom Rule</span>
                 </label>
             </li>
-            <li title="Teiren Default Rule">
+            <li title="Default Rule">
                 <label for="modal-tab2" role="button">
-                    <span>Teiren Default Rule</span>
+                    <span>Default Rule</span>
                 </label>
             </li>
         </ul>
@@ -95,7 +97,7 @@
                 <div id="edit_body"></div>
             </div>
             <div class="modal-footer" id="modal_footer">
-                <input type='button' class="btn btn-teiren" value="Close" data-dismiss='modal'>
+                <input type='button' class="btn btn-md btn-teiren" value="Close" data-dismiss='modal'>
             </div>
         </div>
     </div>
@@ -121,5 +123,6 @@
 {% endblock %}
 {% block script %}
 <script src="{% static '/M_threatD/js/rule.js' %}"></script>
+<script src="{% static '/M_threatD/js/searchcard.js' %}"></script>
 <script src="{% static '/M_threatD/js/addRule/ruleSection.js' %}"></script>
 {% endblock %}

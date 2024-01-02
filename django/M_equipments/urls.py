@@ -2,10 +2,13 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Integration
-    path('', views.integration_view),
-    path('<equipment>/', views.integration_page),
-    path("<equipment>/check/", views.integration_check_ajax),
-    path("<equipment>/insert/", views.integration_insert_ajax),
-    path("<equipment>/collection/", views.integration_collection_ajax),
+    # Integration Page
+    path('<pageType>/', views.integration_view),
+
+    ## Configuration Ajax
+    path('configuration/config/<actionType>/', views.integration_config_ajax),
+
+    ## Registration Page/Ajax
+    path('<equipment>/<logType>/', views.registration_page),
+    path("<equipment>/<logType>/<actionType>/", views.integration_registration_ajax),
 ]

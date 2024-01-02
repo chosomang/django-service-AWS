@@ -1,4 +1,4 @@
-function getCookie(name) {
+function getCookie(name = 'csrftoken') {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
@@ -14,12 +14,29 @@ function getCookie(name) {
 }
 
 $(function () {
-    const csrftoken = getCookie('csrftoken');
+    $.ajax({
+        url: '/topbar/alert/',
+        headers: {
+            'X-CSRFToken': getCookie()
+        },
+        type:'post'
+    }).done(function(data){
+        if (data.top_alert){
+            $('#sidebar_alert').removeAttr('hidden')
+            $('#topbar_alert').addClass('text-danger fa-bounce')
+            $('#sidebar_alert').text(data.top_alert.count)
+        }
+        else if (data.no_top_alert){
+            $('#sidebar_alert').attr('hidden', true)
+            $('#topbar_alert').removeClass('text-danger fa-bounce')
+        }
+    })
+
     setInterval(function(){
         $.ajax({
             url: '/topbar/alert/',
             headers: {
-                'X-CSRFToken': csrftoken
+                'X-CSRFToken': getCookie()
             },
             type:'post'
         }).done(function(data){
@@ -33,5 +50,5 @@ $(function () {
                 $('#topbar_alert').removeClass('text-danger fa-bounce')
             }
         })
-    }, 1000);
+    }, 5000);
 })

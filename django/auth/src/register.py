@@ -1,5 +1,7 @@
 from django.conf import settings
 from py2neo import Graph
+from datetime import datetime
+import hashlib
 
 # AWS
 host = settings.NEO4J['HOST']
@@ -11,21 +13,24 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 def check_account(request):
     if 0 < graph.evaluate(f"MATCH (a:Teiren:Account {{userName:'{request['user_name']}'}}) RETURN COUNT(a)"):
         return [f"[User Name: '{request['user_name']}'] Already Exists.", "Please Try Again"]
-    if 0 < graph.evaluate(f"MATCH (a:Teiren:Account {{userId:'{request['user_id']}'}})RETURN COUNT(a)"):
-        return [f"[User ID: '{request['user_id']}'] Already Exists.", "Please Try Again"]
     for key, value in request.items():
         if not value:
             return [f"{key.replace('_',' ').title()} Is Missing.", "Please Try Again"]
+    if request['user_password'] != request['password_verification']:
+        return ['Password Does Not Match','Please Try Again']
     return 'check'
 
-def register_account(request):
+def register_account(request, ip):
     cypher = f"""
-    MERGE (a:Teiren:Account {{
+    MERGE (super:Super:Teiren {{name:'Teiren'}})
+    WITH super
+    MERGE (super)-[:SUB]->(a:Teiren:Account {{
         userName: '{request['user_name']}',
-        userId: '{request['user_id']}',
-        userPassword: '{request['user_password']}',
+        userPassword: '{hashlib.sha256(request['user_password'].encode()).hexdigest()}',
         email: '{request['email_add']}',
-        phoneNo: '{request['phone_no']}'
+        createdTime: '{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}',
+        ipAddress: '{ip}',
+        failCount: 0
     }})
     RETURN COUNT(a)
     """

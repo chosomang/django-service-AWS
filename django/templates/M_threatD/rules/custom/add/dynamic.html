@@ -4,7 +4,7 @@
         <div class='row'>
             <h5 class='text-teiren font-weight-bold ml-3 mt-2'>Dynamic Rule Configuration</h5>
             <div class="ml-auto">
-                <button type="button" class="btn btn-md btn-danger" style="border-radius:40px" onclick="deleteSection(0)"><i class="fas fa-trash-can"></i></button>
+                <button type="button" class="btn btn-md btn-danger" style="border-radius:40px" onclick="deleteSection(0)"><i class="fa-solid fa-xmark"></i></button>
             </div>
         </div>
         <input type="hidden" id="ruleClass" name="ruleClass" value="dynamic"/>
@@ -152,7 +152,9 @@
         </div>
         <button type="button" class="btn btn-block btn-teiren mt-3" onclick="addNewDynamicRule()">Add Dynamic Rule</button>
     </div>
-    <script> var cloud = '{{cloud}}' </script>
+    <script>
+        var logType = '{{log_type}}'
+    </script>
     <script src="{% static '/M_threatD/js/addRule/dynamic.js' %}"></script>
 </div>
 

@@ -3,6 +3,6 @@ from . import views
 
 urlpatterns = [
     # Log Management
-    path('<cloud>/', views.log_view),
-    path("modal/<cloud>/", views.log_modal)
+    path('<resourceType>/<logType>/', views.log_view),
+    path("<resourceType>/modal/<logType>/", views.log_modal)
 ]

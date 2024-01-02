@@ -33,13 +33,13 @@ function addNewRuleSet(){
         $('#temp').remove()
         $('#loader').remove()
         alert(response)
-        if(response == '정책 추가 완료'){
+        if(response == 'Added Rule Successfully'){
             window.location.reload()
         }
     })
 }
 
-function addProperty(cloud){
+function addProperty(logType){
     var count = $('#properties').find('.prop').length + 1
     $.ajax({
         url:'/threat/custom/add/static_slot/',
@@ -49,7 +49,7 @@ function addProperty(cloud){
         type: 'post',
         data:{
             count: count,
-            cloud: cloud
+            log_type: logType
         }
     }).done(function(data){
         $('#properties').append(data)

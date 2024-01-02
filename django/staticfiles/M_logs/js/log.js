@@ -27,15 +27,15 @@ $('#help').on('show.bs.modal', function () {
 $('#detail-modal').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);
     var id = button.data('id')
-    var cloud = button.data('cloud')
+    var logType = button.data('logtype')
     $.ajax({
-        url: '/logs/modal/details/',
+        url: `/logs/${resourceType}/modal/details/`,
         headers: {
             'X-CSRFToken': getCookie()
         },
         data: {
             id: id,
-            cloud: cloud
+            logType: logType
         },
         type: 'post'
     }).done(function (data) {
@@ -51,9 +51,10 @@ $(function () {
 
 /// Search_Filter
 function searchFilter(e) {
+    // console.log($('#search').serializeArray())
     $('#log_table').fadeOut('normal')
     if (e == 'reset') {
-        data = `page=1&cloud=${cloud}`
+        data = `page=1&logType=${logType}`
         var checkbox = $('#search input[type="checkbox"]')
         checkbox.each(function () {
             this.checked = false
@@ -64,18 +65,17 @@ function searchFilter(e) {
         $('.regexbox input').val('')
 
     } else {
-        data = $('#search').serialize() + `&page=${e}&cloud=${cloud}`
+        data = $('#search').serialize() + `&page=${e}&logType=${logType}`
     }
-    console.log(data)
     $.ajax({
-        url: '/logs/filter/',
+        url: `/logs/${resourceType}/filter/`,
         headers: {
             'X-CSRFToken': getCookie()
         },
         data: data,
         type: 'post'
     }).done(function (response) {
-        if (!response.startsWith('<div')) {
+        if (!response.startsWith('<div')){
             window.location.reload()
         }
         $('#searchCollapse').removeClass('show')

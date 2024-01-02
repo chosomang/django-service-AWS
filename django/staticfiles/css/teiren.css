@@ -215,7 +215,7 @@ a {
 
 a:hover {
   color: #224abe;
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 a:not([href]):not([class]) {
@@ -3726,8 +3726,8 @@ input[type="button"].btn-block {
   clear: both;
   font-weight: 400;
   color: #3a3b45;
+  word-break: break-all;
   text-align: inherit;
-  white-space: nowrap;
   background-color: transparent;
   border: 0;
 }

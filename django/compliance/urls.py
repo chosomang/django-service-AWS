@@ -5,8 +5,8 @@ from .src import delete, add, assets_data_add, assets_add, assets_data_delete, a
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('index/', views.compliance_view),
-    path('compliance/', views.compliance_view),
+    # path('index/', views.compliance_view),
+    # path('compliance/', views.compliance_view),
     #path('report_month/', views.report_month_view, name='[Teiren] 월간 위협 보고서'),
     path('lists/', views.lists_view),
     path('lists_2/', views.lists_view_2),
@@ -54,4 +54,4 @@ urlpatterns = [
     path('assets_data_modify/', assets_data_modify.modify),
     path('assets_file_modify/', assets_file_modify.modify)
 
-]
+ ]
