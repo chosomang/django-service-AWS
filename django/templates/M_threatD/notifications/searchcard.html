@@ -161,6 +161,43 @@
                         </div>
                     </div>
                 </div>
+                <div class="collapsebox">
+                    <div class="searchbox">
+                        <div class="searchbox-header">
+                            Source IP
+                        </div>
+                        <div class="w-75">
+                            <input class="searchbox-input dropdown-toggle" placeholder="Severity">
+                            <ul class="search-dropdown-menu shadow" style="overflow:hidden scroll;">
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input severity" type="checkbox" name="severity" value="all" onclick="selectAll(this, 'severity')">All
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input severity" type="checkbox" name="severity" value="['CRITICAL', 'danger']" onclick="selectcheck(this, 'severity')">CRITICAL
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input severity" type="checkbox" name="severity" value="['HIGH', 'caution']" onclick="selectcheck(this, 'severity')">HIGH
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input severity" type="checkbox" name="severity" value="['MID', 'warning']" onclick="selectcheck(this, 'severity')">MID
+                                    </label>
+                                </li>
+                                <li class="dropdown-item">
+                                    <label>
+                                        <input class="form-check-input severity" type="checkbox" name="severity" value="['LOW', 'success']" onclick="selectcheck(this, 'severity')">LOW
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
                 <button class="btn-reset" type="button" onClick="searchFilter('reset', [])">
                     <span class="material-symbols-outlined">
                         restart_alt
