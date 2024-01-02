@@ -159,8 +159,8 @@ def get_alert_logs(request):
     """)
     page_obj = {}
     total_page = math.ceil(total_count / limit)
-    st_page = max(1, page - 5)
-    ed_page = min(total_page, page + 5)
+    st_page = max(1, page - 3)
+    ed_page = min(total_page, page + 3 if page > 4 else 7)
     page_obj['has_previous'] = True if page > 1 else False
     page_obj['previous_page_number']=page-1
     page_obj['paginator'] = {'page_range': range(st_page, ed_page+1)}

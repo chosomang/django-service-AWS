@@ -110,10 +110,10 @@
                                 <div class="d-flex row justify-content-center">
                                     Source Ip
                                     <div class="order-div">
-                                        <button class="order-btn" type="button" onClick="searchFilter(1,['sourceIp','ASC'])">
+                                        <button class="order-btn" type="button" onClick="searchFilter(1,['ip','ASC'])">
                                             <i class="fa-solid fa-sort-up"></i>
                                         </button>
-                                        <button class="order-btn" type="button" onClick="searchFilter(1,['sourceIp','DESC'])">
+                                        <button class="order-btn" type="button" onClick="searchFilter(1,['ip','DESC'])">
                                             <i class="fa-solid fa-sort-down"></i>
                                         </button>
                                     </div>
@@ -153,40 +153,33 @@
                             {% for result in data %}
                                 {% if result.alert == 0 %}
                                 <tr class="text-danger">
-                                    <td style="font-weight:900" width="10%"><i class="fa-solid fa-eye-slash fa-bounce"></i></td>
+                                    <td style="font-weight:900" width="8%"><i class="fa-solid fa-eye-slash fa-bounce"></i></td>
                                 {% else %}
                                 <tr>
-                                    <td class="text-teiren" style="font-weight:900" width="10%"><i class="fa-solid fa-circle-check"></i></td>
+                                    <td class="text-teiren" style="font-weight:900" width="8%"><i class="fa-solid fa-circle-check"></i></td>
                                 {% endif %}
-                                {% for key, value in result.items %}
-                                    {% if key != 'form' %}
-                                        {% if key == 'ruleComment' %}
-                                            <td align="left" width="1000">{{value}}</td>
-                                        {% elif key == 'eventTime_format' or key == 'eventName' %}
-                                            <td width="200">{{value}}</td>
-                                        {% elif key == 'severity'%}
-                                            <td width="180">
-                                                <div class="color-box color-box-{{value.1}}">{{value.0}}</div>
-                                            </td>
-                                        {% elif key == 'alert' %}
-                                        {% else %}
-                                            <td>{{value}}</td>  
-                                        {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                                <td width="300">
-                                    <form method="POST" action="/threat/notifications/details/">
-                                        {% csrf_token %}
-                                        {% for key, value in result.form.items %}
-                                            <input type="hidden" name="{{key}}" value="{{value}}">
-                                        {% endfor %}
-                                        {% if 'alert' in result %}
-                                            <button class="btn btn-md btn-danger ">Details</button>
-                                        {% else %}
-                                            <button class="btn btn-md btn-teiren ">Details</button>
-                                        {% endif %}
-                                    </form>
-                                </td>
+                                    <td width="8%"> {{result.resource}}</td>
+                                    <td width="10%">{{result.eventTime_format}}</td>
+                                    <td align="left" width="30%">{{result.ruleComment}}</td>
+                                    <td width="10%">{{result.eventName}}</td>
+                                    <td width="10%">
+                                        <div class="color-box color-box-{{result.severity.1}}">{{result.severity.0}}</div>
+                                    </td>
+                                    <td width="10%">{{result.sourceIp}}</td>
+                                    <td width="15%">{{result.rule_name}}</td>
+                                    <td width="10%">
+                                        <form method="POST" action="/threat/notifications/details/">
+                                            {% csrf_token %}
+                                            {% for key, value in result.form.items %}
+                                                <input type="hidden" name="{{key}}" value="{{value}}">
+                                            {% endfor %}
+                                            {% if 'alert' in result %}
+                                                <button class="btn btn-md btn-danger ">Details</button>
+                                            {% else %}
+                                                <button class="btn btn-md btn-teiren ">Details</button>
+                                            {% endif %}
+                                        </form>
+                                    </td>
                             </tr>
                             {% endfor %}
                         {% else %}
@@ -204,6 +197,13 @@
                             <button class="page-link" onclick="searchFilter(1)">Start</button>
                         </li>
                         <li class="page-item" aria-current="page">
+                            <button class="page-link" onclick="searchFilter({{page_obj.previous_page_number}})">Prev</button>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled" aria-current="page">
+                            <button class="page-link" onclick="searchFilter(1)" >Start</button>
+                        </li>
+                        <li class="page-item disabled" aria-current="page">
                             <button class="page-link" onclick="searchFilter({{page_obj.previous_page_number}})">Prev</button>
                         </li>
                         {% endif %}
@@ -225,6 +225,13 @@
                             <button class="page-link" onclick="searchFilter({{page_obj.next_page_number}})">Next</button>
                         </li>
                         <li class="page-item" aria-current="page">
+                            <button class="page-link" onclick="searchFilter({{page_obj.paginator.num_pages}})">End</button>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled" aria-current="page">
+                            <button class="page-link" onclick="searchFilter({{page_obj.next_page_number}})">Next</button>
+                        </li>
+                        <li class="page-item disabled" aria-current="page">
                             <button class="page-link" onclick="searchFilter({{page_obj.paginator.num_pages}})">End</button>
                         </li>
                         {% endif %}

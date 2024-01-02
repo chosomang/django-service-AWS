@@ -3,8 +3,8 @@
         <div class="searchcard-body py-3">
             <select class="btn-select" name="main_search_key">
                 <option value="resource">Resource</option>
-                <option value="comment">Detected Rule Comment</option>
-                <option value="comment">Detected Event</option>
+                <option value="ruleComment">Detected Rule Comment</option>
+                <option value="eventName">Detected Event</option>
                 <option value="sourceIp">Source Ip</option>
             </select>
             <input class="search-input" name="main_search_value" placeholder="Search"/>
@@ -75,19 +75,19 @@
                             <ul class="search-dropdown-menu shadow" style="overflow:hidden scroll;">
                                 <li class="dropdown-item">
                                     <label>
-                                        <input class="form-check-input comment" type="checkbox" name="comment" value="all" onclick="selectAll(this, 'comment')">All
+                                        <input class="form-check-input ruleComment" type="checkbox" name="ruleComment" value="all" onclick="selectAll(this, 'ruleComment')">All
                                     </label>
                                 </li>
                                 <li class="dropdown-item">
                                     <label>
-                                        <input class="form-check-input comment" type="checkbox" name="comment" value="regex" onclick="selectcheck(this, 'comment')">Regex
+                                        <input class="form-check-input ruleComment" type="checkbox" name="ruleComment" value="regex" onclick="selectcheck(this, 'ruleComment')">Regex
                                     </label>
                                 </li>
                             </ul>
                         </div>
                     </div>
-                    <div id="comment_regex" class="regexbox" style="display: none;">
-                        <input name="comment_regex" class="regex-input" placeholder="Rule Comment Regex">
+                    <div id="ruleComment_regex" class="regexbox" style="display: none;">
+                        <input name="ruleComment_regex" class="regex-input" placeholder="Rule Comment Regex">
                     </div>
                 </div>
             </div>
