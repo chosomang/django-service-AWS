@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="locationbar ml-2">
+    <span>Threat Management &nbsp;&nbsp;>&nbsp;&nbsp; </span>
+    <span class="current">Threat Alert<span>
+</div>
+<div>
+    <!-- Page Heading -->
+    <h6 class="h3 mb-2 text-gray-800 ml-2 font-weight-bold">Threat Alert</h6>
+    <p class="h6 ml-2 mb-4">Notifications Of Detected Threats</p>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-teiren">Threat Alert List</h6>
+        </div>
+        <div class="card-body" style="font-size:15px;">
+            <div class="table-responsive" style="overflow:hidden;">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+                    style="text-align:center;overflow:scroll;font-size:15px !important;">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Resource</th>
+                            <th>Event Time</th>
+                            <th>Detected Rule</th>
+                            <th>Detected Event</th>
+                            <th>Severity</th>
+                            <th>Source Ip</th>
+                            <th>Detection No</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            <th>Status</th>
+                            <th>Resource</th>
+                            <th>Event Time</th>
+                            <th>Detected Rule</th>
+                            <th>Detected Event</th>
+                            <th>Severity</th>
+                            <th>Source Ip</th>
+                            <th>Detection No</th>
+                            <th>Details</th>
+                        </tr>
+                    </tfoot>
+                    <tbody>
+                        {% if data %}
+                        {% for result in data %}
+                        {% if 'alert' in result %}
+                        <tr class="text-danger">
+                            <td style="font-weight:900" width="200"><i class="fa-solid fa-eye-slash fa-bounce"></i></td>
+                        {% else %}
+                        <tr>
+                            <td class="text-teiren" style="font-weight:900" width="200"><i class="fa-solid fa-circle-check"></i></td>
+                        {% endif %}
+                            {% for key, value in result.items %}
+                            {% if key != 'form' %}
+                            {% if key == 'detectedAction' %}
+                            <td align="left" width="1000">{{value}}</td>
+                            {% elif key == 'eventTime_format' or key == 'actionDisplayName' %}
+                            <td width="200">{{value}}</td>
+                            {% elif key == 'cloud'%}
+                            <td width="200">{{value}}</td>
+                            {% elif key == 'level'%}
+                            <td width="180">
+                                <div class="color-box color-box-{{value.1}}">{{value.0}}</div>
+                            </td>
+                            {% elif key == 'alert' %}
+                            {% else %}
+                            <td>{{value}}</td>  
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                            <td width="300">
+                                <form method="POST" action="/threat/notifications/details/">
+                                    {% csrf_token %}
+                                    {% for key, value in result.form.items %}
+                                    <input type="hidden" name="{{key}}" value="{{value}}">
+                                    {% endfor %}
+                                    {% if 'alert' in result %}
+                                    <button class="btn btn-md btn-danger ">Details</button>
+                                    {% else %}
+                                    <button class="btn btn-md btn-teiren ">Details</button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $.fn.dataTable.ext.type.order['threat-level-pre'] = function(data) {
+        switch(data) {
+            case '<div class="color-box color-box-danger">CRITICAL</div>':
+                return 1;
+            case '<div class="color-box color-box-caution">HIGH</div>':
+                return 2;
+            case '<div class="color-box color-box-warning">MID</div>':
+                return 3;
+            case '<div class="color-box color-box-success">LOW</div>':
+                return 4;
+            default:
+                return 5;
+        }
+    };
+    $.fn.dataTable.ext.type.order['alert-check-pre'] = function(data) {
+        switch(data) {
+            case '<i class="fa-solid fa-eye-slash fa-bounce"></i>':
+                return 1;
+            case '<i class="fa-solid fa-circle-check"></i>':
+                return 2;
+            default:
+                return 3;
+        }
+    };
+    $("#dataTable").DataTable({
+        //데이터 테이블 0번째 인덱스부터 거꾸로 정렬(최신순 정렬)
+        order: [
+            [0, 'asc']
+        ],
+        columnDefs: [{
+            targets:0,
+            type: 'alert-check'
+        },{
+            targets: 5,
+            type: 'threat-level'
+        }],
+        ordering: true,
+    });
+    $(function() {
+        $('#threat_side').addClass('active')
+        $(window).on("pageshow", function(event) {
+            if (event.originalEvent.persisted) {
+                location.reload();
+            }
+        });
+    })
+</script>
+{% endblock %}
