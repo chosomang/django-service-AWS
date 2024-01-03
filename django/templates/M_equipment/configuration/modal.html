@@ -5,10 +5,10 @@
     <p><span>REGION NAME: </span><input type="text" class="form-control" name="region_name" value="{{region_name}}" readonly></p>
     <p><span>LOG GROUP NAME: </span><input type="text" class="form-control" name="group_name" value="{{group_name}}" readonly></p>
     {% if 'on_off' %}
-        {% if on_off == '1' %}
+        {% if 'on_off' == '0' %}
             <p><span>CURRENT STATUS: </span><input type="text" class="form-control" value="On" readonly></p>
             <input type="hidden" class="form-control" name="on_off" value="0" readonly>
-        {% elif on_off == '0' %}
+        {% else %}
             <p><span>COLLECTION STATUS: </span><input type="text" class="form-control" value="Off" readonly></p>
             <input type="hidden" class="form-control" name="on_off" value="1" readonly>
         {% endif %}
