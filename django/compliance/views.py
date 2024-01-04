@@ -34,10 +34,13 @@ def compliance_lists_modify(request, compliance_type):
 
 @login_required
 def compliance_lists_detail_view(request, compliance_type):
-    data = dict(request.POST.items())
-    data.update(lists.get_lists_details(compliance_type.capitalize().replace('-','_'), data))
-    data.update({'compliance_type': compliance_type})
-    return render(request, f"compliance/compliance_lists/details.html", data)
+    if request.method == 'POST':
+        data = dict(request.POST.items())
+        data.update(lists.get_lists_details(compliance_type.capitalize().replace('-','_'), data))
+        data.update({'compliance_type': compliance_type})
+        return render(request, f"compliance/compliance_lists/details.html", data)
+    else:
+        return redirect(f"/compliance/lists/{compliance_type}")
 
 def assetChange(request):
     if request.method == "POST":
