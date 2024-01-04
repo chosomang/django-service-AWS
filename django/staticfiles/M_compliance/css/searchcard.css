@@ -1,0 +1,77 @@
+.searchcard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fbfefe;
+    background-clip: border-box;
+    border: 1px solid #eaeaea;
+    border-radius: 5px;
+}
+
+.searchcard-body {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 1.25rem;
+}
+
+.searchcard .searchcard-body .searchbox-header {
+    display: flex;
+    width: 25%;
+    color: #fff;
+    background-color: #24b6d4;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    padding: 5px 15px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.searchcard .searchcard-body .search-select{
+    display: flex;
+    flex-direction: column;
+    width: 45%;
+    margin: 0 15px;
+}
+
+.searchcard .searchcard-body .btn-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    overflow: hidden;
+    color: #57626F;
+    background-color: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 5px;
+    margin-right:20px;
+    padding: 6px 15px;
+    font-size: 12px;
+    text-align: center;
+}
+
+.searchcard .searchcard-body .btn-select:focus {
+    outline: none;
+    border: 1px solid #24b6d4;
+}
+
+
+.searchcard .searchcard-body .btn-search {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #fff;
+    background-color: #24b6d4;
+    border: 2px solid #24b6d4;
+    border-radius: 5px;
+    padding: 5px 15px;
+    margin-left: 20px;
+    transition: all 0.3s;
+}
+
+.searchcard .searchcard-body .btn-search:hover {
+    color: #24b6d4;
+    background-color: #f2fefe;
+}

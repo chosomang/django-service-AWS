@@ -6,7 +6,6 @@ from django.conf import settings
 import os
 import json
 from django.http import FileResponse
-from common.risk.v1.notification.alert import check_topbar_alert
 from .src import evidence, lists, lists_2, version_modify, assets_change, file_view, policy
 from . import models
 from .models import Document
