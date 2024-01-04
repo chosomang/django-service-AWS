@@ -8,8 +8,10 @@ urlpatterns = [
     # path('index/', views.compliance_view),
     # path('compliance/', views.compliance_view),
     #path('report_month/', views.report_month_view, name='[Teiren] 월간 위협 보고서'),
-    path('lists/', views.lists_view),
-    path('lists_2/', views.lists_view_2),
+    path('lists/', views.compliance_lists_view),
+    path('lists/<compliance_type>/', views.compliance_lists_view),
+    path('lists/<compliance_type>/modify/', views.compliance_lists_modify),
+    path('lists/<compliance_type>/details/', views.compliance_lists_detail_view),
 
     path('evidence/', views.get_evidence_data),
     path('evidence/data_add/', views.add_evidence_data),
@@ -28,7 +30,7 @@ urlpatterns = [
 
     path('delete/', delete.delete),
     path('add/', add.add),
-    path('version_modify/', views.versionModify),
+    
 
     path('integration/', views.integration),
     path('integration_add/', views.add_integration),
@@ -40,8 +42,8 @@ urlpatterns = [
     path('policy/data_mod/', views.mod_policy_data),
     path('policy/data_del/', views.del_policy_data),
     path('policy/file_add/', views.add_policy_file),
-    path('policy/file_del/', views.del_policy_file)
-,
+    path('policy/file_del/', views.del_policy_file),
+
     path('assets_change/', views.assetChange),
     path('assets_data_add/', assets_data_add.add),
     path('assets_add/', assets_add.add),
@@ -54,4 +56,4 @@ urlpatterns = [
     path('assets_data_modify/', assets_data_modify.modify),
     path('assets_file_modify/', assets_file_modify.modify)
 
- ]
+]

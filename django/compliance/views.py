@@ -2,11 +2,9 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from .src import evidence, lists, assets
 from django.http import HttpResponse, JsonResponse
-from django.conf import settings
-import os
 import json
 from django.http import FileResponse
-from .src import evidence, lists, lists_2, version_modify, assets_change, file_view, policy
+from .src import evidence, lists, assets_change, file_view, policy
 from . import models
 from .models import Document
 
@@ -17,24 +15,28 @@ def compliance_view(request):
     return render(request, f"compliance/compliance.html", context)
 
 # Compliance lists - 현경
-def lists_view(request):
-    context= lists.version()
-    return render(request, f"compliance/lists.html", context)
+@login_required
+def compliance_lists_view(request, compliance_type=None):
+    if compliance_type:
+        context= lists.get_lists_version(compliance_type.capitalize().replace('-','_'))
+        context.update({'compliance_type': compliance_type})
+        return render(request, f"compliance/compliance_lists/lists.html", context)
+    return render(request, f"compliance/compliance_lists.html")
 
-# Compliance lists_2 - 현경
-def lists_view_2(request):
-    data = dict(request.POST.items())
-    result = lists_2.test(data)
-    data.update(result)
-    return render(request, f"compliance/lists_2.html", data)
-
-def versionModify(request):
+def compliance_lists_modify(request, compliance_type):
     if request.method == "POST":
         data = dict(request.POST.items())
         if "article" in data :
-            return HttpResponse(version_modify.comply(data))
-        data.update({'compliance':version_modify.version(data)})
-        return render(request, f"compliance/version_list.html", data)
+            return HttpResponse(lists.modify_lists_comply(compliance_type.capitalize().replace('-','_'), data))
+        data.update({'compliance':lists.get_lists_version(compliance_type.capitalize().replace('-','_'), data)})
+        data.update({'compliance_type': compliance_type})
+        return render(request, f"compliance/compliance_lists/dataTable.html", data)
+
+def compliance_lists_detail_view(request, compliance_type):
+    data = dict(request.POST.items())
+    data.update(lists.get_lists_details(compliance_type.capitalize().replace('-','_'), data))
+    data.update({'compliance_type': compliance_type})
+    return render(request, f"compliance/compliance_lists/details.html", data)
 
 def assetChange(request):
     if request.method == "POST":
