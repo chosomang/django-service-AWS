@@ -32,6 +32,7 @@ def compliance_lists_modify(request, compliance_type):
         data.update({'compliance_type': compliance_type})
         return render(request, f"compliance/compliance_lists/dataTable.html", data)
 
+@login_required
 def compliance_lists_detail_view(request, compliance_type):
     data = dict(request.POST.items())
     data.update(lists.get_lists_details(compliance_type.capitalize().replace('-','_'), data))
