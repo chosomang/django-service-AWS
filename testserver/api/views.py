@@ -19,7 +19,23 @@ def index(request):
 #     else: # GET
 #         return render(request, 'api/{}/cypher.html'.format(API_VERSION))
 
-### api endpoint ###
+# AWS Lambda, api-gateway API TESTING #
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+def receive_metrics(request):
+    if request.method == 'POST':
+        # 수신된 데이터를 파싱
+        data = json.loads(request.body)
+
+        # 데이터 처리 로직 (데이터베이스에 저장, 처리 등)
+        # 예: print(data) 또는 모델을 사용하여 데이터베이스에 저장
+
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'invalid method'}, status=405)
 
 from rest_framework import generics
 from rest_framework import viewsets
