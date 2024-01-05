@@ -16,6 +16,7 @@ urlpatterns = [
     path('', views.index),
     path('', include(router.urls)), # /cypher/{}
     path('get/<str:param>', CypherListCreateView.as_view()), # custom view
+    path('/receive-metrics', views.receive_metrics, name='receive-metrics'),
     # path('create/', create_cypher, name='create_cypher'),
     # path('endpoint/', CypherListCreateView.as_view(), name='cypher_create'),
 ]
