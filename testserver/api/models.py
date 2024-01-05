@@ -8,6 +8,16 @@ class Cypher(models.Model):
     cypher_type = models.CharField(max_length=MAX_TYPE_SIZE, default='')
     cypher = models.TextField(max_length=MAX_CYPHER_SIZE, default='')
 
+
 class ApiCypher(models.Model):
     cypher_type = models.CharField(max_length=MAX_TYPE_SIZE, default='')
     cypher = models.TextField(max_length=MAX_CYPHER_SIZE, default='')
+
+    
+class Metrics(models.Model):
+    cpu_usage = models.FloatField()
+    memory_usage = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"CPU: {self.cpu_usage}, Memory: {self.memory_usage}"
