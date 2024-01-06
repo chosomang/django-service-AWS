@@ -1,17 +1,23 @@
 from django.urls import include, path
 from django.conf import settings
 from . import views
-from .src import delete, add, assets_data_add, assets_add, assets_data_delete, assets_delete, assets_file_add, assets_file_delete, assets_modify, assets_data_modify, assets_file_modify
+from .src import delete, add
 from django.conf.urls.static import static
 
 urlpatterns = [
-    # path('index/', views.compliance_view),
-    # path('compliance/', views.compliance_view),
-    #path('report_month/', views.report_month_view, name='[Teiren] 월간 위협 보고서'),
+    # Compliance Lists
     path('lists/', views.compliance_lists_view),
     path('lists/<compliance_type>/', views.compliance_lists_view),
     path('lists/<compliance_type>/modify/', views.compliance_lists_modify),
     path('lists/<compliance_type>/details/', views.compliance_lists_detail_view),
+    
+    # Asset Management
+    path('assets/', views.assets_view),
+    path('assets/<asset_type>/', views.assets_view),
+    path('assets/table/<action_type>/', views.assets_table),
+    path('assets/<asset_type>/<action_type>/', views.assets_action),
+    
+    #-------------------------------------------------------------------------------------
 
     path('evidence/', views.get_evidence_data),
     path('evidence/data_add/', views.add_evidence_data),
@@ -26,7 +32,6 @@ urlpatterns = [
     path('evidence/get_version', views.get_version),
     path('evidence/get_article', views.get_article),
     path('evidence/get_product/', views.get_product),
-    path('assets/', views.assets_view),
 
     path('delete/', delete.delete),
     path('add/', add.add),
@@ -43,17 +48,5 @@ urlpatterns = [
     path('policy/data_del/', views.del_policy_data),
     path('policy/file_add/', views.add_policy_file),
     path('policy/file_del/', views.del_policy_file),
-
-    path('assets_change/', views.assetChange),
-    path('assets_data_add/', assets_data_add.add),
-    path('assets_add/', assets_add.add),
-    path('assets_data_delete/', assets_data_delete.delete),
-    path('assets_delete/', assets_delete.delete),
-    path('file_view/', views.fileView),
-    path('assets_file_add/', assets_file_add.add),
-    path('assets_file_delete/', assets_file_delete.delete),
-    path('assets_modify/', assets_modify.modify),
-    path('assets_data_modify/', assets_data_modify.modify),
-    path('assets_file_modify/', assets_file_modify.modify)
 
 ]

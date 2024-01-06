@@ -1,12 +1,10 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.decorators import login_required
-from .src import evidence, lists, assets
 from django.http import HttpResponse, JsonResponse
-import json
 from django.http import FileResponse
-from .src import evidence, lists, assets_change, file_view, policy
-from . import models
+from .src import evidence, lists, assets, policy
 from .models import Document
+import json
 
 
 # Compliance
@@ -42,25 +40,44 @@ def compliance_lists_detail_view(request, compliance_type):
     else:
         return redirect(f"/compliance/lists/{compliance_type}")
 
-def assetChange(request):
-    if request.method == "POST":
-        data = dict(request.POST.items())
-        result = assets_change.asset(data)
-        data.update(result)
-        return render(request, f"compliance/assets_change.html", data)
 
-def fileView(request):
-    if request.method == "POST":
-        data = dict(request.POST.items())
-        data.update({'files':file_view.view(data)})
-        return render(request, f"compliance/file_view.html", data)
+#Assets Management - 현경
+@login_required
+def assets_view(request, asset_type=None):
+    if request.method == 'POST':
+        if asset_type == 'File':
+            context = ({'files':assets.get_file_list()})
+            return render(request, f"compliance/asset_management/file_view.html", context)
+        if asset_type == 'All':
+            context = assets.get_asset_list()
+        else:
+            context = assets.get_asset_list(asset_type)
+        return render(request, f"compliance/asset_management/dataTable.html", context)
+    else:
+        context= assets.get_asset_list()
+        return render(request, f"compliance/asset_management.html", context)
 
-#Assets lists - 현경
-def assets_view(request):
+@login_required
+def assets_table(request, action_type):
+    if request.method == 'POST':
+        response = assets.asset_table_action(request, action_type)
+        return HttpResponse(response)
+    else:
+        redirect('/auth/login')
 
-    context= assets.asset()
-    return render(request, f"compliance/assets.html", context)
+@login_required
+def assets_action(request, asset_type, action_type):
+    if request.method == 'POST':
+        if asset_type == 'file':
+            return HttpResponse(assets.asset_file_action(request, action_type))
+        elif asset_type == 'data':
+            return HttpResponse(assets.asset_data_action(request, action_type))
+    else:
+        redirect('/auth/login')
 
+
+
+#########################################################################################
 # Data 리스트 출력 페이지
 def get_evidence_data(request):
     if request.method == "GET":
@@ -120,7 +137,6 @@ def add_evidence_data(request):
 def mod_evidence_data(request):
     if request.method=="POST":
         data=dict(request.POST.items())
-   
         try:
             #이걸 JsonResponse로 어케 바꾸지
             return HttpResponse(evidence.mod_data(data))
