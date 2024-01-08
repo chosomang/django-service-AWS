@@ -10,28 +10,60 @@ password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 
 def get_lists_version(compliance_type, data=None):
+    where_version = ''
+    where_product = ''
     if data:
         version = data['version']
         product = data['product']
+        if compliance_type == 'Isms_p':
+            where_version = f"WHERE i.date = date('{version}')"
+            where_product = f"WHERE p.name = '{product}'"
+        else:
+            where_version = f"WHERE v.date = date('{version}')"
+    if compliance_type == 'Isms_p':
+        results = graph.run(f"""
+        MATCH (i:Compliance:Version{{name:'{compliance_type}'}})-[:CHAPTER]->(c:Chapter:Compliance:Certification)-[:SECTION]->(n:Certification:Compliance:Section)-[:ARTICLE]->(m:Certification:Compliance:Article)
+        {where_version if where_version else ''}
+        OPTIONAL MATCH (m)<-[r:COMPLY]-(p:Product:Evidence:Compliance)
+        {where_product if where_product else ''}
+        WITH split(m.no, '.') as articleNo, c, n, m, coalesce(r, {{score: 0}}) as r, p
+        WITH toInteger(articleNo[0]) AS part1, toInteger(articleNo[1]) AS part2, toInteger(articleNo[2]) AS part3, c, n, m, r, p
+        RETURN
+            c.no as chapterNo,
+            c.name as chapterName,
+            n.no as sectionNo,
+            n.name as sectionName,
+            m.no as articleNo,
+            m.name as articleName,
+            m.comment as articleComment,
+            r.score as complyScore
+        ORDER BY part1, part2, part3
+        """)
     else:
-        version = '2023-10-31'
-        product = 'AWS'
-    results = graph.run(f"""
-    MATCH (i:Compliance:Version{{name:'{compliance_type}', date:date('{version}')}})-[:CHAPTER]->(c:Chapter:Compliance:Certification)-[:SECTION]->(n:Certification:Compliance:Section)-[:ARTICLE]->(m:Certification:Compliance:Article)
-    OPTIONAL MATCH (m)<-[r:COMPLY]-(p:Product:Evidence:Compliance{{name:'{product}'}})
-    WITH split(m.no, '.') as articleNo, c, n, m, coalesce(r, {{score: 0}}) as r, p
-    WITH toInteger(articleNo[0]) AS part1, toInteger(articleNo[1]) AS part2, toInteger(articleNo[2]) AS part3, c, n, m, r, p
-    RETURN
-        c.no as chapterNo,
-        c.name as chapterName,
-        n.no as sectionNo,
-        n.name as sectionName,
-        m.no as articleNo,
-        m.name as articleName,
-        m.comment as articleComment,
-        r.score as complyScore
-    ORDER BY part1, part2, part3
-    """)
+        # 법령은 PRODUCT 가 필요없을 수도 있다? -- 성연과 상의 (법령은 증적을 수집하는게 아니다/product별로 법령은 지키는 것을 보여줄 필요는 없다)
+        results = graph.run(f"""
+        OPTIONAL MATCH (l:Law{{name:'{compliance_type}'}})-[:VERSION]->(v:Version)-[*]->(a:Article)
+        {where_version if where_version else ''}
+        WITH l, v, a
+        OPTIONAL MATCH (v)-[:CHAPTER]->(c:Chapter)-[:SECTION]->(s:Section)-[:ARTICLE]->(a)
+        WITH l, v, c, a, s
+        OPTIONAL MATCH (v)-[:CHAPTER]->(c1:Chapter)-[:ARTICLE]->(a)
+        WITH
+            l, v, c, a, s, c1,
+            toInteger(COALESCE(c.no, 0)) + toInteger(COALESCE(c1.no, 0)) as chapterOrder,
+            toInteger(a.no) as articleOrder,
+            toInteger(s.no) as sectionOrder
+        RETURN
+            COALESCE(l.name, '') AS lawName,
+            COALESCE(COALESCE(c.no + '장', '') + COALESCE(c1.no + '장', ''), '') AS chapterNo,
+            COALESCE(COALESCE(c.name, '') + COALESCE(c1.name, ''), '') AS chapterName,
+            COALESCE(s.no + '절', '') AS sectionNo,
+            COALESCE(s.name, '') AS sectionName,
+            COALESCE(a.no + '조', '') AS articleNo,
+            COALESCE(a.name, '') AS articleName,
+            a.comment AS articleComment
+        ORDER BY chapterOrder, sectionOrder, articleOrder
+        """)
     response = []
     for result in results:
         response.append(dict(result.items()))

@@ -49,6 +49,15 @@ def add(request):
         MERGE (a)<-[:EVIDENCE]-(n)
         merge (n)-[:FILE]->(e)
         """
+        # 바꿔야 됨
+        """
+        MATCH (p:Product:Evidence:Compliance{{name:'{AWS}'}})
+        MERGE (n:Compliance:Evidence:Data{{name:'{dataName}', comment:'{dataComment}'}})
+        MERGE (e:Compliance:Evidence:File{{name:'{uploadedFile.name}', comment:'{fileComment}', upload_date:'{timestamp}', version:'{version}', author:'{author}', poc:'{poc}'}})
+        MERGE (p)-[:DATA]->(n)
+        MERGE (a)<-[:EVIDENCE]-(n)
+        MERGE (n)-[:FILE]->(e)
+        """
         graph.run(add_evidence)
 
         response = "증적 파일이 업로드 되었습니다."

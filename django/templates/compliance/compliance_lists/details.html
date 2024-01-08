@@ -76,7 +76,7 @@
                     {% for i in law %}
                         {% if i.lawName == '' and i.chapterNo == '' and i.sectionNo == '' and i.articleNo == '' %}
                         <tr>
-                            <td colspan="4">엣큥!! 관련 법령이 없어요</td>
+                            <td colspan="4">No Data</td>
                         </tr>
                         {% else %}
                     <tr>
@@ -134,25 +134,21 @@
                                 <td>{{a.fileUploadDate}}</td>
                                 <td>{{a.fileAuthor}}</td>
                                 <td>
-                                    <button class="btn btn-md btn-teiren">
-                                        preview
-                                    </button>
+                                    <button class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-magnifying-glass"></i></button>
                                 </td>
                                 <td>
-                                    <button class="btn btn-md btn-teiren">
-                                        download
-                                    </button>
+                                    <button class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-download"></i></button>
                                 </td>
                                 <td>
                                     <form method="post">
                                         <input type="hidden" name="file_name" id="file_name" value="{{a.fileName}}"/>
-                                        <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#modify_file">modify</button>
+                                        <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#modify_file"><i class="fa-solid fa-pen-to-square"></i></button>
                                     </form>
                                 </td>
                                 <td>
                                     <form method="post">
                                         <input type="hidden" name="file_name" id="file_name" value="{{a.fileName}}"/>
-                                        <button type="button" class="btn btn-md btn-teiren" onclick="deleteEvidence(this)">delete</button>
+                                        <button type="button" class="btn btn-md btn-danger" onclick="deleteEvidence(this)"><i class="fa-solid fa-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>
