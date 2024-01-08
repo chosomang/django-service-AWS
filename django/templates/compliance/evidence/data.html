@@ -4,14 +4,14 @@
 {% block content %}
 <!-- Begin Page Content -->
 <div class="locationbar ml-2">
-    <span>Compliance &nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;</span>
-    <span class="current">Evidence <span>
+    <span>Compliance Management&nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;</span>
+    <span class="current">Evidence<span>
 </div>
 
 
 <!-- Page Heading -->
-<h2 class="h2 font-weight-bold mb-2 text-gray-800 ml-2">Evidence List</h2>
-<p class="h4 mb-4 ml-2">You can manage the entire evidence, manage the version, and manage the mapping at once.</p>    
+<h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">Evidence List</h6>
+<p class="h6 mb-4 ml-2">Manage the entire evidence, manage the version, and manage the mapping at once.</p>
 
 
 <div class="card shadow mb-4" id="search_table">
@@ -36,11 +36,9 @@
 </div>
 
 <div class="card shadow mb-4" id="log_table">
-    <div class="card-header py-3">
-        <h4 class="m-0 font-weight-bold text-teiren">
-            Evidence List
-            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_add"  style="font-size:0.7vw">Add Data</button>           
-        </h4>
+    <div class="card-header row align-items-center py-3">
+        <h4 class="m-0 mr-3 font-weight-bold text-teiren">Evidence List</h4>
+        <button class="btn btn-md btn-teiren ml-auto mr-2" data-toggle="modal" data-target="#data_add">Add Data</button>           
     </div>
     
     
@@ -75,15 +73,13 @@
                                 
                                 <form method="GET" action="/compliance/evidence/file/">
                                     <input type="hidden" name="title" value="{{ d.data.name }}"/>
-                                    <button type="submit" class="btn btn-md btn-teiren" style="font-size:0.7vw">바로가기</button>
+                                    <button type="submit" class="btn btn-md btn-teiren">바로가기</button>
                                 </form>
                             </td>
                             <td>
-                                <button type="button" class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#data_mod"
-                                data-name="{{d.data.name}}" data-comment="{{d.data.comment}}" data-author="{{d.data.author}}">Mod</button>                                 
-                                
-
-                                <button type="button" class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_data('{{d.data.name}}')">Del</button>
+                                <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_mod"
+                                data-name="{{d.data.name}}" data-comment="{{d.data.comment}}" data-author="{{d.data.author}}">Mod</button>
+                                <button type="button" class="btn btn-md btn-danger" onclick="del_data('{{d.data.name}}')">Del</button>
                             </td>
                         </tr>
 

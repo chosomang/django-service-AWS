@@ -17,9 +17,10 @@ urlpatterns = [
     path('assets/table/<action_type>/', views.assets_table),
     path('assets/<asset_type>/<action_type>/', views.assets_action),
     
-    #-------------------------------------------------------------------------------------
-
+    # Evidence Management
     path('evidence/', views.get_evidence_data),
+
+    #-------------------------------------------------------------------------------------
     path('evidence/data_add/', views.add_evidence_data),
     path('evidence/data_mod/', views.mod_evidence_data),
     path('evidence/data_del/', views.del_evidence_data),

@@ -31,7 +31,7 @@
                         <td>{{file.uploadDate}}</td>
                         <td>{{file.fileAuthor}}</td>
                         <td>
-                            <button class="btn btn-md btn-teiren"><i class="fa-solid fa-file-arrow-down mr-2"></i>Download</button>
+                            <button class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-file-arrow-down mr-2"></i>Download</button>
                         </td>
                         <td>
                             <input type="hidden" name="fileName" id="fileName" value="{{file.fileName}}"/>
@@ -60,7 +60,7 @@
     <div class="modal-dialog">
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
-                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Upload Assets File</h5>
+                <h5 class="m-0 font-weight-bold text-teiren" id='modal_title'>Upload Assets File</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                 </button>
@@ -78,7 +78,7 @@
                 </form>
             </div>
             <div class="modal-footer" id="modal_footer">
-                <button type='submit' id='upload' class="btn btn-md btn-outline-primary" onclick="addAssetFile()" value="Upload">Upload</button>
+                <button type='submit' id='upload' class="btn btn-md btn-outline-teiren" onclick="addAssetFile()" value="Upload">Upload</button>
             </div>
         </div>
     </div>
@@ -96,11 +96,12 @@
             <div class="modal-body card-body" style="font-size:12px;">
                 <form id="file_modify_form" enctype="multipart/form-data">
                 <div>
-                    <p>File Name: <input type="hidden" id="fileName" name="fileName" value="{{file.fileName}}">{{file.fileName}}</p>
-                    <p>File Comment: <input type="text" class="form-control" id='fileComment' name="fileComment" value="{{file.fileComment}}"></p>
-                    <p>Version: <input type="text" class="form-control" id='fileVersion' name="fileVersion" value='{{file.fileVersion}}'></p>
-                    <p>Author: <input type="text" class="form-control" id='fileAuthor' name="fileAuthor" value='{{file.fileAuthor}}'></p>
-                    <p>Poc: <input type="text" class="form-control" id='filePoC' name="filePoC" value='{{file.filePoC}}'></p>
+                    <input type="hidden" class="form-control" id="og_fileName" name="og_fileName" value="">
+                    <p>File Name: <input class="form-control" id="fileName" name="fileName" value="" readonly></p>
+                    <p>File Comment: <input type="text" class="form-control" id='fileComment' name="fileComment" value=""></p>
+                    <p>Version: <input type="text" class="form-control" id='fileVersion' name="fileVersion" value=''></p>
+                    <p>Author: <input type="text" class="form-control" id='fileAuthor' name="fileAuthor" value=''></p>
+                    <p>Poc: <input type="text" class="form-control" id='filePoC' name="filePoC" value=''></p>
                     {% csrf_token %}
                 </div>
                 </form>
@@ -138,12 +139,14 @@
         var data = $(e.parentNode).find('input')
         data.each(function(){
             $(`#file_modify #${this.name}`).val(this.value)
+            if (this.name === 'fileName'){
+                $('#file_modify #og_fileName').val(this.value)
+            }
         })
     }
 
     function modifyAssetFile(){
         var data = $('#file_modify_form').serialize()
-        console.log(data)
         $.ajax({
             url: '/compliance/assets/file/modify/',
             data: data,

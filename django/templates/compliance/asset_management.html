@@ -27,7 +27,7 @@
             File
         </a>
         <div class="my-auto">
-            <button class="btn btn-md btn-outline-teiren" style="border-radius:10px;" data-toggle="modal" data-target="#add_data">
+            <button class="btn btn-md btn-outline-teiren" style="border-radius:10px;" data-toggle="modal" data-target="#assets_category_add">
                 <i class="fa-solid fa-plus"></i>
             </button>
         </div>
@@ -77,8 +77,8 @@
     </div>
 </div>
 
-<!--Add Asset Table Modal -->
-<div class="modal hide fade card-body" id="add_data" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+<!--Add Asset Category Modal -->
+<div class="modal hide fade card-body" id="assets_category_add" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
@@ -88,9 +88,9 @@
                 </button>
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
-                <form id="addData_form" enctype="multipart/form-data">         
-                    <p>Data:<input type="text" class="form-control" id='assetData' name="assetData" value=''></p>
-                    <p>Data Comment: <input type="text" class="form-control" id='dataComment' name="dataComment" value='' placeholder="Enter a Comment of Data"></p>
+                <form id="add_category_form" enctype="multipart/form-data">         
+                    <p>Asset Category Name:<input type="text" class="form-control" id='category_name' name="category_name" value=''></p>
+                    <p>Category Comment: <input type="text" class="form-control" id='category_comment' name="category_comment" value='' placeholder="Enter a Comment for the Category"></p>
                     {% csrf_token %}
             </div>
             <div class="modal-footer" id="modal_footer">
@@ -127,7 +127,7 @@
         })
     }
 
-    $('#addData_form').on('submit', function(e){
+    $('#add_category_form').on('submit', function(e){
         e.preventDefault();
 
         var formData = new FormData(this)
@@ -143,7 +143,7 @@
             contentType: false,  // Important!
             success: function(response) {
                 alert(response);
-                if(response === 'Successfully Created Asset Table'){
+                if(response === 'Successfully Created Asset Category'){
                     location.reload()
                     return 0
                 }
