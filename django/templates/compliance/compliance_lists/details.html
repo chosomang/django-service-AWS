@@ -96,9 +96,9 @@
     <div class="card-header row py-3">
         <h4 class="m-0 font-weight-bold text-teiren">Evidence List</h6>
         <div class="ml-auto mr-3">
-            <button class="ex btn btn-md">ex</button>
-            <div class="ex-text">{% for a in article_list %}{% for i in a.articleExample %}{{i|linebreaks}}{% endfor %}{% endfor %}</div>
-            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#upload_file">add</button>
+            <!-- <button class="ex btn btn-md">ex</button>
+            <div class="ex-text">{% for a in article_list %}{% for i in a.articleExample %}{{i|linebreaks}}{% endfor %}{% endfor %}</div> -->
+            <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#upload_file"><i class="fa-solid fa-plus mr-2"></i>Add Evidence Data</button>
         </div>
     </div>
     <div class="card-body" style="font-size:15px;">
@@ -166,6 +166,38 @@
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
                 <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Upload Evidence File</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <form id="evidence_form" enctype="multipart/form-data">
+                <div>
+                    <p>Data: <input type="text" class="form-control" id='dataName' name="dataName" value=''></p>
+                    <p>Data Comment: <input type="text" class="form-control" id='dataComment' name="dataComment" value='' placeholder="Enter a Comment of Data"></p>
+                    <p>File Comment: <input type="text" class="form-control" id='fileComment' name="fileComment" value='' placeholder="Enter a Comment of File"></p>
+                    <p>Version: <input type="text" class="form-control" id='version' name="version" value='' placeholder="ex. v_1.0"></p>
+                    <p>Author: <input type="text" class="form-control" id='author' name="author" value=''></p>
+                    <p>Poc: <input type="text" class="form-control" id='poc' name="poc" value=''></p>
+                    <input type="file" name="uploadedFile">
+                    {% csrf_token %}
+                </div>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type="hidden" name="art_no" id="art_no" value="{{no}}"/>
+                <input type='submit' id='add' class="btn btn-md btn-outline-primary" value="Upload">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modify Evidence File Modal -->
+<div class="modal hide fade card-body" id="modify_file" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify Evidence File</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                 </button>

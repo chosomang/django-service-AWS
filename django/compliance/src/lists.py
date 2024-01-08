@@ -1,6 +1,8 @@
 from django.conf import settings
 from py2neo import Graph
 # import json
+from datetime import datetime  # Add this import for timestamp
+from ..models import Document
 
 ## Graph DB 연동
 host = settings.NEO4J['HOST']
@@ -201,3 +203,73 @@ def get_lists_details(compliance_type, data):
             'evidence_list' : evidence,
             'category' : category
     }
+
+def product_data_action(request, action_type):
+    if action_type == 'add':
+        response = add_product_data(request)
+    elif action_type == 'modify':
+        response = modify_product_data(request)
+    elif action_type == 'delete':
+        response = delete_product_data(request)
+    else:
+        response = 'Fail'
+    return response
+
+def add_product_data(request):
+    try:
+        # Extract data from the POST request
+        data = dict(request.POST.items())
+        art_no = data['art_no']
+        dataName = data.get('dataName', '')
+        dataComment = data.get('dataComment', '')
+        fileComment = data.get('fileComment', '')
+        author = data.get('author', '')
+        poc = data.get('poc', '')
+        version = data.get('version', '')
+        uploadedFile = request.FILES["uploadedFile"]
+
+        # 디비에 파일 정보 저장
+        document = Document(
+            title=fileComment,
+            uploadedFile=uploadedFile
+        )
+        document.save()
+
+        documents = Document.objects.all()
+
+        # Add current timestamp
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        uploadedFile.name = uploadedFile.name.replace(' ', '_')
+
+        # Create or update the node with properties
+        add_evidence = f"""
+        MATCH (a:Compliance:Certification:Article{{compliance_name:'Isms_p', no:'{art_no}'}})
+        MATCH (c:Evidence:Compliance{{name:'Evidence'}})
+        MERGE (n:Compliance:Evidence:Data{{name:'{dataName}', comment:'{dataComment}'}})
+        MERGE (e:Compliance:Evidence:File{{name:'{uploadedFile.name}', comment:'{fileComment}', upload_date:'{timestamp}', version:'{version}', author:'{author}', poc:'{poc}'}})
+        MERGE (c)-[:DATA]->(n)
+        MERGE (a)<-[:EVIDENCE]-(n)
+        merge (n)-[:FILE]->(e)
+        """
+        # 바꿔야 됨
+        """
+        MATCH (p:Product:Evidence:Compliance{{name:'{AWS}'}})
+        MERGE (n:Compliance:Evidence:Data{{name:'{dataName}', comment:'{dataComment}'}})
+        MERGE (e:Compliance:Evidence:File{{name:'{uploadedFile.name}', comment:'{fileComment}', upload_date:'{timestamp}', version:'{version}', author:'{author}', poc:'{poc}'}})
+        MERGE (p)-[:DATA]->(n)
+        MERGE (a)<-[:EVIDENCE]-(n)
+        MERGE (n)-[:FILE]->(e)
+        """
+        graph.run(add_evidence)
+
+        response = "증적 파일이 업로드 되었습니다."
+    except Exception as e:
+        response = f'Error: {str(e)}'
+    finally:
+        return response
+
+def modify_product_data(request):
+    return 0
+
+def delete_product_data(request):
+    return 0
