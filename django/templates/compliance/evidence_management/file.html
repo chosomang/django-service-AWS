@@ -6,13 +6,15 @@
 <!-- Begin Page Content -->
 
 <div class="locationbar ml-2">
-    <span>Compliance &nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;증적관리&nbsp;&nbsp;>&nbsp;&nbsp;</span>
-    <span class="current">{{title}} <span>
+    <span>Compliance Management&nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;<a href="/compliance/evidence/">Evidence Management</a>&nbsp;&nbsp;>&nbsp;&nbsp;</span>
+    <span class="current">{{title}}<span>
 </div>
 
+
 <!-- Page Heading -->
-<h2 class="h2 font-weight-bold mb-2 text-gray-800 ml-2">{{title}}</h2>
-<p class="h4 mb-4 ml-2">{{title}} 분류에 대한 내용 및 관련 법령, 매핑 항목, 증적 버전 관리 등을 수행할 수 있습니다.</p>    
+<h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{title}}</h6>
+<p class="h6 mb-4 ml-2">{{title}} 분류에 대한 내용 및 관련 법령, 매핑 항목, 증적 버전 관리 등을 수행할 수 있습니다.</p>
+
 <div class="card shadow mb-4" id="log_table">
     <div class="card-header py-3">
         <h4 class="m-0 font-weight-bold text-teiren">Overview</h4>
@@ -25,7 +27,7 @@
                 <tbody>
                     {%for d in data%}
                     <tr>
-                        <th>Name</th>
+                        <th style="width:20%;">Name</th>
                         <td>{{d.data.name}}</td>
                     </tr>
 
@@ -59,17 +61,10 @@
 </div>
 
 <div class="card shadow mb-4" id="log_table">
-    <div class="card-header py-3">
-        <h4 class="m-0 font-weight-bold text-teiren">Current Evidence Preview</h4>
-    </div>
-
-    <h2> 즌비증~</h2>
-
     <div class="card-header py-3 row">
         <h4 class="m-0 font-weight-bold text-teiren">Evidence Version Manage</h4>
-        <button class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#file_add" data-name="{{title}}">Add File</button>           
+        <button class="btn btn-md btn-teiren ml-auto mr-3" data-toggle="modal" data-target="#file_add" data-name="{{title}}">Add File</button>           
     </div>
-
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
@@ -94,15 +89,15 @@
                             <td>{{f.name}}</td>
                             <td>{{f.comment}}</td>
                             <td>{{f.version}}</td>
-                            <td><button id="downloadBtn" class="btn btn-md btn-teiren"  style="font-size:0.7vw" onclick="download_file('{{f.name}}')">Download</button></td>
+                            <td><button id="downloadBtn" class="btn btn-md btn-teiren"  onclick="download_file('{{f.name}}')">Download</button></td>
                             <td>{{f.poc}}</td>
                             <td>{{f.author}}</td>
                             <td>{{f.upload_date}}</td>
                             <td>
-                                <button class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#file_mod" 
+                                <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#file_mod" 
                                 data-data-name="{{title}}" data-name="{{f.name}}" data-comment="{{f.commnt}}" data-version="{{f.version}}"
                                 data-poc="{{f.poc}}" data-author="{{f.author}}" data-last-update="{{f.upload_date}}">Mod</button>           
-                                <button class="btn btn-md btn-danger" style="font-size:0.7vw" onclick="del_file('{{title}}','{{f.name}}')">삭제</button>
+                                <button class="btn btn-md btn-danger" onclick="del_file('{{title}}','{{f.name}}')">삭제</button>
                             </td>
                         </tr>
                     {% endfor %}
@@ -115,8 +110,7 @@
 <div class="card shadow mb-4" id="log_table">
     <div class="card-header py-3 row">
         <h4 class="m-0 font-weight-bold text-teiren">관련 인증 및 정책</h4>
-
-        <button class="btn btn-md btn-teiren" style="font-size:0.7vw" data-toggle="modal" data-target="#com_add">Add Compliance</button>           
+        <button class="btn btn-md btn-teiren ml-auto mr-3" data-toggle="modal" data-target="#com_add">Add Compliance</button>           
     </div>
 
     <div class="card-body" style="font-size:15px;">
@@ -145,7 +139,7 @@
                         <td>{{c.arti.no}}. {{c.arti.name}}</td>
 
                         <td>
-                            <a href="#" class="btn btn-md btn-teiren" style="font-size:0.7vw">
+                            <a href="#" class="btn btn-md btn-teiren">
                                 Detail
                             </a>
                         </td>

@@ -18,21 +18,19 @@ urlpatterns = [
     path('assets/<asset_type>/<action_type>/', views.assets_action),
     
     # Evidence Management
-    path('evidence/', views.get_evidence_data),
+    path('evidence/', views.evidence_view),
+    path('evidence/data/<action_type>/', views.evidence_data_action),
+    path('evidence/<data_name>/', views.evidence_data_detail_view),
 
     #-------------------------------------------------------------------------------------
+    
     path('evidence/data_add/', views.add_evidence_data),
     path('evidence/data_mod/', views.mod_evidence_data),
     path('evidence/data_del/', views.del_evidence_data),
-    path('evidence/file/', views.get_evidence_file),
     path('evidence/file_add/', views.add_evidence_file),
     path('evidence/file_mod/', views.mod_evidence_file),
     path('evidence/file_del/', views.del_evidence_file),
     path('evidence/com_add/', views.add_com),
-    path('evidence/get_compliance', views.get_compliance),
-    path('evidence/get_version', views.get_version),
-    path('evidence/get_article', views.get_article),
-    path('evidence/get_product/', views.get_product),
 
     path('delete/', delete.delete),
     path('add/', add.add),

@@ -111,36 +111,34 @@ $('.searchbox-input').on('input', function() {
     });
 });
 
+$('#evidence_dataTable').DataTable({
+    info: true,
+    searching: false,
+    lengthChange: false
+})
 
 /// Search_Filter
-function searchFilter(e){
-    var custom_rules = ''
-    var default_rules = ''
+function searchFilter(){
     $.ajax({
-        url: 'custom/filter/',
+        url: '',
         headers:{
             'X-CSRFToken': getCookie()
         },
-        data:$('#search').serializeArray(),
+        data: $('#search').serialize(),
         type: 'post'
     }).done(function(response){
-        custom_rules = response
+        if(response.trim().startsWith('<head')){
+            location.reload()
+            return 0
+        }
+        $('#evidence_dataTable').DataTable().destroy()
+        $('#evidence_dataTable').html(response)
+        $('#evidence_dataTable').DataTable({
+            info: true,
+            searching: false,
+            lengthChange: false
+        })
     })
-    $.ajax({
-        url: 'default/filter/',
-        headers:{
-            'X-CSRFToken': getCookie()
-        },
-        data:$('#search').serializeArray(),
-        type: 'post'
-    }).done(function(response){
-        default_rules = response
-    })
-    $("#dataTable_default").fadeOut()
-    $("#dataTable_custom").fadeOut()
-    setTimeout(function(){
-        updateRules(default_rules, custom_rules)
-    }, 300)
 }
 
 function updateRules(default_rules, custom_rules){

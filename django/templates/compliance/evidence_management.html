@@ -14,40 +14,15 @@
 <!-- Page Heading -->
 <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">Evidence Management</h6>
 <p class="h6 mb-4 ml-2">Manage the entire evidence, manage the version, and manage the mapping at once.</p>
-
 {% include "./evidence_management/searchcard.html" %}
-<!-- <div class="card shadow mb-4" id="search_table">
-    <div class="card-body" style="font-size:15px;">
-        
-        <form id="form" role="search">
-            <select id="search_query1" name="search_query1">
-                <option value="name">Name</option>
-                <option value="comment">Comment</option>
-                <option value="author">Author</option>
-                <option value="last_update">Last Update</option>
-            </select>
-
-            <input type="search" id="search_query2" name="search_query2" placeholder="Search...">
-            <button class="btn btn-md btn-outline-primary">Search</button>
-        
-            <a class="btn btn-md btn-outline-warning" href="/compliance/evidence/">
-                Reset
-            </a>
-        </form>
-    </div>
-</div> -->
-
 <div class="card shadow mb-4" id="log_table">
     <div class="card-header row align-items-center py-3">
-        <h4 class="m-0 mr-3 font-weight-bold text-teiren">Evidence List</h4>
-        <button class="btn btn-md btn-teiren ml-auto mr-2" data-toggle="modal" data-target="#data_add">Add Data</button>           
+        <h6 class="m-0 mr-3 font-weight-bold text-teiren">Evidence List</h6>
+        <button class="btn btn-md btn-teiren ml-auto mr-2" data-toggle="modal" data-target="#data_add"><i class="fa-solid fa-plus mr-2"></i>Add Data</button>           
     </div>
-    
-    
-    
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
+            <table class="table table-bordered" id="evidence_dataTable" width="100%" cellspacing="0"
                 style="table-layout:fixed;text-align:center;font-size:15px;">
                 <thead>
                     <tr>
@@ -58,33 +33,32 @@
                         <th>Author</th>
                         <th>Last update</th>
                         <th>Files</th>
-                        <th>func</th>
+                        <th>Modify</th>
+                        <th>Delete</th>
                     </tr>
-                    </thead>
-                
+                </thead>
                 <tbody>
-                    {% for d in data_list%}
+                    {% for data in data_list%}
                         <tr>
-                            <td>{{forloop.counter}}</td>
-                            <td>{{d.product.name}}</td>
-                            <td>{{d.data.name}}</td>
-                            <td>{{d.data.comment}}</td>
-                            <td>{{d.data.author}}</td>
-                            <td>{{d.data.last_update}}</td>
+                            <td style="width:20%;">{{forloop.counter}}</td>
+                            <td>{{data.product.name}}</td>
+                            <td>{{data.data.name}}</td>
+                            <td>{{data.data.comment}}</td>
+                            <td>{{data.data.author}}</td>
+                            <td>{{data.data.last_update}}</td>
                             <td>
-                                
-                                <form method="GET" action="/compliance/evidence/file/">
-                                    <input type="hidden" name="title" value="{{ d.data.name }}"/>
-                                    <button type="submit" class="btn btn-md btn-teiren">바로가기</button>
-                                </form>
+                                <a href="/compliance/evidence/{{ data.data.name }}/">
+                                    <button type="button" class="btn btn-md btn-teiren">바로가기</button>
+                                </a>
                             </td>
                             <td>
                                 <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_mod"
-                                data-name="{{d.data.name}}" data-comment="{{d.data.comment}}" data-author="{{d.data.author}}">Mod</button>
-                                <button type="button" class="btn btn-md btn-danger" onclick="del_data('{{d.data.name}}')">Del</button>
+                                data-name="{{data.data.name}}" data-comment="{{data.data.comment}}" data-author="{{data.data.author}}"><i class="fa-solid fa-pen-to-square mr-2"></i>Modify</button>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-md btn-danger" onclick="del_data('{{data.data.name}}')"><i class="fa-solid fa-trash mr-2"></i>Delete</button>
                             </td>
                         </tr>
-
                     {% endfor %}
                 </tbody>
             </table>
@@ -103,45 +77,44 @@
                 </button>
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
-                <div>
-                    <label for="product_selected">Choose Product Category:</label>
-                    <select id="product_selected">
-                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-                        <option value="none">Select Product</option>
-                    </select>
+                <form id="data_add_form">
+                    <p>Choose Product:
+                        <select class="form-control" id="product_selected" name="product" placeholder="test">
+                            <option value="">Select Product</option>
+                            {% for product in product_list %}
+                            <option value="{{product}}">{{product}}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <p>Name: <input class="form-control" name="add_name" type="text"></p>
+                    <p>Comment: <input class="form-control" name="add_comment" type="text"></p>
+                    <p>Author: <input class="form-control" name="add_author" type="text"></p>
 
-                    <br><br>
-
-                    Name: <input class="form-control" name="add_name" type="text"><br><br>
-                    Comment: <input class="form-control" name="add_comment" type="text"><br><br>
-                    Author: <input class="form-control" name="add_author" type="text"><br><br>
-                    Relation Compliance<br><br>
-
-
-                    <label for="compliance">Choose Compliance:</label>
-                    <select id="compliance" onchange="updateVersion()">
-                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-                        <option value="none">Choose Compliance</option>
-                    </select>
-                    <br>
-                    <label for="version_selected">Choose Version:</label>
-                    <select id="version_selected" onchange="updateArticle()">
-                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-                        <option value="none">Please select Compliance</option>
-                    </select>
-                    <br>
-                    <label for="article_selected">Choose Compliance Article:</label>
-                    <select id="article_selected">
-                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-                        <option value="none">Please select Version</option>
-                    </select>
-
-                    <!--더 많은 Relation Compliance를 추가할 수 있는 코드를 아래 제작해야 함-->
-
-                </div>
+                    <p>Related Compliance:
+                        <select class="form-control" id="compliance" name="compliance" onchange="updateVersion()">
+                            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                            <option value="">Choose Compliance</option>
+                            {% for compliance in compliance_list %}
+                            <option value="{{compliance}}">{{compliance}}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <p>Related Compliance Version:
+                        <select class="form-control" id="version_selected" name="version" onchange="updateArticle()">
+                            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                            <option value=""></option>
+                        </select>
+                    </p>
+                    <p>Related Compliance Article:
+                        <select class="form-control" id="article_selected" name="article">
+                            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                            <option value=""></option>
+                        </select>
+                    </p>
+                </form>
             </div>
             <div class="modal-footer" id="modal_footer">
-                <input type='button' id='add_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
                 <input type='button' id='add_accept' class="btn btn-md btn-outline-primary" value="Save">
             </div>
             </form>
@@ -177,305 +150,164 @@
         </div>
     </div>
 </div>
-
-
+{% endblock %}
+{% block script %}
 <script>
+    $('#data_mod').on('shown.bs.modal', function (e) {
+        var button = $(e.relatedTarget); // 클릭된 버튼
+        var last_name = button.data('name'); // data-name 속성의 값
+        var data_name = button.data('name'); // data-name 속성의 값
+        var data_comment = button.data('comment'); // data-name 속성의 값
+        var data_author = button.data('author'); // data-name 속성의 값
 
+        // 모달 내부 필드에 데이터 표시
+        $('input[name="last_name"]').val(last_name);
+        $('input[name="mod_name"]').val(data_name);
+        $('input[name="mod_comment"]').val(data_comment);
+        $('input[name="mod_author"]').val(data_author);
+    });
 
-$('#data_mod').on('shown.bs.modal', function (e) {
-    var button = $(e.relatedTarget); // 클릭된 버튼
-    var last_name = button.data('name'); // data-name 속성의 값
-    var data_name = button.data('name'); // data-name 속성의 값
-    var data_comment = button.data('comment'); // data-name 속성의 값
-    var data_author = button.data('author'); // data-name 속성의 값
-
-    // 모달 내부 필드에 데이터 표시
-    $('input[name="last_name"]').val(last_name);
-    $('input[name="mod_name"]').val(data_name);
-    $('input[name="mod_comment"]').val(data_comment);
-    $('input[name="mod_author"]').val(data_author);
-});
-
-$('#add_accept').click(function() {
-    // Call your Ajax function here
-    var product_selected=$('#product_selected').val();
-    var name = $('input[name="add_name"]').val();
-    var comment = $('input[name="add_comment"]').val();
-    var author = $('input[name="add_author"]').val();
-    var compliance=$('#compliance').val();
-    var version_selected=$('#version_selected').val();
-    var article_selected=$('#article_selected').val();
-
-    $.ajax({
-        url: '/compliance/evidence/data_add/',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {
-            'product_selected': product_selected,
-            'name': name,
-            'comment': comment,
-            'author': author,
-            'compliance': compliance,
-            'version_selected':version_selected,
-            'article_selected': article_selected
-        },
-        success: function(response){       
-            if(response.startsWith('\n<meta')){
-                location.reload()
-            }
+    $('#add_accept').click(function() {
+        $.ajax({
+            url: 'data/add/',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: $('#data_add_form').serialize()
+        }).done(function(response){
+            alert(response)
             if(response === 'success'){
-                alert('Saved Successfully')
-                window.location.href= '/compliance/evidence/'
-            }else if(response === 'already exist'){
-                alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
-            }else if(response === 'NULL'){
-                alert('Name must be entered. Try Again')
+                location.reload()
+                return 0
             }
-            else {
-                alert('Failed To Save. Please Try Again')
+        })
+    });
+
+    // 상위 카테고리가 변경될 때 호출되는 함수
+    function updateVersion() {
+        $.ajax({
+            url: 'data/get_version/',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: {
+                "compliance": $('#compliance').val()
             }
-        },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
-        }
-    })
-});
-    
-
-// 페이지 로드 시 초기화 함수 호출
-    window.onload = function() {
-    // 상위 카테고리를 서버에서 받아오는 함수 호출
-    fetchProductSelected();
-    fetchComplianceSelected();
-
-     var search_query1 = new URLSearchParams(window.location.search).get("search_query1");
-     if (search_query1) {
-         document.getElementById("search_query1").value = search_query1;
-     }
-     var search_query2 = new URLSearchParams(window.location.search).get("search_query2");
-     if (search_query2) {
-         document.getElementById("search_query2").value = search_query2;
-     }
-}
-
-function fetchProductSelected(){
-    var product_selected = document.getElementById('product_selected');
-
-    var product_list=[]
-
-    $.ajax({
-        url: '/compliance/evidence/get_product/',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {},
-        success: function (response) {
-            var product_list = response['product_list'];
-
-            for (var i = 0; i < product_list.length; i++) {
-                var product = product_list[i];
-                var optionElement = document.createElement('option');
-                optionElement.value = product;
-                optionElement.text = product;
-                product_selected.add(optionElement);
-            }
-        },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
-        }
-    })
-
-}
-
-
-function fetchComplianceSelected() {
-    var compliance_selected = document.getElementById('compliance');
-    
-    //실제로 데이터 가져오는 곳.
-    var compliance_list=[]
-
-    $.ajax({
-        url: '/compliance/evidence/get_compliance',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {},
-        success: function (response) {
-            var compliance_list = response['compliance_list'];
-            
-            for (var i = 0; i < compliance_list.length; i++) {
-                var compliance = compliance_list[i];
-                var optionElement = document.createElement('option');
-                optionElement.value = compliance;
-                optionElement.text = compliance;
-                compliance_selected.add(optionElement);
-            }
-        },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
-        }
-    })
-
-}
-
-// 상위 카테고리가 변경될 때 호출되는 함수
-function updateVersion() {
-    var compliance_selected = document.getElementById('compliance');
-
-    $.ajax({
-        url: '/compliance/evidence/get_version',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {
-            "compliance_selected": compliance_selected.value // Send the selected value to the server
-        },
-        success: function (response) {
+        }).done(function(response){
             var version_list = response['version_list'];
+            $('#article_selected').html('')
+            $('#version_selected').html('')
+            $('#version_selected').append(
+                $('<option>').text('Choose Compliance Version').attr('disabled', true).attr('selected', true)
+            )
+            $(version_list).each(function(i){
+                var version = $('<option>').text(this).val(this)
+                $('#version_selected').append(version)
+            })
+        })
+    }
 
-            version_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
 
-            var optionElement = document.createElement('option');
-            optionElement.value = 'none'; // 실제 전달되는 값은 no만
-            optionElement.text = 'Nothing Select';
-            version_selected.add(optionElement);
-
-            // 받아온 카테고리를 드롭다운에 추가
-            for (var i = 0; i < version_list.length; i++) {
-                var version = version_list[i]['version'];
-
-                // 새로운 option 엘리먼트를 생성
-                var optionElement = document.createElement('option');
-                optionElement.value = version_list[i]['version']; // 실제 전달되는 값은 no만
-                optionElement.text = version; 
-            
-                // version_selected에 추가
-                version_selected.add(optionElement);
+    // 하위 카테고리를 서버에서 받아오는 함수
+    function updateArticle() {
+        $.ajax({
+            url: 'data/get_article/',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: {
+                "compliance": $('#compliance').val(), // Send the selected value to the server
+                "version": $('#version_selected').val()
             }
-        },
-        error: function (xhr, errmsg, err) {
-            console.log(xhr.status + ": " + xhr.responseText);
-        }
-    });
-}
+        }).done(function(response){
+            var article_list = response['article_list']
+            $('#article_selected').html('')
+            $('#article_selected').append(
+                $('<option>').text('Choose Compliance Article').attr('disabled', true).attr('selected', true)
+            )
+            $(article_list).each(function(){
+                var version = $('<option>').text(`${this['no']} ${this['name']}`).val(`${this['no']} ${this['name']}`)
+                $('#article_selected').append(version)
+            })
+        })
+    }
 
 
-// 하위 카테고리를 서버에서 받아오는 함수
-function updateArticle() {
-    var compliance_selected = document.getElementById('compliance');
-    var version_selected = document.getElementById('version_selected');
-
-    $.ajax({
-        url: '/compliance/evidence/get_article',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {
-            "compliance_selected": compliance_selected.value, // Send the selected value to the server
-            "version_selected": version_selected.value
-        },
-        success: function (response) {
-            var article_list = response['article_list'];
-
-            article_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
-
-            var optionElement = document.createElement('option');
-            optionElement.value = ''; // 실제 전달되는 값은 no만
-            optionElement.text = 'Nothing Select';
-            article_selected.add(optionElement);
-
-            // 받아온 카테고리를 드롭다운에 추가
-            for (var i = 0; i < article_list.length; i++) {
-                var article = '['+article_list[i]['no']+'] '+article_list[i]['name'];
-                var optionElement = document.createElement('option');
-                optionElement.value = article_list[i]['no']; // 실제 전달되는 값은 no만
-                optionElement.text = article;
-                article_selected.add(optionElement);
-            }
-        },
-        error: function (xhr, errmsg, err) {
-            console.log(xhr.status + ": " + xhr.responseText);
-        }
-    });
-}
+    $('#mod_accept').click(function() {
+        // Call your Ajax function here
+        var last_name=$('input[name="last_name"]').val();
+        var mod_name = $('input[name="mod_name"]').val();
+        var mod_comment = $('input[name="mod_comment"]').val();
+        var mod_author = $('input[name="mod_author"]').val();
 
 
-$('#mod_accept').click(function() {
-    // Call your Ajax function here
-    var last_name=$('input[name="last_name"]').val();
-    var mod_name = $('input[name="mod_name"]').val();
-    var mod_comment = $('input[name="mod_comment"]').val();
-    var mod_author = $('input[name="mod_author"]').val();
-
-
-    $.ajax({
-        url: '/compliance/evidence/data_mod/',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {
-            'last_name':last_name,
-            'mod_name': mod_name,
-            'mod_comment': mod_comment,
-            'mod_author': mod_author
-        },
-        success: function(response){
-            if(response.startsWith('\n<meta')){
-                location.reload()
-            }
-            if(response === 'success'){
-                alert('Saved Successfully')
-                window.location.href= '/compliance/evidence/'
-            }else if(response === 'already exist'){
-                alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
-            }else if(response === 'NULL'){
-                alert('Name must be entered. Try Again')
-            }
-            else {
-                alert('Failed To Save. Please Try Again')
-            }
-        },
-        error : function(xhr,errmsg,err) {
+        $.ajax({
+            url: '/compliance/evidence/data_mod/',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: {
+                'last_name':last_name,
+                'mod_name': mod_name,
+                'mod_comment': mod_comment,
+                'mod_author': mod_author
+            },
+            success: function(response){
+                if(response.startsWith('\n<meta')){
+                    location.reload()
+                }
+                if(response === 'success'){
+                    alert('Saved Successfully')
+                    window.location.href= '/compliance/evidence/'
+                }else if(response === 'already exist'){
+                    alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
+                }else if(response === 'NULL'){
+                    alert('Name must be entered. Try Again')
+                }
+                else {
+                    alert('Failed To Save. Please Try Again')
+                }
+            },
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); 
             console.log(xhr.status + ": " + xhr.responseText); 
-        }
-    })
-});
+                console.log(xhr.status + ": " + xhr.responseText); 
+            }
+        })
+    });
 
-function del_data(del_data_name){
-    $.ajax({
-        url: '/compliance/evidence/data_del/',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {
-            'name': del_data_name,
-        },
-        success: function(response){
-            if(response.startsWith('\n<meta')){
-                location.reload()
-            }
-            if(response === 'success'){
-                alert('Deleted Successfully')
-                window.location.href= '/compliance/evidence/'
-            } else {
-                alert('Failed To Save. Please Try Again')
-            }
-        },
-        error : function(xhr,errmsg,err) {
+    function del_data(del_data_name){
+        $.ajax({
+            url: '/compliance/evidence/data_del/',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: {
+                'name': del_data_name,
+            },
+            success: function(response){
+                if(response.startsWith('\n<meta')){
+                    location.reload()
+                }
+                if(response === 'success'){
+                    alert('Deleted Successfully')
+                    window.location.href= '/compliance/evidence/'
+                } else {
+                    alert('Failed To Save. Please Try Again')
+                }
+            },
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); 
             console.log(xhr.status + ": " + xhr.responseText); 
-        }
-    })
-}
-
-
+                console.log(xhr.status + ": " + xhr.responseText); 
+            }
+        })
+    }
 </script>
 <script src="{% static '/M_compliance/js/evidence_management/searchcard.js' %}"></script>
 {% endblock %}

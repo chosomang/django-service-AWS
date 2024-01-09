@@ -41,7 +41,7 @@ def compliance_lists_detail_view(request, compliance_type):
         return redirect(f"/compliance/lists/{compliance_type}")
 
 
-#Assets Management - 현경
+#Assets Management
 @login_required
 def assets_view(request, asset_type=None):
     if request.method == 'POST':
@@ -75,36 +75,52 @@ def assets_action(request, asset_type, action_type):
     else:
         redirect('/auth/login')
 
-
-
-#########################################################################################
-# Data 리스트 출력 페이지
-def get_evidence_data(request):
-    if request.method == "GET":
-        search_query1 = request.GET.get('search_query1', None)
-        search_query2 = request.GET.get('search_query2', None)
-
-        if search_query1 and search_query2:
-            data_list = evidence.get_data(search_query1, search_query2)
-        else:
-            data_list = evidence.get_data()
-        context = {'data_list': data_list}
-
-        return render(request, "compliance/evidence_management.html", context)
+# Evidence Management
+@login_required
+def evidence_view(request):
+    context = {
+        'data_list': evidence.get_data_list(request),
+        'product_list': evidence.get_product_list(),
+        'compliance_list': evidence.get_compliance_list()
+        }
+    if request.method == 'POST':
+        return render(request, "compliance/evidence_management/dataTable.html", context)
     else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
+        return render(request, "compliance/evidence_management.html", context)
+
+def evidence_data_action(request, action_type):
+    if request.method == 'POST':
+        if action_type == 'get_version':
+            version_list = evidence.get_compliance_version_list(request)
+            return JsonResponse({'version_list':version_list})
+        elif action_type == 'get_article':
+            article_list = evidence.get_compliance_article_list(request)
+            return JsonResponse({"article_list" :article_list})
+        elif action_type == 'add':
+            return HttpResponse(evidence.add_evidence_data(request))
+        elif action_type == 'modify':
+            return 0
+
+
+@login_required
+def evidence_data_detail_view(request, data_name):
+    data=evidence.get_data_list()
+    file_list=evidence.get_file()
+    compliance_list=evidence.get_compliance_list()
+    context={
+        'title':data_name,
+        'data': data,
+        'file_list': file_list,
+        'compliance_list':compliance_list
+    }
+    return render(request, f"compliance/evidence_management/file.html", context)
+
+#-------------------------------------------------------------------------------------------
 
 def get_compliance(request):
     if request.method == "POST":
         compliance_list = evidence.get_compliance()
         json_data = json.dumps({"compliance_list" :compliance_list})    
-        return HttpResponse(json_data, content_type='application/json')
-
-def get_version(request):
-    if request.method == "POST":
-        compliance_selected=dict(request.POST.items())
-        version_list = evidence.get_version(compliance_selected)
-        json_data = json.dumps({"version_list" :version_list})    
         return HttpResponse(json_data, content_type='application/json')
 
 def get_article(request):
@@ -159,30 +175,7 @@ def del_evidence_data(request):
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
 
-# file 출력
-def get_evidence_file(request):
-    if request.method == 'GET':
-        # Ajax GET 요청에서 전달된 파라미터 가져오기
-        title = request.GET.get('title', None)
-        data=evidence.get_data('name', title)
-        file_list=evidence.get_file(title)
-        compliance_list=evidence.get_compliance_list('evi',title)
-        
-        context={
-            'title':title,
-            'data': data,
-            'file_list': file_list,
-            'compliance_list':compliance_list
-        }
 
-        if title:
-            return render(request, f"compliance/evidence/file.html", context)
-        else:
-            # title이 없을 경우 에러 응답
-            return JsonResponse({'error': 'Missing title parameter'}, status=400)
-    else:
-        # GET 이외의 메소드에 대한 처리
-        return JsonResponse({'error': 'Invalid method'}, status=400)
 
 # file 추가 시, 함수 동작
 def add_evidence_file(request):
