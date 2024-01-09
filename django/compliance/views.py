@@ -90,7 +90,7 @@ def get_evidence_data(request):
             data_list = evidence.get_data()
         context = {'data_list': data_list}
 
-        return render(request, "compliance/evidence/data.html", context)
+        return render(request, "compliance/evidence_management.html", context)
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
 

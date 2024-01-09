@@ -2,7 +2,7 @@
 {% load custom_filter %}
 {% load static %}
 {% block head %}
-<link rel="stylesheet" href="{% static '/M_compliance/css/searchcard.css' %}">
+<link rel="stylesheet" href="{% static '/M_compliance/css/compliance_lists/searchcard.css' %}">
 {% endblock head %}
 
 {% block content %}
@@ -106,8 +106,8 @@
 <script>
     var compliance_type = "{{compliance_type}}"
 </script>
-<script src="{% static '/M_compliance/js/lists.js' %}"></script>
-<script src="{% static '/M_compliance/js/searchcard.js' %}"></script>
+<script src="{% static '/M_compliance/js/compliance_lists/lists.js' %}"></script>
+<script src="{% static '/M_compliance/js/compliance_lists/searchcard.js' %}"></script>
 
 {% endblock %}
 

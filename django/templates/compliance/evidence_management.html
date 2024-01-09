@@ -1,20 +1,22 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% block head %}
+<link rel="stylesheet" href="{% static '/M_compliance/css/evidence_management/searchcard.css' %}">
+{% endblock head %}
 {% block content %}
 <!-- Begin Page Content -->
 <div class="locationbar ml-2">
     <span>Compliance Management&nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;</span>
-    <span class="current">Evidence<span>
+    <span class="current">Evidence Management<span>
 </div>
 
 
 <!-- Page Heading -->
-<h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">Evidence List</h6>
+<h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">Evidence Management</h6>
 <p class="h6 mb-4 ml-2">Manage the entire evidence, manage the version, and manage the mapping at once.</p>
 
-
-<div class="card shadow mb-4" id="search_table">
+{% include "./evidence_management/searchcard.html" %}
+<!-- <div class="card shadow mb-4" id="search_table">
     <div class="card-body" style="font-size:15px;">
         
         <form id="form" role="search">
@@ -33,7 +35,7 @@
             </a>
         </form>
     </div>
-</div>
+</div> -->
 
 <div class="card shadow mb-4" id="log_table">
     <div class="card-header row align-items-center py-3">
@@ -475,5 +477,6 @@ function del_data(del_data_name){
 
 
 </script>
+<script src="{% static '/M_compliance/js/evidence_management/searchcard.js' %}"></script>
 {% endblock %}
 
