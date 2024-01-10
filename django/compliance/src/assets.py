@@ -222,7 +222,7 @@ def add_asset_file(request):
             add_evidence = f"""
             MATCH (p:Product:Compliance:Evidence{{name:'Asset Manage'}})-[:DATA]->(a:Compliance:Evidence:Data{{name:'File'}})
             MERGE (e:Compliance:Evidence:File{{name:'{uploadedFile.name}', comment:'{fileComment}', upload_date:'{timestamp}', version:'{version}', author:'{author}', poc:'{poc}'}})
-            merge (a)-[:FILE]->(e)
+            MERGE (a)-[:FILE]->(e)
             """
             graph.run(add_evidence)
 

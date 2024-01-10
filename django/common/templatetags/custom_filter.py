@@ -22,3 +22,8 @@ def list_item(_list, index):
 @register.simple_tag
 def make_list(*args):
     return list(args)
+
+@register.filter(name="replace")
+def replace(value, args):
+    search, replace_with = args.split(',')
+    return value.replace(search, replace_with)

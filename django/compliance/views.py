@@ -103,80 +103,31 @@ def evidence_data_action(request, action_type):
         elif action_type == 'delete':
             return HttpResponse(evidence.delete_evidence_data(request))
 
+## Evidence Data Management
 @login_required
 def evidence_data_detail_view(request, data_name):
-    print(data_name)
-    # data=evidence.get_data_list()
-    # file_list=evidence.get_file()
-    # compliance_list=evidence.get_compliance_list()
-    # context={
-    #     'title':data_name,
-    #     'data': data,
-    #     'file_list': file_list,
-    #     'compliance_list':compliance_list
-    # }
-    return render(request, f"compliance/evidence_management/details.html", {})
+    if data_name:
+        context = {
+            'data_name': data_name,
+            'data_list': evidence.get_data_list(request, data_name),
+            'file_list': evidence.get_file_list(data_name),
+            'compliance_list': evidence.get_data_related_compliance('evidence', data_name)
+        }
+        return render(request, f"compliance/evidence_management/details.html", context)
+
+def evidence_file_action(request, action_type):
+    if request.method == 'POST':
+        if action_type == 'add':
+            return HttpResponse(evidence.add_evidence_file(request))
+        elif action_type == 'modify':
+            return HttpResponse(evidence.modify_evidence_file(request))
+        elif action_type == 'delete':
+            return HttpResponse(evidence.delete_evidence_file(request))
+
+def evidence_related_compliance(request):
+    return HttpResponse('test')
 
 #-------------------------------------------------------------------------------------------
-
-def get_compliance(request):
-    if request.method == "POST":
-        compliance_list = evidence.get_compliance()
-        json_data = json.dumps({"compliance_list" :compliance_list})    
-        return HttpResponse(json_data, content_type='application/json')
-
-def get_article(request):
-    if request.method == "POST":
-        try:
-            version_selected=dict(request.POST.items())
-            article_list = evidence.get_article(version_selected)
-            json_data = json.dumps({"article_list" :article_list})  
-            return HttpResponse(json_data, content_type='application/json')
-        except Exception as e:
-            # 에러가 발생한 경우
-            return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
-
-
-# file 추가 시, 함수 동작
-def add_evidence_file(request):
-    if request.method == 'POST':
-        add_file = request.POST.dict()
-        uploaded_file = request.FILES.get("add_file")
-        file_name = add_file.get('add_name', '')
-
-        # Saving the information in the database
-        document = Document(
-            title=file_name,
-            uploadedFile=uploaded_file
-        )
-        document.save()
-
-        return HttpResponse(evidence.add_file(add_file))
-    else:
-        return HttpResponse("Invalid request method")
-
-# file 수정
-def mod_evidence_file(request):
-    if request.method=="POST":
-        mod_file=dict(request.POST.items())
-
-        try:
-            #이걸 JsonResponse로 어케 바꾸지
-            return HttpResponse(evidence.mod_file(mod_file))   
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
-        
-
-# file 삭제
-def del_evidence_file(request):
-    if request.method=="POST":
-        del_file=dict(request.POST.items())
-        return HttpResponse(evidence.del_file(del_file))
-    
 def add_com(request):
     if request.method=="POST":
         add_com=dict(request.POST.items())

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% load custom_filter %}
 {% block content %}
 <!-- Begin Page Content -->
 <style>
@@ -23,7 +23,7 @@
     <span class="current">{{no}} {{name}}<span>
 </div>
 <div>
-    <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{compliance_type}}</h6>
+    <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{compliance_type.upper|replace:"_,-"}}</h6>
     <p class="h4 mb-4 ml-2">{{no}} {{name}}</p>
 </div>
 <div class="card shadow mb-4">
@@ -114,7 +114,7 @@
                         <th>Version</th>
                         <th>PoC</th>
                         <th>Upload Date</th>
-                        <th>Upload</th>
+                        <th>Author</th>
                         <th>Preview</th>
                         <th>Download</th>
                         <th>Modify</th>

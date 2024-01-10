@@ -88,7 +88,7 @@
     <div class="modal-dialog">
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
-                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify Assets File</h5>
+                <h5 class="m-0 font-weight-bold text-teiren" id='modal_title'>Modify Assets File</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                 </button>
@@ -107,7 +107,7 @@
                 </form>
             </div>
             <div class="modal-footer" id="modal_footer">
-                <button type='submit' id='upload' class="btn btn-md btn-outline-primary" onclick="modifyAssetFile()">Modify</button>
+                <button type='submit' id='upload' class="btn btn-md btn-outline-teiren" onclick="modifyAssetFile()">Modify</button>
             </div>
         </div>
     </div>
@@ -117,7 +117,6 @@
 
     function addAssetFile() {
         var formData = new FormData($('#asset_file_form')[0]);
-        console.log(formData)
         $.ajax({
             url: '/compliance/assets/file/add/',
             data: formData,

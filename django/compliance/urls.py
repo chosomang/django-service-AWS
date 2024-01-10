@@ -21,11 +21,9 @@ urlpatterns = [
     path('evidence/', views.evidence_view),
     path('evidence/data/<action_type>/', views.evidence_data_action),
     path('evidence/<data_name>/', views.evidence_data_detail_view),
+    path('evidence/file/<action_type>/', views.evidence_file_action),
 
     #-------------------------------------------------------------------------------------
-    path('evidence/file_add/', views.add_evidence_file),
-    path('evidence/file_mod/', views.mod_evidence_file),
-    path('evidence/file_del/', views.del_evidence_file),
     path('evidence/com_add/', views.add_com),
 
     path('delete/', delete.delete),
