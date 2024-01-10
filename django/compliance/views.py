@@ -99,21 +99,23 @@ def evidence_data_action(request, action_type):
         elif action_type == 'add':
             return HttpResponse(evidence.add_evidence_data(request))
         elif action_type == 'modify':
-            return 0
-
+            return HttpResponse(evidence.modify_evidence_data(request))
+        elif action_type == 'delete':
+            return HttpResponse(evidence.delete_evidence_data(request))
 
 @login_required
 def evidence_data_detail_view(request, data_name):
-    data=evidence.get_data_list()
-    file_list=evidence.get_file()
-    compliance_list=evidence.get_compliance_list()
-    context={
-        'title':data_name,
-        'data': data,
-        'file_list': file_list,
-        'compliance_list':compliance_list
-    }
-    return render(request, f"compliance/evidence_management/file.html", context)
+    print(data_name)
+    # data=evidence.get_data_list()
+    # file_list=evidence.get_file()
+    # compliance_list=evidence.get_compliance_list()
+    # context={
+    #     'title':data_name,
+    #     'data': data,
+    #     'file_list': file_list,
+    #     'compliance_list':compliance_list
+    # }
+    return render(request, f"compliance/evidence_management/details.html", {})
 
 #-------------------------------------------------------------------------------------------
 
@@ -135,46 +137,6 @@ def get_article(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
-    
-# Data 추가
-def add_evidence_data(request):
-    if request.method=="POST":
-        data=dict(request.POST.items())
-   
-        try:
-            #이걸 JsonResponse로 어케 바꾸지
-            return HttpResponse(evidence.add_data(data))
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
-    
-# Data 수정
-def mod_evidence_data(request):
-    if request.method=="POST":
-        data=dict(request.POST.items())
-        try:
-            #이걸 JsonResponse로 어케 바꾸지
-            return HttpResponse(evidence.mod_data(data))
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
-    
-
-# Data 삭제
-def del_evidence_data(request):
-    if request.method=="POST":
-        del_data=dict(request.POST.items())
-
-        try:
-            #이걸 JsonResponse로 어케 바꾸지
-            return HttpResponse(evidence.del_data(del_data))   
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
-
 
 
 # file 추가 시, 함수 동작

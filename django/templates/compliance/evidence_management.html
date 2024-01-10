@@ -56,7 +56,8 @@
                                 data-name="{{data.data.name}}" data-comment="{{data.data.comment}}" data-author="{{data.data.author}}"><i class="fa-solid fa-pen-to-square mr-2"></i>Modify</button>
                             </td>
                             <td>
-                                <button type="button" class="btn btn-md btn-danger" onclick="del_data('{{data.data.name}}')"><i class="fa-solid fa-trash mr-2"></i>Delete</button>
+                                <button type="button" class="btn btn-md btn-danger" data-toggle="modal" data-target="#data_delete"
+                                data-name="{{data.data.name}}" data-comment="{{data.data.comment}}" data-author="{{data.data.author}}"><i class="fa-solid fa-trash mr-2"></i>Delete</button>
                             </td>
                         </tr>
                     {% endfor %}
@@ -71,7 +72,7 @@
     <div class="modal-dialog">
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
-                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Data</h5>
+                <h5 class="m-0 font-weight-bold text-teiren" id='modal_title'>Add Evidence Data</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                 </button>
@@ -86,9 +87,9 @@
                             {% endfor %}
                         </select>
                     </p>
-                    <p>Name: <input class="form-control" name="add_name" type="text"></p>
-                    <p>Comment: <input class="form-control" name="add_comment" type="text"></p>
-                    <p>Author: <input class="form-control" name="add_author" type="text"></p>
+                    <p>Name: <input class="form-control" name="name" type="text"></p>
+                    <p>Comment: <input class="form-control" name="comment" type="text"></p>
+                    <p>Author: <input class="form-control" name="author" type="text"></p>
 
                     <p>Related Compliance:
                         <select class="form-control" id="compliance" name="compliance" onchange="updateVersion()">
@@ -115,9 +116,8 @@
             </div>
             <div class="modal-footer" id="modal_footer">
                 <input type='button' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
-                <input type='button' id='add_accept' class="btn btn-md btn-outline-primary" value="Save">
+                <input type='button' id='add_accept' class="btn btn-md btn-teiren" value="Save">
             </div>
-            </form>
         </div>
     </div>
 </div>
@@ -127,46 +127,55 @@
     <div class="modal-dialog">
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
-                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify Data</h5>
+                <h5 class="m-0 font-weight-bold text-teiren" id='modal_title'>Modify Evidence Data</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                 </button>
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
-                <div>
-                    <input class="form-control" name="last_name" type="hidden"><br><br>
-                    Data Name: <input class="form-control" name="mod_name" type="text"><br><br>
-                    Comment: <input class="form-control" name="mod_comment" type="text"><br><br>
-                    Author: <input class="form-control" name="mod_author" type="text"><br><br>
-
-                    <!-- Relation Compliance를 추가할 수 있는 코드를 아래 제작해야 함-->
-                </div>
+                <form id="data_modify_form">
+                    <input class="form-control" name="og_name" type="hidden">
+                    <p>Data Name: <input class="form-control" name="name" type="text"></p>
+                    <p>Comment: <input class="form-control" name="comment" type="text"></p>
+                    <p>Author: <input class="form-control" name="author" type="text"></p>
+                </form>
             </div>
             <div class="modal-footer" id="modal_footer">
                 <input type='button' id='mod_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
-                <input type='button' id='mod_accept' class="btn btn-md btn-outline-primary" value="Modify">
+                <input type='button' id='mod_accept' class="btn btn-md btn-teiren" value="Modify">
             </div>
-            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Data Modal -->
+<div class="modal hide fade card-body" id="data_delete" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-danger" id='modal_title'>Delete Evidence Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <form id="data_delete_form">
+                    <p>Data Name: <input class="form-control" name="name" type="text" readonly></p>
+                    <p>Comment: <input class="form-control" name="comment" type="text" readonly></p>
+                    <p>Author: <input class="form-control" name="author" type="text" readonly></p>
+                </form>
+                <h5>All the files in <span id="data_name" class="text-danger"></span> will be deleted. Will you still delete this data?</h5>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' id='delete_accept' class="btn btn-md btn-danger" value="Delete">
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
 {% block script %}
 <script>
-    $('#data_mod').on('shown.bs.modal', function (e) {
-        var button = $(e.relatedTarget); // 클릭된 버튼
-        var last_name = button.data('name'); // data-name 속성의 값
-        var data_name = button.data('name'); // data-name 속성의 값
-        var data_comment = button.data('comment'); // data-name 속성의 값
-        var data_author = button.data('author'); // data-name 속성의 값
-
-        // 모달 내부 필드에 데이터 표시
-        $('input[name="last_name"]').val(last_name);
-        $('input[name="mod_name"]').val(data_name);
-        $('input[name="mod_comment"]').val(data_comment);
-        $('input[name="mod_author"]').val(data_author);
-    });
-
     $('#add_accept').click(function() {
         $.ajax({
             url: 'data/add/',
@@ -177,7 +186,7 @@
             data: $('#data_add_form').serialize()
         }).done(function(response){
             alert(response)
-            if(response === 'success'){
+            if(response.startsWith('Success')){
                 location.reload()
                 return 0
             }
@@ -235,79 +244,65 @@
         })
     }
 
+    $('#data_mod').on('shown.bs.modal', function (e) {
+        var button = $(e.relatedTarget); // 클릭된 버튼
+        var data_name = button.data('name'); // data-name 속성의 값
+        var data_comment = button.data('comment'); // data-name 속성의 값
+        var data_author = button.data('author'); // data-name 속성의 값
+
+        // 모달 내부 필드에 데이터 표시
+        $('#data_mod input[name="og_name"]').val(data_name)
+        $('#data_mod input[name="name"]').val(data_name);
+        $('#data_mod input[name="comment"]').val(data_comment);
+        $('#data_mod input[name="author"]').val(data_author);
+    });
 
     $('#mod_accept').click(function() {
-        // Call your Ajax function here
-        var last_name=$('input[name="last_name"]').val();
-        var mod_name = $('input[name="mod_name"]').val();
-        var mod_comment = $('input[name="mod_comment"]').val();
-        var mod_author = $('input[name="mod_author"]').val();
-
-
         $.ajax({
-            url: '/compliance/evidence/data_mod/',
+            url: 'data/modify/',
             headers: {
                 'X-CSRFToken': "{{ csrf_token }}"
             },
             type: 'POST',
-            data: {
-                'last_name':last_name,
-                'mod_name': mod_name,
-                'mod_comment': mod_comment,
-                'mod_author': mod_author
-            },
-            success: function(response){
-                if(response.startsWith('\n<meta')){
-                    location.reload()
-                }
-                if(response === 'success'){
-                    alert('Saved Successfully')
-                    window.location.href= '/compliance/evidence/'
-                }else if(response === 'already exist'){
-                    alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
-                }else if(response === 'NULL'){
-                    alert('Name must be entered. Try Again')
-                }
-                else {
-                    alert('Failed To Save. Please Try Again')
-                }
-            },
-            error : function(xhr,errmsg,err) {
-                console.log(xhr.status + ": " + xhr.responseText); 
-            console.log(xhr.status + ": " + xhr.responseText); 
-                console.log(xhr.status + ": " + xhr.responseText); 
+            data: $('#data_modify_form').serialize()
+        }).done(function(response){
+            alert(response)
+            if(response.startsWith('Success')){
+                location.reload()
+                return 0
             }
         })
     });
+    
+    $('#data_delete').on('shown.bs.modal', function (e) {
+        var button = $(e.relatedTarget); // 클릭된 버튼
+        var data_name = button.data('name'); // data-name 속성의 값
+        var data_comment = button.data('comment'); // data-name 속성의 값
+        var data_author = button.data('author'); // data-name 속성의 값
+        
+        // 모달 내부 필드에 데이터 표시
+        $('#data_delete #data_name').text(data_name);
+        $('#data_delete input[name="name"]').val(data_name);
+        $('#data_delete input[name="comment"]').val(data_comment);
+        $('#data_delete input[name="author"]').val(data_author);
+    });
 
-    function del_data(del_data_name){
+    $('#delete_accept').click(function (){
         $.ajax({
-            url: '/compliance/evidence/data_del/',
+            url: 'data/delete/',
             headers: {
                 'X-CSRFToken': "{{ csrf_token }}"
             },
             type: 'POST',
-            data: {
-                'name': del_data_name,
-            },
-            success: function(response){
-                if(response.startsWith('\n<meta')){
-                    location.reload()
-                }
-                if(response === 'success'){
-                    alert('Deleted Successfully')
-                    window.location.href= '/compliance/evidence/'
-                } else {
-                    alert('Failed To Save. Please Try Again')
-                }
-            },
-            error : function(xhr,errmsg,err) {
-                console.log(xhr.status + ": " + xhr.responseText); 
-            console.log(xhr.status + ": " + xhr.responseText); 
-                console.log(xhr.status + ": " + xhr.responseText); 
+            data: $('#data_delete_form').serialize()
+        }).done(function(response){
+            alert(response)
+            if(response.startsWith('Success')){
+                location.reload()
+                return 0
             }
         })
-    }
+    })
 </script>
 <script src="{% static '/M_compliance/js/evidence_management/searchcard.js' %}"></script>
 {% endblock %}

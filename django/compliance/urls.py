@@ -23,10 +23,6 @@ urlpatterns = [
     path('evidence/<data_name>/', views.evidence_data_detail_view),
 
     #-------------------------------------------------------------------------------------
-    
-    path('evidence/data_add/', views.add_evidence_data),
-    path('evidence/data_mod/', views.mod_evidence_data),
-    path('evidence/data_del/', views.del_evidence_data),
     path('evidence/file_add/', views.add_evidence_file),
     path('evidence/file_mod/', views.mod_evidence_file),
     path('evidence/file_del/', views.del_evidence_file),

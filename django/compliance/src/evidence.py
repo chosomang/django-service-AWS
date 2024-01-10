@@ -11,26 +11,24 @@ graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 
 
 # data 목록 가져오기
-def get_data_list(request):
+def get_data_list(request, data_name=None):
     response=[]
     main_search_key = request.POST.get('main_search_key', '')
     main_search_value = request.POST.get('main_search_value', '')
-    if main_search_key == '' or main_search_value == '':
-        cypher=f"""
-            MATCH (p:Product:Evidence:Compliance)-[:DATA]->(d:Data:Compliance:Evidence)
-            WHERE p.name <> 'Asset Manage' and p.name <> 'Policy Manage'
-            RETURN d AS data, p AS product
-        """
-        results = graph.run(cypher)
+    if not main_search_key or not main_search_value:
+        results = graph.run(f"""
+        MATCH (p:Product:Evidence:Compliance)-[:DATA]->(d:Data:Compliance:Evidence)
+        WHERE p.name <> 'Asset Manage' and p.name <> 'Policy Manage'
+        RETURN d AS data, p AS product
+        """)
         for result in results:
             response.append(result) 
     else:
-        cypher=f"""
-            MATCH (p:Product:Evidence:Compliance)-[:DATA]->(d:Data:Compliance:Evidence)
-            WHERE p.name <> 'Asset Manage' AND p.name <> 'Policy Manage' AND toLower(d.{main_search_key}) CONTAINS toLower('{main_search_value}')
-            RETURN d AS data, p AS product
-        """
-        results = graph.run(cypher)
+        results = graph.run(f"""
+        MATCH (p:Product:Evidence:Compliance)-[:DATA]->(d:Data:Compliance:Evidence)
+        WHERE p.name <> 'Asset Manage' AND p.name <> 'Policy Manage' AND toLower(d.{main_search_key}) CONTAINS toLower('{main_search_value}')
+        RETURN d AS data, p AS product
+        """)
         for result in results:
             response.append(result)
     return response
@@ -51,10 +49,10 @@ def get_product_list():
 def get_compliance_list():
     try:
         response = graph.evaluate(f"""
-            MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance)
-            WHERE c.name <> 'Evidence'
-            WITH replace(toUpper(c.name), '_', '-') as compliance ORDER BY c.name
-            RETURN COLLECT(compliance)
+        MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance)
+        WHERE c.name <> 'Evidence'
+        WITH replace(toUpper(c.name), '_', '-') as compliance ORDER BY c.name
+        RETURN COLLECT(compliance)
         """)
     except Exception as e:
         response = []
@@ -62,8 +60,8 @@ def get_compliance_list():
         return response
 
 def get_compliance_version_list(request):
-    compliance = request.POST.get('compliance', '').replace('-', '_').capitalize()
     try:
+        compliance = request.POST.get('compliance', '').replace('-', '_').capitalize()
         response = graph.evaluate(f"""
         MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)
         WITH toString(v.date) as version ORDER BY v.date
@@ -75,9 +73,9 @@ def get_compliance_version_list(request):
         return response
 
 def get_compliance_article_list(request):
-    compliance = request.POST.get('compliance', '').replace('-', '_').capitalize()
-    version = request.POST.get('version', '')
     try:
+        compliance = request.POST.get('compliance', '').replace('-', '_').capitalize()
+        version = request.POST.get('version', '')
         cypher=f"""
             OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
             WITH a
@@ -111,82 +109,116 @@ def get_compliance_article_list(request):
 
 # data 추가
 def add_evidence_data(request):
-    for key, value in dict(request.POST.items()).items():
-        if value == '':
-            return f"Please Enter/Select {key.replace('add_', '').title()}"
-    
-    product= request.POST.get('product', '')
-    name = request.POST.get('name', '')
-    comment = request.POST.get('comment', '')
-    author = request.POST.get('author', '')
-    last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    compliance = request.POST.get('compliance', '')
-    version=request.POST.get('version', '')
-    article = request.POST.get('article', '')
+    data = dict(request.POST.items())
+    for key, value in data.items():
+        if value == '' and key not in ['comment', 'author', ''] :
+            return f"Please Enter/Select {key.title()}"
+    try:
+        last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        if 0 < graph.evaluate(f"""
+        MATCH (c:Data:Compliance:Evidence{{
+            name:'{data['name']}'
+        }})
+        RETURN count(c)
+        """):
+            response = "Data Already Exsists. Please Enter Different Name."
+        else:
+            if data['article'] != '':
+                cypher = f"""
+                MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{data['product']}'}})
+                MATCH (v:Version{{name:'{data['compliance'].replace('-','_').capitalize()}', date:date('{data['version']}')}})-[*]->(a:Article{{compliance_name:'{data['compliance'].replace('-','_').capitalize()}', no:'{data['article'].split(' ')[0]}'}})
+                MERGE (p)-[:DATA]->
+                    (d:Data:Compliance:Evidence {{
+                    name:'{data['name']}',
+                    comment:'{data['comment']}',
+                    author:'{data['author']}',
+                    last_update:'{last_update}'
+                }})-[:EVIDENCE]->(a)
+                RETURN COUNT(d)
+                """
+            elif data['compliance'] != '':
+                cypher = f"""
+                MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{data['product']}'}})
+                MATCH (c:Version:Compliance{{name:'{data['compliance'].replace('-','_').capitalize()}', date:date('{data['version']}')}})
+                MERGE (p)-[:DATA]->
+                    (d:Data:Compliance:Evidence {{
+                    name:'{data['name']}',
+                    comment:'{data['comment']}',
+                    author:'{data['author']}',
+                    last_update:'{last_update}'
+                }})-[:EVIDENCE]->(c)
+                RETURN COUNT(d)
+                """
+            else:
+                raise Exception
+            if 0 == graph.run(cypher):
+                raise Exception
+            else:
+                response = "Successfully Create Data."
+    except Exception as e:
+        print(e)
+        response = "Failed To Create Data. Please Try Again."
+    finally:
+        return response
 
-    #중복 체크 필요
-    cypher=f"""
+def modify_evidence_data(request):
+    try:
+        og_name=request.POST.get('og_name', '')
+        name = request.POST.get('name', '')
+        if not name:
+            response = "Please Enter Data Name"
+        elif not og_name:
+            raise Exception
+        elif og_name != name and 0 < graph.evaluate(f"""
         MATCH (c:Data:Compliance:Evidence{{
             name:'{name}'
         }})
         RETURN count(c)
-    """
-    if graph.evaluate(cypher) >= 1:
-        return 'already exist'
-        
-
-    #매핑 리스트가 있을 때(컴플라이언스와 관계 생성)
-    if article!='none' and article: 
-        #article까지 selected 했을 때
-        cypher= f"""
-                MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{product}'}})
-                MATCH (v:Version{{name:'{compliance}', date:date('{version}')}})-[*]->(a:Article{{compliance_name:'{compliance}', no:'{article}'}})
-                MERGE (p)-[:DATA]->
-                    (d:Data:Compliance:Evidence {{
-                    name:'{name}',
-                    comment:'{comment}',
-                    author:'{author}',
-                    last_update:'{last_update}'
-                }})-[:EVIDENCE]->(a)
-                RETURN COUNT(d)
-            """
-
-    elif compliance!='none' and compliance: 
-    # 컴플라이언스만 selected 했을 때
-        cypher= f"""
-                MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{product}'}})
-                MATCH (c:Version:Compliance{{name:'{compliance}', date:date('{version}')}})
-                MERGE (p)-[:DATA]->
-                    (d:Data:Compliance:Evidence {{
-                    name:'{name}',
-                    comment:'{comment}',
-                    author:'{author}',
-                    last_update:'{last_update}'
-                }})-[:EVIDENCE]->(c)
-                RETURN COUNT(d)
-            """  
-        
-    #매핑할 애들이 없을 때(그냥 증적 노드만 생성)
-    else: 
-        cypher= f"""
-                MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{product}'}})
-                MERGE (p)-[:DATA]->
-                    (d:Data:Compliance:Evidence {{
-                    name:'{name}',
-                    comment:'{comment}',
-                    author:'{author}',
-                    last_update:'{last_update}'
-                }})
-                RETURN COUNT(d)
-            """
-
-    try:
-        if graph.evaluate(cypher) == 1:
-            return 'success'
+        """):
+            response = "Data Name Already Exsists. Please Enter New Data Name."
         else:
+            comment = request.POST.get('comment', '')
+            author = request.POST.get('author', '')
+            last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            graph.evaluate(f"""
+                MATCH (d:Data:Compliance{{name:'{og_name}'}})
+                SET d.name = '{name}',
+                    d.comment='{comment}',
+                    d.author='{author}',
+                    d.last_update='{last_update}' 
+                RETURN COUNT(d)
+            """)
+            response = "Successfully Modified Data"
+    except Exception as e:
+        print(e)
+        response = 'Failed To Modify Data. Please Try Again.'
+    finally:
+        return response
+
+def delete_evidence_data(request):
+    try:
+        name = request.POST.get('name', '')
+        if not name:
             raise Exception
-    except Exception:
-        return 'fail'
+        else:
+            comment = request.POST.get('comment', '')
+            author = request.POST.get('author', '')
+            graph.evaluate(f"""
+            MATCH (d:Compliance:Evidence:Data{{name:'{name}', comment:'{comment}', author:'{author}'}})
+            WITH d
+            OPTIONAL MATCH (d)-[:FILE]->(f:File:Compliance:Evidence)
+            WITH d, COLLECT(f) AS file_list
+            FOREACH (f IN file_list| DETACH DELETE f)
+            DETACH DELETE d
+            RETURN count(d)
+            """)
+            response = "Successfully Deleted Data"
+    except Exception as e:
+        print(e)
+        response = "Failed To Delete Data. Please Try Again."
+    finally:
+        return response
+
 #----------------------------------------------------------------------------------
 # 전체 컴플라이언스 리스트 가져오기 (Evidence 노드 제외)
 def get_compliance():
@@ -254,153 +286,6 @@ def get_article(dict):
         
     return response
 
-
-# data 추가
-def add_data(dict):
-    product_selected= dict.get('product_selected', '')
-    name = dict.get('name', '')
-    comment = dict.get('comment', '')
-    author = dict.get('author', '')
-    last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    compliance = dict.get('compliance', '')
-    version_selected=dict.get('version_selected', '')
-    article_selected = dict.get('article_selected', '')
-
-    if not name:                         
-        return 'NULL'
-
-
-    #중복 체크 필요
-    cypher=f"""
-        MATCH (c:Data:Compliance:Evidence{{
-            name:'{name}'
-        }})
-        RETURN count(c)
-    """
-    if graph.evaluate(cypher) >= 1:
-        return 'already exist'
-        
-
-    #매핑 리스트가 있을 때(컴플라이언스와 관계 생성)
-    if article_selected!='none' and article_selected: 
-        #article까지 selected 했을 때
-        cypher= f"""
-                MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{product_selected}'}})
-                MATCH (v:Version{{name:'{compliance}', date:date('{version_selected}')}})-[*]->(a:Article{{compliance_name:'{compliance}', no:'{article_selected}'}})
-                MERGE (p)-[:DATA]->
-                    (d:Data:Compliance:Evidence {{
-                    name:'{name}',
-                    comment:'{comment}',
-                    author:'{author}',
-                    last_update:'{last_update}'
-                }})-[:EVIDENCE]->(a)
-                RETURN COUNT(d)
-            """
-
-    elif compliance!='none' and compliance: 
-    # 컴플라이언스만 selected 했을 때
-        cypher= f"""
-                MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{product_selected}'}})
-                MATCH (c:Version:Compliance{{name:'{compliance}', date:date('{version_selected}')}})
-                MERGE (p)-[:DATA]->
-                    (d:Data:Compliance:Evidence {{
-                    name:'{name}',
-                    comment:'{comment}',
-                    author:'{author}',
-                    last_update:'{last_update}'
-                }})-[:EVIDENCE]->(c)
-                RETURN COUNT(d)
-            """  
-        
-    #매핑할 애들이 없을 때(그냥 증적 노드만 생성)
-    else: 
-        cypher= f"""
-                MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{product_selected}'}})
-                MERGE (p)-[:DATA]->
-                    (d:Data:Compliance:Evidence {{
-                    name:'{name}',
-                    comment:'{comment}',
-                    author:'{author}',
-                    last_update:'{last_update}'
-                }})
-                RETURN COUNT(d)
-            """
-
-    try:
-        if graph.evaluate(cypher) == 1:
-            return 'success'
-        else:
-            raise Exception
-    except Exception:
-        return 'fail'
-
-def mod_data(dict):
-    last_name=dict.get('last_name', '')
-    name = dict.get('mod_name', '')
-    comment = dict.get('mod_comment', '')
-    author = dict.get('mod_author', '')
-    last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    if not name:
-        return 'NULL'
-
-    if last_name == name:
-        #data name을 수정하는 게 아니라면
-        cypher= f"""
-            MATCH (d:Data:Compliance{{name:'{last_name}'}})
-            SET d.comment='{comment}', d.author='{author}', d.last_update='{last_update}' 
-            RETURN COUNT(d)
-        """
-    else:
-        #data name도 수정하는거라면 중복체크 필요
-        cypher=f"""
-            MATCH (c:Data:Compliance:Evidence{{
-                name:'{name}'
-            }})
-            RETURN count(c)
-        """
-        if graph.evaluate(cypher) >= 1:
-            return 'already exist'
-
-        cypher= f"""
-            MATCH (d:Data:Compliance{{name:'{last_name}'}})
-            SET d.name='{name}', d.comment='{comment}', d.author='{author}', d.last_update='{last_update}' 
-            RETURN COUNT(d)
-        """
-
-    try:
-        if graph.evaluate(cypher) == 1:
-            return 'success'
-        else:
-            raise Exception
-    except Exception:
-        return 'fail'
-
-
-# data 삭제
-def del_data(dict):
-    name=dict['name']
-    if not name:
-        return 'fail'
-
-    #하위 노드가 있을 경우 하위 노드(파일)까지 모두 삭제, 아니면 Data만 삭제
-    cypher=f"""
-        MATCH (d:Compliance:Evidence:Data{{name:'{name}'}})
-        WITH d
-        OPTIONAL MATCH (d)-[:FILE]->(f:File:Compliance:Evidence)
-        WITH d, COLLECT(f) AS file_list
-        FOREACH (f IN file_list| DETACH DELETE f)
-        DETACH DELETE d
-        RETURN count(d)
-    """
-
-    try:
-        if graph.evaluate(cypher) >= 1:
-            return 'success'
-        else:
-            raise Exception
-    except Exception:
-        return 'fail'
 
 
 # file 리스트 가져오기
