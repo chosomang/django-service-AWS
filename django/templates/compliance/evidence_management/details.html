@@ -85,7 +85,14 @@
                             <td>{{file.poc}}</td>
                             <td>{{file.author}}</td>
                             <td>{{file.upload_date}}</td>
-                            <td><button id="downloadBtn" class="btn btn-md btn-teiren"  onclick="download_file('{{file.name}}')"><i class="fa-solid fa-file-arrow-down mr-2"></i>Download</button></td>
+                            <td>
+                                <form method="POST" action="/compliance/evidence/file/download/" target="_blank">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="name" value="{{file.name}}">
+                                    <input type="hidden" name="comment" value="{{file.comment}}">
+                                    <button type="submit" class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-download mr-2"></i>Download</button>
+                                </form>
+                            </td>
                             <td>
                                 <button class="btn btn-md btn-teiren" data-toggle="modal" data-target="#file_mod" 
                                 data-data-name="{{data_name}}" data-name="{{file.name}}" data-comment="{{file.comment}}" data-version="{{file.version}}"
@@ -123,17 +130,18 @@
                         <th>Section</th>
                         <th>Article</th>
                         <th>Details</th>
+                        <th>Delete</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {%for compliance in compliance_list%}
+                    {%for compliance in related_compliance_list%}
                     <tr>
                         <td>{{forloop.counter}}</td>
                         <td>{{compliance.version.name.upper|replace:"_,-"}}</td>
                         <td>{{compliance.version.date}}</td>
-                        <td>{{compliance.chapter.no}}. {{compliance.chapter.name}}</td>
+                        <td>{{compliance.chapter.no}} {{compliance.chapter.name}}</td>
                         <td>{{compliance.section.no}} {{compliance.section.name}}</td>
-                        <td>{{compliance.article.no}}. {{compliance.article.name}}</td>
+                        <td>{{compliance.article.no}} {{compliance.article.name}}</td>
                         <td>
                             <form method="POST" action="/compliance/lists/{{compliance.version.name.upper|replace:"_,-"}}/details/">
                                 {% csrf_token %}
@@ -143,6 +151,12 @@
                                     Details
                                 </button>
                             </form>
+                        </td>
+                        <td>
+                            <button class="btn btn-md btn-danger" data-toggle="modal" data-target="#compliance_delete" 
+                                data-compliance="{{compliance.version.name.upper|replace:"_,-"}}" data-version="{{compliance.version.date}}" data-article="{{compliance.article.no}} {{compliance.article.name}}">
+                                <i class="fa-solid fa-trash mr-2"></i>Delete
+                            </button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -191,7 +205,7 @@
                 <h5 class="m-0 font-weight-bold text-teiren" id='modal_title'>Modify Evidence File</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
-                </button>``
+                </button>
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
                 <form id="file_modify_form">
@@ -202,6 +216,7 @@
                     <p>File Author: <input class="form-control" name="author" type="text" readonly></p>
                     <p>File Version: <input class="form-control" name="version" type="text"></p>
                     <p>File PoC: <input class="form-control" name="poc" type="text"></p>
+                    <input type="hidden" name="og_comment">
                 </form>
             </div>
             <div class="modal-footer" id="modal_footer">
@@ -222,7 +237,7 @@
                 <h5 class="m-0 font-weight-bold text-danger" id='modal_title'>Delete Evidence File</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
-                </button>``
+                </button>
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
                 <form id="file_delete_form">
@@ -251,41 +266,70 @@
     <div class="modal-dialog">
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
-                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Add Compliance</h5>
+                <h5 class="m-0 font-weight-bold text-teiren" id='modal_title'>Add Related Compliance</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                 </button>
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
-                <div>
-                    <input class="form-control" name="data_name" type="hidden">
-                    <input class="form-control" name="file_name" type="hidden">
-                    Relation Compliance
-
-                    <label for="compliance">Choose Compliance:</label>
-                    <select id="compliance" onchange="updateVersion()">
-                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-                        <option value="none">Choose Compliance</option>
-                    </select>
-                    <br>
-                    <label for="version_selected">Choose Version:</label>
-                    <select id="version_selected" onchange="updateArticle()">
-                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-                        <option value="none">Please select Compliance</option>
-                    </select>
-                    <br>
-                    <label for="article_selected">Choose Compliance Article:</label>
-                    <select id="article_selected">
-                        <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
-                        <option value="none">Please select Version</option>
-                    </select>
+                <form id="compliance_add_form">
+                    <input class="form-control" name="data_name" value="{{data_name}}" type="hidden">
+                    <p>Related Compliance:
+                        <select class="form-control" id="compliance" name="compliance" onchange="updateVersion()">
+                            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                            <option value="">Choose Compliance</option>
+                            {% for compliance in compliance_list %}
+                            <option value="{{compliance}}">{{compliance}}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <p>Related Compliance Version:
+                        <select class="form-control" id="version_selected" name="version" onchange="updateArticle()">
+                            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                            <option value=""></option>
+                        </select>
+                    </p>
+                    <p>Related Compliance Article:
+                        <select class="form-control" id="article_selected" name="article">
+                            <!-- 초기에는 아무것도 선택되지 않도록 빈 옵션 추가 -->
+                            <option value=""></option>
+                        </select>
+                    </p>
 
                     <!--더 많은 Relation Compliance를 추가할 수 있는 코드를 아래 제작해야 함-->
-                </div>
+                </form>
             </div>
             <div class="modal-footer" id="modal_footer">
-                <input type='button' id='com_add_quit' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
-                <input type='button' id='com_add_accept' class="btn btn-md btn-outline-primary" onclick="add_com('{{data_name}}')" value="Add">
+                <input type='button' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' class="btn btn-md btn-teiren" onclick="addRelatedCompliance()" value="Add">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Related Complaince Modal -->
+<div class="modal hide fade card-body" id="compliance_delete" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-danger" id='modal_title'>Delete Evidence File</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <form id="compliance_delete_form">
+                    <input class="form-control" name="data_name" value="{{data_name}}" type="hidden">
+                    <p>Related Compliance: <input class="form-control" name="compliance" type="text" readonly></p>
+                    <p>Related Compliance Version: <input class="form-control" name="version" type="text" readonly></p>
+                    <p>Related Compliance Article <input class="form-control" name="article" type="text" readonly></p>
+                </form>
+                <h5 class="text-danger">Will You Delete Compliance Relation?</h5>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
+                <input type='button' class="btn btn-md btn-danger" onClick="deleteRelatedCompliance()" value="Delete">
             </div>
             </form>
         </div>
@@ -336,6 +380,7 @@
         $('#file_modify_form input[name="last_update"]').val(button.data('last-update'));
         $('#file_modify_form input[name="name"]').val(button.data('name'));
         $('#file_modify_form input[name="comment"]').val(button.data('comment'));
+        $('#file_modify_form input[name="og_comment"]').val(button.data('comment'));
         $('#file_modify_form input[name="author"]').val(button.data('author'));
         $('#file_modify_form input[name="version"]').val(button.data('version'));
         $('#file_modify_form input[name="poc"]').val(button.data('poc'));
@@ -388,267 +433,96 @@
         })
     })
 
-function add_com(data_name){
-    // Call your Ajax function here
-    var data_name = data_name;
-    var compliance=$('#compliance').val();
-    var version_selected=$('#version_selected').val();
-    var article_selected=$('#article_selected').val();
-
-    console.log('compliance: ', compliance);
-    console.log('version:', version_selected);
-    console.log('article_selected: ', article_selected);
-    console.log('data_name: ', data_name);
-
-
+function addRelatedCompliance(){
     $.ajax({
-        url: '/compliance/evidence/com_add/',
+        url: '/compliance/evidence/compliance/add/',
         headers: {
             'X-CSRFToken': "{{ csrf_token }}"
         },
         type: 'POST',
-        data: {
-            'name': data_name,
-            'compliance': compliance,
-            'version_selected':version_selected,
-            'article_selected': article_selected
-        },
-        success: function(response){       
-            if(response.startsWith('\n<meta')){
-                location.reload()
-            }
-            if(response === 'success'){
-                alert('Saved Successfully')
-                location.reload()
-            }else if(response === 'already exist'){
-                alert('Name is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
-            }else if(response === 'NULL'){
-                alert('Compliance and Version must be entered. Try Again')
-            }
-            else {
-                alert('Failed To Save. Please Try Again')
-            }
-        },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
+        data: $('#compliance_add_form').serialize()
+    }).done(function(response){
+        alert(response)
+        if(response.startsWith("Success")){
+            location.reload()
+            return 0
         }
     })
-
-    
 }
 
+$('#compliance_delete').on('shown.bs.modal', function (e) {
+    var button = $(e.relatedTarget); // 클릭된 버튼
+    $('#compliance_delete_form input[name="compliance"]').val(button.data('compliance'));
+    $('#compliance_delete_form input[name="version"]').val(button.data('version'));
+    $('#compliance_delete_form input[name="article"]').val(button.data('article'));
+});
 
-// 페이지 로드 시 초기화 함수 호출
-{% comment %} window.onload = function() {
-    // 상위 카테고리를 서버에서 받아오는 함수 호출
-    fetchComplianceSelected();
-} {% endcomment %}
-
-// 상위 카테고리를 서버에서 받아오는 함수
-{% comment %} function fetchComplianceSelected() {
-    var compliance_selected = document.getElementById('compliance');
-    
-    //실제로 데이터 가져오는 곳.
-    var compliance_list=[]
-    return 0
+function deleteRelatedCompliance(){
     $.ajax({
-        url: '/compliance/evidence/get_compliance',
+        url: '/compliance/evidence/compliance/delete/',
         headers: {
             'X-CSRFToken': "{{ csrf_token }}"
         },
         type: 'POST',
-        data: {},
-        success: function (response) {
-            var compliance_list = response['compliance_list'];
-            
-            for (var i = 0; i < compliance_list.length; i++) {
-                var compliance = compliance_list[i];
-                var optionElement = document.createElement('option');
-                optionElement.value = compliance;
-                optionElement.text = compliance;
-                compliance_selected.add(optionElement);
-            }
-        },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
+        data: $('#compliance_delete_form').serialize()
+    }).done(function(response){
+        alert(response)
+        if(response.startsWith("Success")){
+            location.reload()
+            return 0
         }
     })
-
-} {% endcomment %}
-
+}
 // 상위 카테고리가 변경될 때 호출되는 함수
 function updateVersion() {
-    var compliance_selected = document.getElementById('compliance');
-
     $.ajax({
-        url: '/compliance/evidence/get_version',
+        url: '/compliance/evidence/data/get_version/',
         headers: {
             'X-CSRFToken': "{{ csrf_token }}"
         },
         type: 'POST',
         data: {
-            "compliance_selected": compliance_selected.value // Send the selected value to the server
-        },
-        success: function (response) {
-            var version_list = response['version_list'];
-
-            version_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
-
-            var optionElement = document.createElement('option');
-            optionElement.value = ''; // 실제 전달되는 값은 no만
-            optionElement.text = 'Nothing Select';
-            version_selected.add(optionElement);
-
-            // 받아온 카테고리를 드롭다운에 추가
-            for (var i = 0; i < version_list.length; i++) {
-                var version = version_list[i]['version'];
-
-                var optionElement = document.createElement('option');
-                optionElement.value = version; // 실제 전달되는 값은 no만
-                optionElement.text = version; 
-            
-                // version_selected에 추가
-                version_selected.add(optionElement);
-            }
-        },
-        error: function (xhr, errmsg, err) {
-            console.log(xhr.status + ": " + xhr.responseText);
+            "compliance": $('#compliance').val()
         }
-    });
+    }).done(function(response){
+        var version_list = response['version_list'];
+        $('#article_selected').html('')
+        $('#version_selected').html('')
+        $('#version_selected').append(
+            $('<option>').text('Choose Compliance Version').attr('disabled', true).attr('selected', true)
+        )
+        $(version_list).each(function(i){
+            var version = $('<option>').text(this).val(this)
+            $('#version_selected').append(version)
+        })
+    })
 }
 
 
 // 하위 카테고리를 서버에서 받아오는 함수
 function updateArticle() {
-    var compliance_selected = document.getElementById('compliance');
-    var version_selected = document.getElementById('version_selected');
-
     $.ajax({
-        url: '/compliance/evidence/get_article',
+        url: '/compliance/evidence/data/get_article/',
         headers: {
             'X-CSRFToken': "{{ csrf_token }}"
         },
         type: 'POST',
         data: {
-            "compliance_selected": compliance_selected.value, // Send the selected value to the server
-            "version_selected": version_selected.value
-        },
-        success: function (response) {
-            var article_list = response['article_list'];
-
-            article_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
-
-            var optionElement = document.createElement('option');
-            optionElement.value = ''; // 실제 전달되는 값은 no만
-            optionElement.text = 'Nothing Select';
-            article_selected.add(optionElement);
-
-            // 받아온 카테고리를 드롭다운에 추가
-            for (var i = 0; i < article_list.length; i++) {
-                var article = '['+article_list[i]['no']+'] '+article_list[i]['name'];
-                var optionElement = document.createElement('option');
-                optionElement.value = article_list[i]['no']; // 실제 전달되는 값은 no만
-                optionElement.text = article;
-                article_selected.add(optionElement);
-            }
-        },
-        error: function (xhr, errmsg, err) {
-            console.log(xhr.status + ": " + xhr.responseText);
+            "compliance": $('#compliance').val(), // Send the selected value to the server
+            "version": $('#version_selected').val()
         }
-    });
-}
-
-function download_file(file_name) {
-    console.log(file_name);
-}
-
-   
-
-// 페이지 로드 시 초기화 함수 호출
-{% comment %} window.onload = function() {
-    // 상위 카테고리를 서버에서 받아오는 함수 호출
-    fetchCategories();
-} {% endcomment %}
-
-// 상위 카테고리를 서버에서 받아오는 함수
-{% comment %} function fetchCategories() {
-    var compliance_selected = document.getElementById('compliance');
-    //실제로 데이터 가져오는 곳.
-
-    var compliance_list=[]
-
-    $.ajax({
-        url: '/compliance/evidence/get_compliance',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {},
-        success: function (response) {
-            var compliance_list = response['compliance_list'];
-            
-            for (var i = 0; i < compliance_list.length; i++) {
-                var compliance = compliance_list[i];
-                var optionElement = document.createElement('option');
-                optionElement.value = compliance;
-                //console.log(compliance);
-                optionElement.text = compliance;
-                compliance_selected.add(optionElement);
-            }
-        },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
-        }
+    }).done(function(response){
+        var article_list = response['article_list']
+        $('#article_selected').html('')
+        $('#article_selected').append(
+            $('<option>').text('Choose Compliance Article').attr('disabled', true).attr('selected', true)
+        )
+        $(article_list).each(function(){
+            var version = $('<option>').text(`${this['no']} ${this['name']}`).val(`${this['no']} ${this['name']}`)
+            $('#article_selected').append(version)
+        })
     })
-
-} {% endcomment %}
-
-// 상위 카테고리가 변경될 때 호출되는 함수
-function updateArticles() {
-    var compliance_selected = document.getElementById('compliance');
-    var article_selected = document.getElementById('article_selected');
-    fetchSubCategories()
 }
-
-// 하위 카테고리를 서버에서 받아오는 함수
-{% comment %} function fetchSubCategories() {
-    var compliance_selected = document.getElementById('compliance');
-    //console.log(compliance_selected.value)
-
-    $.ajax({
-        url: '/compliance/evidence/get_compliance_articles',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {
-            "compliance_selected": compliance_selected.value // Send the selected value to the server
-        },
-        success: function (response) {
-            console.log(response);
-            var article_list = response['article_list'];
-
-            article_selected.innerHTML = ""; // 이전에 추가된 항목들 지우기
-            var optionElement = document.createElement('option');
-            optionElement.value = ''; // 실제 전달되는 값은 no만
-            optionElement.text = 'Nothing Select';
-
-            article_selected.add(optionElement);
-            // 받아온 카테고리를 드롭다운에 추가
-            for (var i = 0; i < article_list.length; i++) {
-                var article = '['+article_list[i]['no']+'] '+article_list[i]['name'];
-                var optionElement = document.createElement('option');
-                optionElement.value = article_list[i]['no']; // 실제 전달되는 값은 no만
-                console.log(article);
-                optionElement.text = article;
-                article_selected.add(optionElement);
-            }
-        },
-        error: function (xhr, errmsg, err) {
-            console.log(xhr.status + ": " + xhr.responseText);
-        }
-    });
-} {% endcomment %}
 
 </script>
 

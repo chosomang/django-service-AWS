@@ -190,9 +190,9 @@ def add_asset_file(request):
     try:
         # Extract data from the POST request
         uploadedFile = request.FILES.get('uploadedFile', '')
-        print(uploadedFile.name)
         data = dict(request.POST.items())
         poc = data.get('poc', '')
+        fileComment = data.get('fileComment', '')
         if not uploadedFile:
             response = 'Please Select File'
         elif 0 < graph.evaluate(f"""
@@ -202,8 +202,9 @@ def add_asset_file(request):
             response = "Already Exsisting File. Please Insert Different File."
         elif not poc:
             response = 'Please Enter Inforamtion for Person of Contact'
+        elif not fileComment:
+            response = "Please Enter Comment"
         else:
-            fileComment = data.get('fileComment', '')
             author = data.get('author', '')
             version = data.get('version', '')
             # Saving the information in the database
@@ -257,12 +258,14 @@ def modify_asset_file(request):
         data = dict(request.POST.items())
         og_fileName = data.get('og_fileName','')
         file_name = data.get('fileName','')
+        file_comment = data.get('fileComment','')
         if not file_name:
             response = "Please Check File Name"
+        elif not file_comment:
+            response = "Please Enter File Comment"
         elif og_fileName != file_name:
             raise Exception
         else:
-            file_comment = data.get('fileComment','')
             file_author = data.get('fileAuthor','')
             file_version = data.get('fileVersion','')
             file_poc = data.get('filePoC','')

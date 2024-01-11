@@ -28,7 +28,7 @@
 </div>
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h4 class="m-0 font-weight-bold text-teiren">Compliance Detail</h6>
+        <h4 class="m-0 font-weight-bold text-teiren">Compliance Detail</h4>
     </div>
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
@@ -58,7 +58,7 @@
 </div>
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h4 class="m-0 font-weight-bold text-teiren">Related Law</h6>
+        <h4 class="m-0 font-weight-bold text-teiren">Related Law</h4>
     </div>
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
@@ -75,16 +75,13 @@
                 <tbody>
                     {% for i in law %}
                         {% if i.lawName == '' and i.chapterNo == '' and i.sectionNo == '' and i.articleNo == '' %}
-                        <tr>
-                            <td colspan="4">No Data</td>
-                        </tr>
                         {% else %}
-                    <tr>
-                        <td>{{i.lawName}}</td>
-                        <td>{{i.chapterNo}} {{i.chapterName}}</td>
-                        <td>{{i.sectionNo}} {{i.sectionName}}</td>
-                        <td>{{i.articleNo}} {{i.articleName}}</td>
-                    </tr>
+                        <tr>
+                            <td>{{i.lawName}}</td>
+                            <td>{{i.chapterNo}} {{i.chapterName}}</td>
+                            <td>{{i.sectionNo}} {{i.sectionName}}</td>
+                            <td>{{i.articleNo}} {{i.articleName}}</td>
+                        </tr>
                         {% endif %}
                     {% endfor %}
                 </tbody>
@@ -94,7 +91,7 @@
 </div>
 <div class="card shadow mb-4">
     <div class="card-header row py-3">
-        <h4 class="m-0 font-weight-bold text-teiren">Evidence List</h6>
+        <h4 class="m-0 font-weight-bold text-teiren">Evidence File List</h4>
         <div class="ml-auto mr-3">
             <!-- <button class="ex btn btn-md">ex</button>
             <div class="ex-text">{% for a in article_list %}{% for i in a.articleExample %}{{i|linebreaks}}{% endfor %}{% endfor %}</div> -->
@@ -113,9 +110,9 @@
                         <th>File Comment</th>
                         <th>Version</th>
                         <th>PoC</th>
-                        <th>Upload Date</th>
                         <th>Author</th>
-                        <th>Preview</th>
+                        <th>Upload Date</th>
+                        <!-- <th>Preview</th> -->
                         <th>Download</th>
                         <th>Modify</th>
                         <th>Delete</th>
@@ -123,32 +120,50 @@
                 </thead>
                 <tbody>
                     {% if evidence_list %}
-                        {% for a in evidence_list %}
+                        {% for evidence in evidence_list %}
                             <tr>
-                                <td>{{a.dataName}}</td>
-                                <td>{{a.dataComment}}</td>
-                                <td>{{a.fileName}}</td>
-                                <td>{{a.fileComment}}</td>
-                                <td>{{a.fileVersion}}</td>
-                                <td>{{a.filePoc}}</td>
-                                <td>{{a.fileUploadDate}}</td>
-                                <td>{{a.fileAuthor}}</td>
-                                <td>
+                                <td>{{evidence.dataName}}</td>
+                                <td>{{evidence.dataComment}}</td>
+                                <td>{{evidence.fileName}}</td>
+                                <td>{{evidence.fileComment}}</td>
+                                <td>{{evidence.fileVersion}}</td>
+                                <td>{{evidence.filePoc}}</td>
+                                <td>{{evidence.fileAuthor}}</td>
+                                <td>{{evidence.fileUploadDate}}</td>
+                                <!-- <td>
                                     <button class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-magnifying-glass"></i></button>
-                                </td>
+                                </td> -->
                                 <td>
-                                    <button class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-download"></i></button>
-                                </td>
-                                <td>
-                                    <form method="post">
-                                        <input type="hidden" name="file_name" id="file_name" value="{{a.fileName}}"/>
-                                        <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#modify_file"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <form method="POST" action="/compliance/lists/evidence/file/download/" target="_blank">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="comment" value="{{evidence.fileComment}}">
+                                        <input type="hidden" name="name" value="{{evidence.fileName}}">
+                                        <button type="submit" class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-download mr-2"></i>Download</button>
                                     </form>
                                 </td>
                                 <td>
-                                    <form method="post">
-                                        <input type="hidden" name="file_name" id="file_name" value="{{a.fileName}}"/>
-                                        <button type="button" class="btn btn-md btn-danger" onclick="deleteEvidence(this)"><i class="fa-solid fa-trash"></i></button>
+                                    <form id="file_modify_modal_form">
+                                        <input type="hidden" name="product" value="{{evidence.productName}}"/>
+                                        <input type="hidden" name="data_name" value="{{evidence.dataName}}"/>
+                                        <input type="hidden" name="name" value="{{evidence.fileName}}"/>
+                                        <input type="hidden" name="comment" value="{{evidence.fileComment}}"/>
+                                        <input type="hidden" name="og_comment" value="{{evidence.fileComment}}"/>
+                                        <input type="hidden" name="version" value="{{evidence.fileVersion}}"/>
+                                        <input type="hidden" name="author" value="{{evidence.fileAuthor}}"/>
+                                        <input type="hidden" name="poc" value="{{evidence.filePoc}}"/>
+                                        <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#modify_file"><i class="fa-solid fa-pen-to-square mr-2"></i>Modify</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form id="file_delete_modal_form">
+                                        <input type="hidden" name="product" value="{{evidence.productName}}"/>
+                                        <input type="hidden" name="data_name" value="{{evidence.dataName}}"/>
+                                        <input type="hidden" name="name" value="{{evidence.fileName}}"/>
+                                        <input type="hidden" name="comment" value="{{evidence.fileComment}}"/>
+                                        <input type="hidden" name="version" value="{{evidence.fileVersion}}"/>
+                                        <input type="hidden" name="author" value="{{evidence.fileAuthor}}"/>
+                                        <input type="hidden" name="poc" value="{{evidence.filePoc}}"/>
+                                        <button type="button" class="btn btn-md btn-danger" data-toggle="modal" data-target="#delete_file"><i class="fa-solid fa-trash mr-2"></i>Delete</button>
                                     </form>
                                 </td>
                             </tr>
@@ -165,28 +180,39 @@
     <div class="modal-dialog">
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
-                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Upload Evidence File</h5>
+                <h5 class="m-0 font-weight-bold text-teiren" id='modal_title'>Upload Evidence File</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                 </button>
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
-                <form id="evidence_form" enctype="multipart/form-data">
-                <div>
-                    <p>Data: <input type="text" class="form-control" id='dataName' name="dataName" value=''></p>
-                    <p>Data Comment: <input type="text" class="form-control" id='dataComment' name="dataComment" value='' placeholder="Enter a Comment of Data"></p>
-                    <p>File Comment: <input type="text" class="form-control" id='fileComment' name="fileComment" value='' placeholder="Enter a Comment of File"></p>
-                    <p>Version: <input type="text" class="form-control" id='version' name="version" value='' placeholder="ex. v_1.0"></p>
-                    <p>Author: <input type="text" class="form-control" id='author' name="author" value=''></p>
-                    <p>Poc: <input type="text" class="form-control" id='poc' name="poc" value=''></p>
-                    <input type="file" name="uploadedFile">
+                <form id="file_add_form" enctype="multipart/form-data">
+                    <p>Product: 
+                        <select class="form-control" id="product" name="product" onchange="updateData('add')">
+                            <option value="" selected>Choose Product</option>
+                            {% for product in product_list %}
+                                <option value="{{product}}">{{product}}</option>
+                            {% endfor %}
+                            <!-- <option value="">New Evidence Data</option> -->
+                        </select>
+                    </p>
+                    <p>Data: 
+                        <select class="form-control" name="data_name">
+                            
+                        </select>
+                    </p>
+                    <p>File Comment: <input type="text" class="form-control" name="comment" value='' placeholder="Enter a Comment of File"></p>
+                    <p>Version: <input type="text" class="form-control" name="version" value='' placeholder="ex. v_1.0"></p>
+                    <p>Author: <input type="text" class="form-control" name="author" value="{{user}}" readonly></p>
+                    <p>Poc: <input type="text" class="form-control" name="poc" value=''></p>
+                    <input type="file" name="file">
+                    <input type="hidden" name="art_no" value="{{no}}"/>
+                    <input type="hidden" name="compliance" value="{{compliance_type}}"/>
                     {% csrf_token %}
-                </div>
+                </form>
             </div>
             <div class="modal-footer" id="modal_footer">
-                <input type="hidden" name="art_no" id="art_no" value="{{no}}"/>
-                <input type='submit' id='add' class="btn btn-md btn-outline-primary" value="Upload">
-                </form>
+                <input type='button' class="btn btn-md btn-outline-teiren" onClick="addEvidenceFile()" value="Upload">
             </div>
         </div>
     </div>
@@ -197,67 +223,186 @@
     <div class="modal-dialog">
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
-                <h5 class="m-0 font-weight-bold text-primary" id='modal_title'>Modify Evidence File</h5>
+                <h5 class="m-0 font-weight-bold text-teiren" id='modal_title'>Modify Evidence File: <span id="file_name"></span></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                 </button>
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
-                <form id="evidence_form" enctype="multipart/form-data">
-                <div>
-                    <p>Data: <input type="text" class="form-control" id='dataName' name="dataName" value=''></p>
-                    <p>Data Comment: <input type="text" class="form-control" id='dataComment' name="dataComment" value='' placeholder="Enter a Comment of Data"></p>
-                    <p>File Comment: <input type="text" class="form-control" id='fileComment' name="fileComment" value='' placeholder="Enter a Comment of File"></p>
-                    <p>Version: <input type="text" class="form-control" id='version' name="version" value='' placeholder="ex. v_1.0"></p>
-                    <p>Author: <input type="text" class="form-control" id='author' name="author" value=''></p>
-                    <p>Poc: <input type="text" class="form-control" id='poc' name="poc" value=''></p>
-                    <input type="file" name="uploadedFile">
+                <form id="file_modify_form">
+                    <p>Product:
+                        <select class="form-control" name="product" onchange="updateData('modify')">
+                            {% for product in product_list %}
+                                <option value="{{product}}">{{product}}</option>
+                            {% endfor %}
+                            <!-- <option value="">New Evidence Data</option> -->
+                        </select>
+                    </p>
+                    <p>Data:
+                        <select class="form-control" name="data_name">
+                        </select>
+                    </p>
+                    <p>File Comment: <input type="text" class="form-control" name="comment" value='' placeholder="Enter a Comment of File"></p>
+                    <p>Version: <input type="text" class="form-control" name="version" value='' placeholder="ex. v_1.0"></p>
+                    <p>Author: <input type="text" class="form-control" name="author" readonly></p>
+                    <p>Poc: <input type="text" class="form-control" name="poc" value=''></p>
+                    <input type="hidden" name="art_no" value="{{no}}"/>
+                    <input type="hidden" name="og_data_name"/>
+                    <input type="hidden" name="og_comment"/>
+                    <input type="hidden" name="compliance" value="{{compliance_type}}"/>
+                    <input type="hidden" name="name"/>
                     {% csrf_token %}
-                </div>
+                </form>
             </div>
             <div class="modal-footer" id="modal_footer">
-                <input type="hidden" name="art_no" id="art_no" value="{{no}}"/>
-                <input type='submit' id='add' class="btn btn-md btn-outline-primary" value="Upload">
+                <input type='button'class="btn btn-md btn-outline-teiren" onClick="modifyEvidenceFile()"value="Modify">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Evidence File Modal -->
+<div class="modal hide fade card-body" id="delete_file" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style='width:700px; height:auto'>
+            <div class="modal-header">
+                <h5 class="m-0 font-weight-bold text-danger" id='modal_title'>Delete Evidence File: <span id="file_name"></span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body card-body" style="font-size:12px;">
+                <form id="file_delete_form" enctype="multipart/form-data">
+                    <p>Product:<input type="text" class="form-control" name="product" readonly></p>
+                    <p>Data:<input type="text" class="form-control" name="data_name" readonly></p>
+                    <p>File Comment: <input type="text" class="form-control" name="comment" readonly></p>
+                    <p>Version: <input type="text" class="form-control" name="version" readonly></p>
+                    <p>Author: <input type="text" class="form-control" name="author" readonly></p>
+                    <p>Poc: <input type="text" class="form-control" name="poc" readonly></p>
+                    <input type="hidden" name="art_no" value="{{no}}"/>
+                    <input type="hidden" name="compliance" value="{{compliance_type}}"/>
+                    <input type="hidden" name="name"/>
+                    {% csrf_token %}
                 </form>
+            </div>
+            <div class="modal-footer" id="modal_footer">
+                <input type='button' class="btn btn-md btn-outline-danger" onClick="deleteEvidenceFile()" value="Delete">
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    function deleteEvidence(e){
-        var data=$(e).parent().serialize()
+    function updateData(action_type){
+        $(`#file_${action_type}_form select[name="data_name"]`).html('')
+        $(`#file_${action_type}_form select[name="data_name"]`).append(
+            $('<option>').text('Choose Evidence Data').val('').attr('selected', true)
+        )
         $.ajax({
-            url:'/compliance/delete/',
-            headers:{
-                'X-CSRFToken': '{{csrf_token}}'
+            url: '/compliance/lists/evidence/file/get_data/',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
             },
-            data: data,
+            type: 'POST',
+            data: $(`#file_${action_type}_form`).serialize()
+        }).done(function(response){
+            $(response['data_list']).each(function(i){
+                $(`#file_${action_type}_form select[name="data_name"]`).append(
+                    $('<option>').text(this).val(this)
+                )
+            })
+        })
+    }
+
+    function addEvidenceFile(){
+        $.ajax({
+            url: '/compliance/lists/evidence/file/add/',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: new FormData($('#file_add_form')[0]),
+            processData: false,
+            contentType: false
+        }).done(function(response){
+            alert(response)
+            if(response.startsWith('Success')){
+                location.reload()
+                return 0
+            }
+        })
+    }
+
+    $('#modify_file').on('shown.bs.modal', function (e) {
+        $($(e.relatedTarget).parent()[0]).find('input').each(function(i){
+            if (this.name === 'product'){
+                $(`#file_modify_form select[name="product"] option[value="${this.value}"]`).attr('selected', true)
+            } else if (this.name === 'data_name'){
+                $.ajax({
+                    url: '/compliance/lists/evidence/file/get_data/',
+                    headers: {
+                        'X-CSRFToken': "{{ csrf_token }}"
+                    },
+                    type: 'POST',
+                    data: $('#file_modify_form').serialize()
+                }).done(function(response){
+                    $(response['data_list']).each(function(i){
+                        $(`#file_modify_form select[name="data_name"]`).append(
+                            $('<option>').text(this).val(this)
+                        )
+                    })
+                    $(`#file_modify_form select[name="data_name"] option[value="${this.value}"]`).attr('selected', true)
+                })
+                $('#file_modify_form input[name="og_data_name"]').val(this.value)
+            } else if (this.name == 'name'){
+                $('#modify_file #file_name').text(this.value)
+                $(`#file_modify_form input[name="${this.name}"`).val(this.value)
+            }
+            else{
+                $(`#file_modify_form input[name="${this.name}"`).val(this.value)
+            }
+        })
+    });
+
+    function modifyEvidenceFile(){
+        $.ajax({
+            url: '/compliance/lists/evidence/file/modify/',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+            type: 'POST',
+            data: $('#file_modify_form').serialize()
+        }).done(function(response){
+            alert(response)
+            if(response.startsWith('Success')){
+                location.reload()
+                return 0
+            }
+        })
+    }
+
+    $('#delete_file').on('shown.bs.modal', function (e) {
+        $($(e.relatedTarget).parent()[0]).find('input').each(function(i){
+            if (this.name == 'name'){
+                $('#delete_file #file_name').text(this.value)
+            }
+            $(`#file_delete_form input[name="${this.name}"`).val(this.value)
+        })
+    });
+
+    function deleteEvidenceFile(){
+        $.ajax({
+            url:'/compliance/lists/evidence/file/delete/',
+            data: $('#file_delete_form').serialize(),
             type: 'post'
         }).done(function(response){
             alert(response)
+            if(response.startsWith("Success")){
+                location.reload()
+                return 0
+            }
         })   
     }
-
-    $('#evidence_form').on('submit', function(e){
-        e.preventDefault();
-
-        var formData = new FormData(this)
-        
-        $.ajax({
-            url: '/compliance/add/',
-            headers: {
-                'X-CSRFToken': '{{csrf_token}}'
-            },
-            data: formData,
-            type: 'post',
-            processData: false,  // Important!
-            contentType: false,  // Important!
-            success: function(response) {
-                alert(response);
-            }
-        });
-    })
 
     $("#related_law").DataTable({
         ordering: false,

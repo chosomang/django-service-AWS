@@ -133,7 +133,6 @@ def modify_lists_comply(compliance_type, data):
 
 def get_lists_details(compliance_type, data):
     no = data['no']
-
     results  = graph.run(f"""
     OPTIONAL MATCH (l:Law)-[:VERSION]->(v:Version)-[*]->(a:Article)<-[:MAPPED]->(i:Certification{{no:'{no}'}})
     WITH l, v, a, i
@@ -171,6 +170,8 @@ def get_lists_details(compliance_type, data):
     #query 수정 완 
     results = graph.run(f"""
     MATCH (f:File:Compliance:Evidence)<-[:FILE]-(d:Compliance:Evidence:Data)-[:EVIDENCE]->(a:Compliance:Certification:Article{{compliance_name:'{compliance_type}', no:'{no}'}})
+    WITH f, d
+    MATCH (d)<-[:DATA]-(p:Product:Compliance:Evidence)
     RETURN
         f.name as fileName,
         f.comment as fileComment,
@@ -181,7 +182,8 @@ def get_lists_details(compliance_type, data):
         f.poc as filePoc,
         f.author as fileAuthor,
         d.name as dataName,
-        d.comment as dataComment
+        d.comment as dataComment,
+        p.name as productName
     """)
     evidence = []
     for result in results:
@@ -198,78 +200,177 @@ def get_lists_details(compliance_type, data):
     for result in results:
         category.append(dict(result.items()))
     
+    product_list = graph.evaluate(f"""
+    MATCH (p:Product:Evidence:Compliance)
+    WHERE NOT p.name ENDS WITH "Manage"
+    WITH p.name as product ORDER BY p.name
+    RETURN COLLECT(product)
+    """)
     return {'law': law,
             'article_list': article,
             'evidence_list' : evidence,
-            'category' : category
+            'category' : category,
+            'product_list': product_list
     }
 
-def product_data_action(request, action_type):
-    if action_type == 'add':
-        response = add_product_data(request)
-    elif action_type == 'modify':
-        response = modify_product_data(request)
-    elif action_type == 'delete':
-        response = delete_product_data(request)
-    else:
-        response = 'Fail'
-    return response
-
-def add_product_data(request):
+def get_product_data_list(request):
     try:
-        # Extract data from the POST request
-        data = dict(request.POST.items())
-        art_no = data['art_no']
-        dataName = data.get('dataName', '')
-        dataComment = data.get('dataComment', '')
-        fileComment = data.get('fileComment', '')
-        author = data.get('author', '')
-        poc = data.get('poc', '')
-        version = data.get('version', '')
-        uploadedFile = request.FILES["uploadedFile"]
-
-        # 디비에 파일 정보 저장
-        document = Document(
-            title=fileComment,
-            uploadedFile=uploadedFile
-        )
-        document.save()
-
-        documents = Document.objects.all()
-
-        # Add current timestamp
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        uploadedFile.name = uploadedFile.name.replace(' ', '_')
-
-        # Create or update the node with properties
-        add_evidence = f"""
-        MATCH (a:Compliance:Certification:Article{{compliance_name:'Isms_p', no:'{art_no}'}})
-        MATCH (c:Evidence:Compliance{{name:'Evidence'}})
-        MERGE (n:Compliance:Evidence:Data{{name:'{dataName}', comment:'{dataComment}'}})
-        MERGE (e:Compliance:Evidence:File{{name:'{uploadedFile.name}', comment:'{fileComment}', upload_date:'{timestamp}', version:'{version}', author:'{author}', poc:'{poc}'}})
-        MERGE (c)-[:DATA]->(n)
-        MERGE (a)<-[:EVIDENCE]-(n)
-        merge (n)-[:FILE]->(e)
-        """
-        # 바꿔야 됨
-        """
-        MATCH (p:Product:Evidence:Compliance{{name:'{AWS}'}})
-        MERGE (n:Compliance:Evidence:Data{{name:'{dataName}', comment:'{dataComment}'}})
-        MERGE (e:Compliance:Evidence:File{{name:'{uploadedFile.name}', comment:'{fileComment}', upload_date:'{timestamp}', version:'{version}', author:'{author}', poc:'{poc}'}})
-        MERGE (p)-[:DATA]->(n)
-        MERGE (a)<-[:EVIDENCE]-(n)
-        MERGE (n)-[:FILE]->(e)
-        """
-        graph.run(add_evidence)
-
-        response = "증적 파일이 업로드 되었습니다."
+        product = request.POST.get('product', '')
+        if product:
+            response = graph.evaluate(f"""
+            MATCH (p:Product:Evidence:Compliance {{name:'{product}'}})-[:DATA]->(d)
+            WITH d.name as data ORDER BY d.name
+            RETURN COLLECT(data)
+            """)
+        else:
+            raise Exception
     except Exception as e:
-        response = f'Error: {str(e)}'
+        print(e)
+        response = []
     finally:
         return response
 
-def modify_product_data(request):
-    return 0
+def add_compliance_evidence_file(request):
+    print(request.POST.dict())
+    for key, value in request.POST.dict().items():
+        if not value and key not in ['version', 'poc']:
+            return f"Please Enter/Select {key.replace('_', ' ').title()}"
+    try:
+        art_no = request.POST.get('art_no', '')
+        compliance = request.POST.get('compliance', '')
+        data_name = request.POST.get('data_name', '')
+        product = request.POST.get('product', '')
+        comment = request.POST.get('comment', '')
+        author = request.POST.get('author', '')
+        poc = request.POST.get('poc', '')
+        version = request.POST.get('version', '')
+        file = request.FILES["file"]
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-def delete_product_data(request):
-    return 0
+        if 0 < graph.evaluate(f"""
+        MATCH (e:Compliance:Evidence:File {{name: '{file.name.replace(' ', '_')}'}})
+        RETURN COUNT(e)
+        """):
+            response = "Already Exsisting File. Please Select New File."
+        else:
+            graph.run(f"""
+            MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})
+            MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})
+            MATCH (n:Compliance:Evidence:Data{{name:'{data_name}'}})
+            MERGE (e:Compliance:Evidence:File{{name:'{file.name.replace(' ', '_')}', comment:'{comment}', upload_date:'{timestamp}', last_update:'{timestamp}', version:'{version}', author:'{author}', poc:'{poc}'}})
+            MERGE (p)-[:DATA]->(n)
+            MERGE (a)<-[:EVIDENCE]-(n)
+            MERGE (n)-[:FILE]->(e)
+            """)
+            # 디비에 파일 정보 저장
+            document = Document(
+                title=comment,
+                uploadedFile=file
+            )
+            document.save()
+            response = "Successfully Added Evidence File"
+    except Exception as e:
+        print(e)
+        response = f'Failed To Add Evidence File. Please Try Again.'
+    finally:
+        return response
+
+def modify_compliance_evidence_file(request):
+    for key, value in request.POST.dict().items():
+        if not value and key not in ['version', 'author', 'poc']:
+            return f"Please Enter/Select {key.replace('_', ' ').title()}"
+        elif not value and key in ['art_no', 'og_data_name', 'name', 'og_file_comment']:
+            return "Failed To Modify Evidence File. Please Try Again"
+    try:
+        # Extract data from the POST request
+        art_no = request.POST.get('art_no', '')
+        compliance = request.POST.get('compliance', '')
+        data_name = request.POST.get('data_name', '')
+        og_data_name = request.POST.get('og_data_name', '')
+        product = request.POST.get('product', '')
+        name = request.POST.get('name', '')
+        comment = request.POST.get('comment', '')
+        og_comment = request.POST.get('og_comment', '')
+        author = request.POST.get('author', '')
+        poc = request.POST.get('poc', '')
+        version = request.POST.get('version', '')
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if data_name != og_data_name:
+            cypher = f"""
+            MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})
+            MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[:DATA]->(d:Compliance:Evidence:Data{{name:'{data_name}'}})
+            MATCH (od:Compliance:Evidence:Data{{name:'{og_data_name}'}})
+            MATCH (a)<-[evidence_rel:EVIDENCE]-(od)-[file_rel:FILE]->(f:Compliance:Evidence:File{{name:'{name}', comment:'{og_comment}'}})
+            MERGE (f)<-[:FILE]-(d)-[:EVIDENCE]->(a)
+            DELETE evidence_rel
+            DELETE file_rel
+            SET f.comment = '{comment}',
+                f.author = '{author}',
+                f.version = '{version}',
+                f.poc = '{poc}',
+                f.last_update = '{timestamp}',
+                od.last_update = '{timestamp}',
+                d.last_update = '{timestamp}'
+            """
+        else:
+            # Create or update the node with properties
+            cypher = f"""
+            MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})
+            MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[:DATA]->(d:Compliance:Evidence:Data{{name:'{data_name}'}})
+            MATCH (a)<-[:EVIDENCE]-(d)-[:FILE]->(f:Compliance:Evidence:File{{name:'{name}', comment:'{og_comment}'}})
+            SET f.comment = '{comment}',
+                f.author = '{author}',
+                f.version = '{version}',
+                f.poc = '{poc}',
+                f.last_update = '{timestamp}',
+                d.last_update = '{timestamp}'
+            """
+        graph.run(cypher)
+        if og_comment != comment:
+            documents = Document.objects.filter(title=f"{og_comment}")
+            for document in documents:
+                if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
+                    document.title = comment
+                    document.save()
+        response = "Successfully Modified Evidence File"
+    except Exception as e:
+        print(e)
+        response = f'Failed To Modify Evidence File. Please Try Again.'
+    finally:
+        return response
+
+def delete_compliance_evidence_file(request):
+    print(request.POST.dict())
+    for key, value in request.POST.dict().items():
+        if not value and key not in ['version', 'author', 'poc']:
+            return f"Please Enter/Select {key.replace('_', ' ').title()}"
+    try:
+        art_no = request.POST.get('art_no', '')
+        compliance = request.POST.get('compliance', '')
+        data_name = request.POST.get('data_name', '')
+        product = request.POST.get('product', '')
+        name = request.POST.get('name', '')
+        comment = request.POST.get('comment', '')
+        author = request.POST.get('author', '')
+        poc = request.POST.get('poc', '')
+        version = request.POST.get('version', '')
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        graph.run(f"""
+        MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})
+        MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[:DATA]->(d:Compliance:Evidence:Data{{name:'{data_name}'}})
+        MATCH (a)<-[:EVIDENCE]-(d)-[:FILE]->(f:Compliance:Evidence:File{{name:'{name}', comment:'{comment}', version:'{version}', author:'{author}', poc:'{poc}'}})
+        SET d.last_update = '{timestamp}'
+        DETACH DELETE f
+        """)
+        documents = Document.objects.filter(title=comment)
+        for document in documents:
+            if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
+                print(document.uploadedFile.path)
+                document.uploadedFile.delete(save=False)
+                document.delete()
+        response = "Successfully Deleted Evidence File"
+    except Exception as e:
+        print(e)
+        response = "Failed To Delete Evidence File. Please Try Again."
+    finally:
+        return response

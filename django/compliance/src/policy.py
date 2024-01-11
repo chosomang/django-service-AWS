@@ -18,7 +18,7 @@ def get_policy(search_query1=None, search_query2=None):
             OPTIONAL MATCH (p)-[:DATA]->(d:Data:Evidence:Compliance)
             WHERE toLower(p.name) CONTAINS toLower('{search_query2}')
             RETURN p AS policy, COLLECT(d) AS data
-            ORDER BY policy.name ASC;
+            ORDER BY policy.name ASC
         """
     elif search_query1=='data' and search_query2:
         cypher=f"""
@@ -26,16 +26,16 @@ def get_policy(search_query1=None, search_query2=None):
             OPTIONAL MATCH (p)-[:DATA]->(d:Data:Evidence:Compliance)
             WHERE toLower(d.name) CONTAINS toLower('{search_query2}')
             RETURN p AS policy, COLLECT(d) AS data
-            ORDER BY policy.name ASC;
+            ORDER BY policy.name ASC
         """
     else:
         cypher=f"""
             MATCH (:Evidence:Compliance)-[:PRODUCT]->(:Product{{name:'Policy Manage'}})-[:POLICY]->(p:Policy)
             OPTIONAL MATCH (p)-[:DATA]->(d:Data:Evidence:Compliance)
             RETURN p AS policy, COLLECT(d) AS data
-            ORDER BY policy.name ASC;
+            ORDER BY policy.name ASC
         """
-
+        print(cypher)
     results = graph.run(cypher)
     for result in results:
         response.append(result)

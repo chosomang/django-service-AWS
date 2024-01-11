@@ -1,7 +1,6 @@
 from django.urls import include, path
 from django.conf import settings
 from . import views
-from .src import delete, add
 from django.conf.urls.static import static
 
 urlpatterns = [
@@ -10,6 +9,8 @@ urlpatterns = [
     path('lists/<compliance_type>/', views.compliance_lists_view),
     path('lists/<compliance_type>/modify/', views.compliance_lists_modify),
     path('lists/<compliance_type>/details/', views.compliance_lists_detail_view),
+    path('lists/<compliance_type>/download/', views.download_compliance_report),
+    path('lists/evidence/file/<action_type>/', views.compliance_lists_file_action),
     
     # Asset Management
     path('assets/', views.assets_view),
@@ -22,13 +23,11 @@ urlpatterns = [
     path('evidence/data/<action_type>/', views.evidence_data_action),
     path('evidence/<data_name>/', views.evidence_data_detail_view),
     path('evidence/file/<action_type>/', views.evidence_file_action),
+    path('evidence/compliance/<action_type>/', views.evidence_related_compliance),
 
+    # Policy Management
+    path('policy/', views.get_policy),
     #-------------------------------------------------------------------------------------
-    path('evidence/com_add/', views.add_com),
-
-    path('delete/', delete.delete),
-    path('add/', add.add),
-    
 
     path('integration/', views.integration),
     path('integration_add/', views.add_integration),

@@ -1,18 +1,11 @@
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
-from django.http import FileResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from .src import evidence, lists, assets, policy
 from .models import Document
-import json
 
 
-# Compliance
-def compliance_view(request):
-    context=' '
-    return render(request, f"compliance/compliance.html", context)
-
-# Compliance lists - 현경
+# Compliance List
 @login_required
 def compliance_lists_view(request, compliance_type=None):
     if compliance_type:
@@ -30,16 +23,40 @@ def compliance_lists_modify(request, compliance_type):
         data.update({'compliance_type': compliance_type})
         return render(request, f"compliance/compliance_lists/dataTable.html", data)
 
+def download_compliance_report(reqeust, compliance_type):
+    file_name = "[Teiren]ISMS-P Compliance Report.docx"
+    file_path = f"C:/Users/choso/Desktop/teiren/django-service-AWS/django/media/result/{file_name}"
+    return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=file_name)
+
 @login_required
 def compliance_lists_detail_view(request, compliance_type):
     if request.method == 'POST':
         data = dict(request.POST.items())
-        data.update(lists.get_lists_details(compliance_type.capitalize().replace('-','_'), data))
-        data.update({'compliance_type': compliance_type})
-        return render(request, f"compliance/compliance_lists/details.html", data)
+        if data['no'] == '' or not compliance_type.lower().startswith('isms'):
+            return redirect(f"/compliance/lists/{compliance_type}")
+        else:
+            data.update(lists.get_lists_details(compliance_type.capitalize().replace('-','_'), data))
+            data.update({'compliance_type': compliance_type})
+            return render(request, f"compliance/compliance_lists/details.html", data)
     else:
         return redirect(f"/compliance/lists/{compliance_type}")
 
+def compliance_lists_file_action(request, action_type):
+    if request.method == 'POST':
+        if action_type == 'add':
+            return HttpResponse(lists.add_compliance_evidence_file(request))
+        elif action_type == 'modify':
+            return HttpResponse(lists.modify_compliance_evidence_file(request))
+        elif action_type == 'delete':
+            return HttpResponse(lists.delete_compliance_evidence_file(request))
+        elif action_type == 'get_data':
+            return JsonResponse({'data_list': lists.get_product_data_list(request)})
+        elif action_type == 'download':
+            documents = Document.objects.filter(title=request.POST.get('comment', ''))
+            for document in documents:
+                if document.uploadedFile.name.endswith(request.POST.get('name', '').replace('[','').replace(']','')):
+                    file_path = document.uploadedFile.path
+                    return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=document.uploadedFile.name)
 
 #Assets Management
 @login_required
@@ -111,7 +128,8 @@ def evidence_data_detail_view(request, data_name):
             'data_name': data_name,
             'data_list': evidence.get_data_list(request, data_name),
             'file_list': evidence.get_file_list(data_name),
-            'compliance_list': evidence.get_data_related_compliance('evidence', data_name)
+            'related_compliance_list': evidence.get_data_related_compliance('evidence', data_name),
+            'compliance_list': evidence.get_compliance_list()
         }
         return render(request, f"compliance/evidence_management/details.html", context)
 
@@ -123,23 +141,38 @@ def evidence_file_action(request, action_type):
             return HttpResponse(evidence.modify_evidence_file(request))
         elif action_type == 'delete':
             return HttpResponse(evidence.delete_evidence_file(request))
+        elif action_type == 'download':
+            documents = Document.objects.filter(title=request.POST.get('comment', ''))
+            for document in documents:
+                if document.uploadedFile.name.endswith(request.POST.get('name', '').replace('[','').replace(']','')):
+                    file_path = document.uploadedFile.path
+                    return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=document.uploadedFile.name)
 
-def evidence_related_compliance(request):
+def evidence_related_compliance(request, action_type):
+    if request.method == 'POST':
+        if action_type == 'add':
+            return HttpResponse(evidence.add_related_compliance(request))
+        elif action_type == 'delete':
+            return HttpResponse(evidence.delete_related_compliance(request))
     return HttpResponse('test')
 
-#-------------------------------------------------------------------------------------------
-def add_com(request):
-    if request.method=="POST":
-        add_com=dict(request.POST.items())
+def get_policy(request):
+    if request.method == "GET":
+        search_query1 = request.GET.get('search_query1', None)
+        search_query2 = request.GET.get('search_query2', None)
 
-        try:
-            #이걸 JsonResponse로 어케 바꾸지
-            return HttpResponse(evidence.add_com(add_com))   
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+        if search_query1 and search_query2:
+            policy_data=policy.get_policy(search_query1, search_query2)
+        else:
+            policy_data=policy.get_policy()
+
+        context={'policy':policy_data}
+
+        return render(request, f"compliance/policy_management.html", context)
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
-    
+#-------------------------------------------------------------------------------------------
+
 # Compliance lists_2 - 현경
 def integration(request):
     if request.method == 'GET':
@@ -172,29 +205,24 @@ def add_integration(request):
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
   
-def get_product(request):
-    if request.method=="POST":
-        product_list = evidence.get_product()
-        json_data = json.dumps({"product_list" :product_list})    
-        return HttpResponse(json_data, content_type='application/json')
 
-def get_policy(request):
-    if request.method == "GET":
-        search_query1 = request.GET.get('search_query1', None)
-        search_query2 = request.GET.get('search_query2', None)
+# def get_policy(request):
+#     if request.method == "GET":
+#         search_query1 = request.GET.get('search_query1', None)
+#         search_query2 = request.GET.get('search_query2', None)
 
-        if search_query1 and search_query2:
-            policy_data=policy.get_policy(search_query1, search_query2)
-        else:
-            policy_data=policy.get_policy()
+#         if search_query1 and search_query2:
+#             policy_data=policy.get_policy(search_query1, search_query2)
+#         else:
+#             policy_data=policy.get_policy()
 
-        context={
-        'policy':policy_data,
-        }
+#         context={
+#         'policy':policy_data,
+#         }
 
-        return render(request, f"compliance/policy/policy.html", context)
-    else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
+#         return render(request, f"compliance/policy/policy.html", context)
+#     else:
+#         return JsonResponse({'error': 'Invalid method'}, status=400)
 
 def get_policy_data(request):
     if request.method == 'GET':
