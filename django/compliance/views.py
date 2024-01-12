@@ -156,21 +156,28 @@ def evidence_related_compliance(request, action_type):
             return HttpResponse(evidence.delete_related_compliance(request))
     return HttpResponse('test')
 
-def get_policy(request):
-    if request.method == "GET":
-        search_query1 = request.GET.get('search_query1', None)
-        search_query2 = request.GET.get('search_query2', None)
+@login_required
+def policy_view(request):
+    context = {'policy': policy.get_policy_data_list(request)}
+    return render(request, f"compliance/policy_management.html", context)
 
-        if search_query1 and search_query2:
-            policy_data=policy.get_policy(search_query1, search_query2)
-        else:
-            policy_data=policy.get_policy()
+def policy_action(request, action_type):
+    if request.method == 'POST':
+        if action_type == 'add':
+            return HttpResponse(policy.add_policy(request))
+        elif action_type == 'modify':
+            return HttpResponse(policy.modify_policy(request))
+        elif action_type == 'delete':
+            return HttpResponse(policy.delete_policy(request))
 
-        context={'policy':policy_data}
-
-        return render(request, f"compliance/policy_management.html", context)
-    else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
+def policy_data_action(request, action_type):
+    if request.method == 'POST':
+        if action_type == 'add':
+            return HttpResponse(policy.add_policy_data(request))
+        elif action_type == 'modify':
+            return HttpResponse(policy.modify_policy_data(request))
+        elif action_type == 'delete':
+            return HttpResponse(policy.delete_policy_data(request))
 #-------------------------------------------------------------------------------------------
 
 # Compliance lists_2 - 현경

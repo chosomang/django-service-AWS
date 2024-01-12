@@ -26,13 +26,17 @@ urlpatterns = [
     path('evidence/compliance/<action_type>/', views.evidence_related_compliance),
 
     # Policy Management
-    path('policy/', views.get_policy),
+    path('policy/', views.policy_view),
+    path('policy/<action_type>/', views.policy_action),
+    path('policy/data/<action_type>/', views.policy_data_action),
+    # path('policy/<policy_type>/<data_type>/', views.policy_data_details)
+    # path('policy/<policy_type>/<data_type>/file/<action_type>/', views.policy_data_file_action),
+
     #-------------------------------------------------------------------------------------
 
     path('integration/', views.integration),
     path('integration_add/', views.add_integration),
 
-    path('policy/', views.get_policy),
     path('policy/file/', views.get_policy_data),
     path('policy/policy_add/', views.add_policy),
     path('policy/data_add/', views.add_policy_data),
