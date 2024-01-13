@@ -178,6 +178,27 @@ def policy_data_action(request, action_type):
             return HttpResponse(policy.modify_policy_data(request))
         elif action_type == 'delete':
             return HttpResponse(policy.delete_policy_data(request))
+@login_required
+def policy_data_view(request, policy_type, data_type):
+    context={'policy': policy_type}
+    context.update(policy.get_policy_data_details(policy_type, data_type))
+    return render(request, f"compliance/policy_management/file.html", context)
+
+def policy_data_file_action(request, policy_type, data_type, action_type):
+    if request.method == 'POST':
+        if action_type == 'add':
+            return HttpResponse(policy.add_policy_data_file(request))
+        elif action_type == 'modify':
+            return HttpResponse(policy.modify_policy_data_file(request))
+        elif action_type == 'delete':
+            return HttpResponse(policy.delete_policy_data_file(request))
+        elif action_type == 'download':
+            documents = Document.objects.filter(title=request.POST.get('comment', ''))
+            for document in documents:
+                if document.uploadedFile.name.endswith(request.POST.get('name', '').replace('[','').replace(']','')):
+                    file_path = document.uploadedFile.path
+                    return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=document.uploadedFile.name)
+
 #-------------------------------------------------------------------------------------------
 
 # Compliance lists_2 - 현경
@@ -213,24 +234,6 @@ def add_integration(request):
         return JsonResponse({'error': 'Invalid method'}, status=400)
   
 
-# def get_policy(request):
-#     if request.method == "GET":
-#         search_query1 = request.GET.get('search_query1', None)
-#         search_query2 = request.GET.get('search_query2', None)
-
-#         if search_query1 and search_query2:
-#             policy_data=policy.get_policy(search_query1, search_query2)
-#         else:
-#             policy_data=policy.get_policy()
-
-#         context={
-#         'policy':policy_data,
-#         }
-
-#         return render(request, f"compliance/policy/policy.html", context)
-#     else:
-#         return JsonResponse({'error': 'Invalid method'}, status=400)
-
 def get_policy_data(request):
     if request.method == 'GET':
         # Ajax GET 요청에서 전달된 파라미터 가져오기
@@ -253,30 +256,6 @@ def get_policy_data(request):
             return JsonResponse({'error': 'Missing title parameter'}, status=400)
     else:
         # GET 이외의 메소드에 대한 처리
-        return JsonResponse({'error': 'Invalid method'}, status=400)
-
-def add_policy(request):
-    if request.method=="POST":
-        policy_name=request.POST.get('policy_name', None)
-   
-        try:
-            #이걸 JsonResponse로 어케 바꾸지
-            return HttpResponse(policy.add_policy(policy_name))
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
-    
-def add_policy_data(request):
-    if request.method=="POST":
-        data=dict(request.POST.items())
-   
-        try:
-            #이걸 JsonResponse로 어케 바꾸지
-            return HttpResponse(policy.add_policy_data(data))
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
     
 def add_policy_file(request):
@@ -301,29 +280,6 @@ def add_policy_file(request):
     else:
         return JsonResponse({'error': 'Invalid method'}, status=400)
     
-def del_policy_data(request):
-    if request.method=="POST":
-        data=dict(request.POST.items())
-   
-        try:
-            #이걸 JsonResponse로 어케 바꾸지
-            return HttpResponse(policy.del_policy_data(data))
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
-    
-def mod_policy_data(request):
-    if request.method=="POST":
-        data=dict(request.POST.items())
-   
-        try:
-            #이걸 JsonResponse로 어케 바꾸지
-            return HttpResponse(policy.mod_policy_data(data))
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
     
 def del_policy_file(request):
     if request.method=="POST":

@@ -29,20 +29,11 @@ urlpatterns = [
     path('policy/', views.policy_view),
     path('policy/<action_type>/', views.policy_action),
     path('policy/data/<action_type>/', views.policy_data_action),
-    # path('policy/<policy_type>/<data_type>/', views.policy_data_details)
-    # path('policy/<policy_type>/<data_type>/file/<action_type>/', views.policy_data_file_action),
+    path('policy/<policy_type>/<data_type>/', views.policy_data_view),
+    path('policy/<policy_type>/<data_type>/file/<action_type>/', views.policy_data_file_action),
 
     #-------------------------------------------------------------------------------------
 
     path('integration/', views.integration),
     path('integration_add/', views.add_integration),
-
-    path('policy/file/', views.get_policy_data),
-    path('policy/policy_add/', views.add_policy),
-    path('policy/data_add/', views.add_policy_data),
-    path('policy/data_mod/', views.mod_policy_data),
-    path('policy/data_del/', views.del_policy_data),
-    path('policy/file_add/', views.add_policy_file),
-    path('policy/file_del/', views.del_policy_file),
-
 ]

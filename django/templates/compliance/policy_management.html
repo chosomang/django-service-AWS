@@ -51,19 +51,20 @@
                                         <td>{{data.last_update}}</td>
                                         <td>
                                             
-                                            <form method="GET" action="/compliance/policy/file/">
+                                            <form method="POST" action="/compliance/policy/{{ p.policy.name }}/{{ data.name }}/">
+                                                {% csrf_token %}
                                                 <input type="hidden" name="policy_name" value="{{ p.policy.name }}"/>
                                                 <input type="hidden" name="data_name" value="{{ data.name }}"/>
-                                                <button type="submit" class="btn btn-md btn-teiren"><i class="fa-solid fa-file mr-2"></i>Files</button>
+                                                <button type="submit" class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-file mr-2"></i>Files</button>
                                             </form>
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-md btn-outline-teiren" data-toggle="modal" data-target="#data_modify_modal"
+                                            <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_modify_modal"
                                             data-policy-name="{{p.policy.name}}" data-name="{{data.name}}" data-comment="{{data.comment}}"><i class="fa-solid fa-pen-to-square mr-2"></i>Modify</button>
                                         </td>
                                         <td>
                                             <button type="button" class="btn btn-md btn-danger" data-toggle="modal" data-target="#data_delete_modal"
-                                            data-policy-name="{{p.policy.name}}" data-name="{{data.name}}" data-comment="{{data.comment}}" data-comment="{{data.author}}"><i class="fa-solid fa-trash mr-2"></i>Delete</button>
+                                            data-policy-name="{{p.policy.name}}" data-name="{{data.name}}" data-comment="{{data.comment}}" data-author="{{data.author}}"><i class="fa-solid fa-trash mr-2"></i>Delete</button>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -137,7 +138,7 @@
                 <form id="policy_delete_form">
                     <p>Policy Name: <input class="form-control" name="policy" type="text" readonly></p>
                 </form>
-                <h5 class="text-danger">Data and files related to <span class="policy-name"></span> will be delete as well. Will you still delete this policy?</h5>
+                <h5 class="text-danger">Data and files related to "<span class="policy-name"></span>" will be delete as well. Will you still delete this policy?</h5>
             </div>
             <div class="modal-footer" id="modal_footer">
                 <input type='button' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
@@ -181,7 +182,7 @@
     <div class="modal-dialog">
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
-                <h5 class="m-0 font-weight-bold text-teiren" id='modal_title'>Modify Data</h5>
+                <h5 class="m-0 font-weight-bold text-teiren" id='modal_title'>Modify Policy Data: <span class="data-name"></span></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                 </button>
@@ -197,7 +198,7 @@
             </div>
             <div class="modal-footer" id="modal_footer">
                 <input type='button' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
-                <input type='button' class="btn btn-md btn-teiren" onClick="modifyPolicyData()" value="Modify">
+                <input type='button' class="btn btn-md btn-teiren" onClick="modifyPolicyData()" value="Modify Policy Data">
             </div>
             </form>
         </div>
@@ -205,27 +206,27 @@
 </div>
 
 <!-- Delete Policy Data Modal -->
-<div class="modal hide fade card-body" id="policy_data_delete" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+<div class="modal hide fade card-body" id="data_delete_modal" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content" style='width:700px; height:auto'>
             <div class="modal-header">
-                <h5 class="m-0 font-weight-bold text-danger" id='modal_title'>Add Policy Data</h5>
+                <h5 class="m-0 font-weight-bold text-danger" id='modal_title'>Delete Policy Data: <span class="data-name"></span></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                 </button>
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
-                <div>
+                <form id="data_delete_form">
                     <p>Policy Name: <input class="form-control" name="policy" type="text" readonly></p>
                     <p>Data Name: <input class="form-control" name="name" type="text" readonly></p>
-                    <p>Comment: <input class="form-control" name="comment" type="text"></p>
-                    <p>Author: <input class="form-control" name="author" type="text"></p>
-                    <h5 class="text-danger">Files Related To <span></span> Will Be Deleted. Will You Delete Policy Data?</h5>
-                </div>
+                    <p>Comment: <input class="form-control" name="comment" type="text" readonly></p>
+                    <p>Author: <input class="form-control" name="author" type="text" readonly></p>
+                    <h5 class="text-danger">Files Related To "<span class="data-name"></span>" Will Be Deleted. Will You Delete Policy Data?</h5>
+                </form>
             </div>
             <div class="modal-footer" id="modal_footer">
                 <input type='button' class="btn btn-md btn-outline-danger" data-dismiss='modal' value="Cancel">
-                <input type='button' class="btn btn-md btn-danger" value="Delete">
+                <input type='button' class="btn btn-md btn-danger" onClick="deletePolicyData()" value="Delete Policy Data">
             </div>
             </form>
         </div>
@@ -329,6 +330,7 @@ $('#data_modify_modal').on('shown.bs.modal', function (e) {
     $(this).find('input[name="name"]').val($(e.relatedTarget).data('name'));
     $(this).find('input[name="og_name"]').val($(e.relatedTarget).data('name'));
     $(this).find('input[name="comment"]').val($(e.relatedTarget).data('comment'));
+    $(this).find('.data-name').text($(e.relatedTarget).data('name'))
 });
 
 function modifyPolicyData(){
@@ -339,6 +341,31 @@ function modifyPolicyData(){
         },
         type: 'POST',
         data: $('#data_modify_form').serialize()
+    }).done(function(response){
+        alert(response)
+        if(response.startsWith('Success')){
+            location.reload()
+            return 0
+        }
+    })
+}
+
+$('#data_delete_modal').on('shown.bs.modal', function (e) {
+    $(this).find('input[name="policy"]').val($(e.relatedTarget).data('policy-name'));
+    $(this).find('input[name="name"]').val($(e.relatedTarget).data('name'));
+    $(this).find('input[name="comment"]').val($(e.relatedTarget).data('comment'));
+    $(this).find('input[name="author"]').val($(e.relatedTarget).data('author'));
+    $(this).find('.data-name').text($(e.relatedTarget).data('name'))
+});
+
+function deletePolicyData(){
+    $.ajax({
+        url: 'data/delete/',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token }}"
+        },
+        type: 'POST',
+        data: $('#data_delete_form').serialize()
     }).done(function(response){
         alert(response)
         if(response.startsWith('Success')){

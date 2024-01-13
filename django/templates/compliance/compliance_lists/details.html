@@ -138,7 +138,7 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="comment" value="{{evidence.fileComment}}">
                                         <input type="hidden" name="name" value="{{evidence.fileName}}">
-                                        <button type="submit" class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-download mr-2"></i>Download</button>
+                                        <button type="submit" class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-download"></i></button>
                                     </form>
                                 </td>
                                 <td>
@@ -151,7 +151,7 @@
                                         <input type="hidden" name="version" value="{{evidence.fileVersion}}"/>
                                         <input type="hidden" name="author" value="{{evidence.fileAuthor}}"/>
                                         <input type="hidden" name="poc" value="{{evidence.filePoc}}"/>
-                                        <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#modify_file"><i class="fa-solid fa-pen-to-square mr-2"></i>Modify</button>
+                                        <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#modify_file"><i class="fa-solid fa-pen-to-square"></i></button>
                                     </form>
                                 </td>
                                 <td>
@@ -163,7 +163,7 @@
                                         <input type="hidden" name="version" value="{{evidence.fileVersion}}"/>
                                         <input type="hidden" name="author" value="{{evidence.fileAuthor}}"/>
                                         <input type="hidden" name="poc" value="{{evidence.filePoc}}"/>
-                                        <button type="button" class="btn btn-md btn-danger" data-toggle="modal" data-target="#delete_file"><i class="fa-solid fa-trash mr-2"></i>Delete</button>
+                                        <button type="button" class="btn btn-md btn-danger" data-toggle="modal" data-target="#delete_file"><i class="fa-solid fa-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>
