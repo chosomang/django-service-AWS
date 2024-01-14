@@ -81,7 +81,7 @@ TEMPLATES = [
     },
 ]
 WSGI_APPLICATION = 'service.wsgi.application'
-
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {

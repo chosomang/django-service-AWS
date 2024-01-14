@@ -53,6 +53,7 @@
 </div>
 
 <div class="card shadow mb-4" id="log_table">
+    <div id="preview_div"></div>
     <div class="card-header py-3 row">
         <h5 class="m-0 font-weight-bold text-teiren">Evidence File Manage</h5>
         <button class="btn btn-md btn-teiren ml-auto mr-3" data-toggle="modal" data-target="#file_add" data-name="{{data_name}}" data-author="{{user}}"><i class="fa-solid fa-plus mr-2"></i>Add File</button>           
@@ -70,6 +71,7 @@
                         <th>PoC</th>
                         <th>Author</th>
                         <th>Upload Date</th>
+                        <th>Preview</th>
                         <th>Download</th>
                         <th>Modify</th>
                         <th>Delete</th>
@@ -85,6 +87,14 @@
                             <td>{{file.poc}}</td>
                             <td>{{file.author}}</td>
                             <td>{{file.upload_date}}</td>
+                            <td>
+                                <form>
+                                    {% csrf_token %}
+                                    <input type="hidden" name="name" value="{{file.name}}">
+                                    <input type="hidden" name="comment" value="{{file.comment}}">
+                                    <button type="button" class="btn btn-md btn-outline-teiren" onClick="preview(this)"><i class="fa-solid fa-magnifying-glass mr-2"></i>Preview</button>
+                                </form>
+                            </td>
                             <td>
                                 <form method="POST" action="/compliance/evidence/file/download/" target="_blank">
                                     {% csrf_token %}
@@ -519,6 +529,33 @@ function updateArticle() {
             var version = $('<option>').text(`${this['no']} ${this['name']}`).val(`${this['no']} ${this['name']}`)
             $('#article_selected').append(version)
         })
+    })
+}
+
+function preview(e){
+    $('#preview_div').css('max-height', '900px')
+    $('#preview_div').html(`
+    <div class="card-header py-3 row">
+        <h4 class="m-0 font-weight-bold text-teiren">File Preview</h4>
+    </div>
+    <div id="preview" class="d-flex justify-content-center" style="background-color:#d7d7d7">
+        <div id="loader" class="d-flex justify-content-center align-items-center" 
+            style="width:100%; height:600px; background-color:rgba(156, 154, 154, 0.1);">
+            <div class="spinner-border-lg text-teiren"></div>
+        </div>
+    </div>
+    `)
+    $('.body-content').animate({
+        scrollTop: Math.abs($('.locationbar').offset().top)+Math.abs($('#preview_div').offset().top)+20
+      }, 'slow');
+    $.ajax({
+        url:'/compliance/file/preview/',
+        type:'POST',
+        data: $(e.parentNode).serialize()
+    }).done(function(response){
+        $('#loader').remove()
+        console.log(response)
+        $('#preview').append(response)
     })
 }
 

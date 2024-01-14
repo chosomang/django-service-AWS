@@ -2,6 +2,13 @@ from django.urls import include, path
 from django.conf import settings
 from . import views
 from django.conf.urls.static import static
+from django.views.static import serve
+from django.urls import re_path
+from django.views.decorators.clickjacking import xframe_options_sameorigin
+
+@xframe_options_sameorigin
+def protected_serve(request, path, document_root=None, show_indexes=False):
+    return serve(request, path, document_root, show_indexes)
 
 urlpatterns = [
     # Compliance Lists
@@ -32,8 +39,14 @@ urlpatterns = [
     path('policy/<policy_type>/<data_type>/', views.policy_data_view),
     path('policy/<policy_type>/<data_type>/file/<action_type>/', views.policy_data_file_action),
 
+    # File Preview
+    path('file/preview/', views.data_file_preview),
     #-------------------------------------------------------------------------------------
 
     path('integration/', views.integration),
     path('integration_add/', views.add_integration),
+
+    re_path(r'^media/(?P<path>.*)$', protected_serve, {
+        'document_root': settings.MEDIA_ROOT,
+    }),
 ]

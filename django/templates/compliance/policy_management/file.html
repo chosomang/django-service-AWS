@@ -53,7 +53,8 @@
     </div>
 
     <h2> 즌비증~</h2> {% endcomment %}
-
+    <div id="preview_div">
+    </div>
     <div class="card-header py-3 row">
         <h4 class="m-0 font-weight-bold text-teiren">Policy Data File Manage</h4>
         <button class="btn btn-md btn-teiren ml-auto mr-3" data-toggle="modal" data-target="#file_add_modal" data-policy="{{policy}}" data-name="{{data.name}}"><i class="fa-solid fa-plus mr-2"></i>Add Policy Data File</button>           
@@ -72,6 +73,7 @@
                         <th>PoC</th>
                         <th>Author</th>
                         <th>Uploaded Date</th>
+                        <th>Preview</th>
                         <th>Download</th>
                         <th>Modify</th>
                         <th>Delete</th>
@@ -87,6 +89,14 @@
                             <td>{{file.poc}}</td>
                             <td>{{file.author}}</td>
                             <td>{{file.upload_date}}</td>
+                            <td>
+                                <form>
+                                    {% csrf_token %}
+                                    <input type="hidden" name="comment" value="{{file.comment}}">
+                                    <input type="hidden" name="name" value="{{file.name}}">
+                                    <button type="button" class="btn btn-md btn-outline-teiren" onclick="preview(this)"><i class="fa-solid fa-magnifying-glass mr-2"></i>preview</button>
+                                </form>
+                            </td>
                             <td>
                                 <form method="POST" action="/compliance/policy/{{policy}}}/{{data.name}}/file/download/" target="_blank">
                                     {% csrf_token %}
@@ -112,7 +122,6 @@
         </div>
     </div>
 </div>
-
 <!-- Add File Modal -->
 <div class="modal hide fade card-body" id="file_add_modal" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -295,156 +304,33 @@ function deletePolicyDataFile(){
     })
 }
 
-//===================================================================================
-
-$('#file_mod').on('shown.bs.modal', function (e) {
-    var button = $(e.relatedTarget);
-
-   var data = {
-    'data_name': button.data('data-name'),
-    'last_name': button.data('name'),
-    'last_update': button.data('last-update'),
-    'file_name': button.data('name'),
-    'file_comment': button.data('comment'),
-    'file_author': button.data('author'),
-    'file_poc': button.data('poc')
-    };
-
-    for (var key in data) {
-        $('input[name="' + key + '"]').val(data[key]);
-    }
-});
-
-$('#file_add').on('shown.bs.modal', function (e) {
-    var button = $(e.relatedTarget); // 클릭된 버튼
-    var policy_name = button.data('policy-name'); 
-    var data_name = button.data('data-name'); // data-name 속성의 값
-   
-    $('input[name="policy_name"]').val(policy_name);
-    $('input[name="data_name"]').val(data_name);
-});
-
-$('#add_accept').click(function() {
-    var policy_name = $('input[name="policy_name"]').val();
-    var data_name = $('input[name="data_name"]').val();
-    var name = $('input[name="add_name"]').val();
-    var comment = $('input[name="add_comment"]').val();
-    var author = $('input[name="add_author"]').val();
-    var poc = $('input[name="add_poc"]').val();
-
-    // FormData 객체 생성
-    var formData = new FormData();
-    formData.append('policy_name', policy_name);
-    formData.append('data_name', data_name);
-    formData.append('name', name);
-    formData.append('comment', comment);
-    formData.append('author', author);
-    formData.append('poc', poc);
-
-    // 파일 필드 추가
-    var fileInput = $('input[name="add_file"]')[0];
-    formData.append('add_file', fileInput.files[0]);
-
+function preview(e){
+    $('#preview_div').css('max-height', '900px')
+    $('#preview_div').html(`
+    <div class="card-header py-3 row">
+        <h4 class="m-0 font-weight-bold text-teiren">File Preview</h4>
+    </div>
+    <div id="preview" class="d-flex justify-content-center" style="background-color:#d7d7d7">
+        <div id="loader" class="d-flex justify-content-center align-items-center" 
+            style="width:100%; height:600px; background-color:rgba(156, 154, 154, 0.1);">
+            <div class="spinner-border-lg text-teiren"></div>
+        </div>
+    </div>
+    `)
+    $('.body-content').animate({
+        scrollTop: Math.abs($('.locationbar').offset().top)+Math.abs($('#preview_div').offset().top)+20
+      }, 'slow');
     $.ajax({
-        url: '/compliance/policy/file_add/',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,  
-        success: function(response){
-            if(response.startsWith('\n<meta')){
-                location.reload() 
-            }
-            if(response === 'success'){
-                alert('Saved Successfully')
-                location.reload()
-            }else if(response === 'already exist'){
-            alert('file name is already exist. Try Again') 
-            }else if(response === 'NULL'){
-                alert('Data name must be entered. Try Again')
-            }
-            else {
-                alert('Failed To Save. Please Try Again')
-            }
-        },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
-        }
+        url:'/compliance/file/preview/',
+        type:'POST',
+        data: $(e.parentNode).serialize()
+    }).done(function(response){
+        $('#loader').remove()
+        console.log(response)
+        $('#preview').append(response)
     })
-})
-
-$('#mod_accept').click(function() {
-    var formData = {
-        'data_name': $('input[name="data_name"]').val(),
-        'last_name': $('input[name="last_name"]').val(),
-        'mod_name': $('input[name="mod_name"]').val(),
-        'mod_comment': $('input[name="mod_comment"]').val(),
-        'mod_author': $('input[name="mod_author"]').val(),
-        'mod_poc': $('input[name="mod_poc"]').val()
-    };
-
-    $.ajax({
-        url: '/compliance/evidence/file_mod/',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: formData,
-        success: function(response){
-            if(response.startsWith('\n<meta')){
-                location.reload()
-            }
-            if(response === 'success'){
-                alert('Modify Successfully')
-                location.reload()
-            }else if(response === 'already exist'){
-                alert('Name is already exist. Try Again')
-            }else if(response === 'NULL'){
-                alert('Name must be entered. Try Again')
-            }
-            else {
-                alert('Failed To Save. Please Try Again')
-            }
-        },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
-        }
-    })
-});
-
-
-function del_file(policy_name, data_name, file_name) {
-    var formData = {
-        'policy_name': policy_name,
-        'data_name': data_name,
-        'file_name': file_name
-    };
-
-    $.ajax({
-        url: '/compliance/policy/file_del/',
-        headers: {'X-CSRFToken': "{{ csrf_token }}"},
-        type: 'POST',
-        data: formData,
-        success: function(response) {
-            if (response.startsWith('\n<meta')) {
-                location.reload();
-            } else {
-                if (response === 'success') {
-                    alert('Deleted Successfully');
-                } else {
-                    alert('Failed To Save. Please Try Again');
-                }
-                location.reload();
-            }
-        },
-        error: function(xhr, errmsg, err) {
-            console.log(xhr.status + ": " + xhr.responseText);
-        }
-    });
 }
+
 </script>
 
 {% endblock %}

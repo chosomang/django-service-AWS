@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse, FileResponse
-from .src import evidence, lists, assets, policy
+from django.views.decorators.clickjacking import xframe_options_sameorigin, xframe_options_exempt
+from .src import evidence, lists, assets, policy, file
 from .models import Document
 
 
@@ -198,6 +199,11 @@ def policy_data_file_action(request, policy_type, data_type, action_type):
                 if document.uploadedFile.name.endswith(request.POST.get('name', '').replace('[','').replace(']','')):
                     file_path = document.uploadedFile.path
                     return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=document.uploadedFile.name)
+
+def data_file_preview(request):
+    if request.method == 'POST':
+        file_url, mime_type = file.get_file_preivew_details(request)
+        return render(request, "compliance/policy_management/file_preview.html", {'file': file_url, 'file_type':mime_type})
 
 #-------------------------------------------------------------------------------------------
 
