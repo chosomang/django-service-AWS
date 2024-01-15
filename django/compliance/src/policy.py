@@ -181,9 +181,9 @@ def modify_policy_data(request):
         return response
 
 def delete_policy_data(request):
-    for key, value in request.POST.dict().items():
-        if not value:
-            return f"Please Enter/Select Data {key.title()}"
+    # for key, value in request.POST.dict().items():
+    #     if not value:
+    #         return f"Please Enter/Select Data {key.title()}"
     try:
         policy = request.POST.get('policy', '')
         name = request.POST.get('name', '')
@@ -206,12 +206,16 @@ def delete_policy_data(request):
                 data_file_list.append(result)
             print(data_file_list)
             response = "test"
-        else:
+        
+        if 0 < graph.evaluate(f"{cypher} RETURN COUNT(d)"):
             graph.run(f"{cypher} DETACH DELETE d")
             response = "Successfully Deleted Policy Data"
+        else:
+            raise Exception
+
     except Exception as e:
         print(e)
-        response ="Failed To . Please Try Again."
+        response ="Failed To Delete Policy Data. Please Try Again."
     finally:
         return response
 
