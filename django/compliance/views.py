@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.clickjacking import xframe_options_sameorigin, xframe_options_exempt
 from .src import evidence, lists, assets, policy, file
-from .models import Document
+from .models import Document, Evidence, Asset, Policy
 
 
 # Compliance List
@@ -18,6 +18,7 @@ def compliance_lists_view(request, compliance_type=None):
 def compliance_lists_modify(request, compliance_type):
     if request.method == "POST":
         data = dict(request.POST.items())
+        print(data)
         if "article" in data :
             return HttpResponse(lists.modify_lists_comply(compliance_type.capitalize().replace('-','_'), data))
         data.update({'compliance':lists.get_lists_version(compliance_type.capitalize().replace('-','_'), data)})
@@ -50,10 +51,8 @@ def compliance_lists_file_action(request, action_type):
             return HttpResponse(lists.modify_compliance_evidence_file(request))
         elif action_type == 'delete':
             return HttpResponse(lists.delete_compliance_evidence_file(request))
-        elif action_type == 'get_data':
-            return JsonResponse({'data_list': lists.get_product_data_list(request)})
         elif action_type == 'download':
-            documents = Document.objects.filter(title=request.POST.get('comment', ''))
+            documents = Evidence.objects.filter(title=request.POST.get('comment', ''))
             for document in documents:
                 if document.uploadedFile.name.endswith(request.POST.get('name', '').replace('[','').replace(']','')):
                     file_path = document.uploadedFile.path
@@ -86,7 +85,13 @@ def assets_table(request, action_type):
 @login_required
 def assets_action(request, asset_type, action_type):
     if request.method == 'POST':
-        if asset_type == 'file':
+        if action_type == 'download':
+            documents = Asset.objects.filter(title=request.POST.get('comment', ''))
+            for document in documents:
+                if document.uploadedFile.name.endswith(request.POST.get('name', '').replace('[','').replace(']','')):
+                    file_path = document.uploadedFile.path
+                    return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=document.uploadedFile.name)
+        elif asset_type == 'file':
             return HttpResponse(assets.asset_file_action(request, action_type))
         elif asset_type == 'data':
             return HttpResponse(assets.asset_data_action(request, action_type))
@@ -123,9 +128,10 @@ def evidence_data_action(request, action_type):
 
 ## Evidence Data Management
 @login_required
-def evidence_data_detail_view(request, data_name):
+def evidence_data_detail_view(request, product_name, data_name):
     if data_name:
         context = {
+            'product_name': product_name,
             'data_name': data_name,
             'data_list': evidence.get_data_list(request, data_name),
             'file_list': evidence.get_file_list(data_name),
@@ -143,7 +149,7 @@ def evidence_file_action(request, action_type):
         elif action_type == 'delete':
             return HttpResponse(evidence.delete_evidence_file(request))
         elif action_type == 'download':
-            documents = Document.objects.filter(title=request.POST.get('comment', ''))
+            documents = Evidence.objects.filter(title=request.POST.get('comment', ''))
             for document in documents:
                 if document.uploadedFile.name.endswith(request.POST.get('name', '').replace('[','').replace(']','')):
                     file_path = document.uploadedFile.path
@@ -194,16 +200,16 @@ def policy_data_file_action(request, policy_type, data_type, action_type):
         elif action_type == 'delete':
             return HttpResponse(policy.delete_policy_data_file(request))
         elif action_type == 'download':
-            documents = Document.objects.filter(title=request.POST.get('comment', ''))
+            documents = Policy.objects.filter(title=request.POST.get('comment', ''))
             for document in documents:
                 if document.uploadedFile.name.endswith(request.POST.get('name', '').replace('[','').replace(']','')):
                     file_path = document.uploadedFile.path
                     return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=document.uploadedFile.name)
 
-def data_file_preview(request):
+def data_file_preview(request, evidence_type):
     if request.method == 'POST':
-        file_url, mime_type = file.get_file_preivew_details(request)
-        return render(request, "compliance/policy_management/file_preview.html", {'file': file_url, 'file_type':mime_type})
+        file_url, mime_type = file.get_file_preivew_details(request, evidence_type)
+        return render(request, "compliance/file_preview.html", {'file': file_url, 'file_type':mime_type})
 
 #-------------------------------------------------------------------------------------------
 

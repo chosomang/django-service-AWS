@@ -1,7 +1,7 @@
 from django.conf import settings
 from py2neo import Graph
 from datetime import datetime
-from ..models import Document
+from ..models import Policy
 
 ## Graph DB 연동
 host = settings.NEO4J['HOST']
@@ -278,7 +278,7 @@ def add_policy_data_file(request):
             SET d.last_update = '{timestamp}'
             """)
             # 디비에 파일 정보 저장
-            document = Document(
+            document = Policy(
                 title=comment,
                 uploadedFile=file
             )
@@ -320,7 +320,7 @@ def modify_policy_data_file(request):
                 d.last_update = '{timestamp}'
             """)
             if og_comment != comment:
-                documents = Document.objects.filter(title=f"{og_comment}")
+                documents = Policy.objects.filter(title=f"{og_comment}")
                 for document in documents:
                     if document.uploadedFile.name.endswith(file_name.replace('[','').replace(']','')):
                         document.title = comment
@@ -352,7 +352,7 @@ def delete_policy_data_file(request):
         """
         if 0 < graph.evaluate(f"{cypher} RETURN COUNT(f)"):
             graph.evaluate(f"{cypher} DETACH DELETE f SET d.last_update = '{timestamp}'")
-            documents = Document.objects.filter(title=comment)
+            documents = Policy.objects.filter(title=comment)
             for document in documents:
                 if document.uploadedFile.name.endswith(file_name.replace('[','').replace(']','')):
                     print(document.uploadedFile.path)

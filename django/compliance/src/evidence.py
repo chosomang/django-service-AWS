@@ -1,7 +1,7 @@
 from django.conf import settings
 from py2neo import Graph
 from datetime import datetime
-from ..models import Document
+from ..models import Evidence
 
 ## Graph DB 연동
 host = settings.NEO4J['HOST']
@@ -287,8 +287,9 @@ def add_evidence_file(request):
         print(request.POST.dict())
         data_name = request.POST.get('data_name','')
         uploaded_file = request.FILES.get("file")
+        product = request.POST.get('product', '')
         if 0 < graph.evaluate(f"""
-        MATCH (d:Data:Evidence:Compliance{{name:'{data_name}'}})-[:FILE]->(f:File:Evidence:Compliance{{name:'{uploaded_file.name}'}})
+        MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[*]->(f:File:Evidence:Compliance{{name:'{uploaded_file.name}'}})
         RETURN count(f)
         """):
             response = "File Name Already Exsists. Please Enter New File Name."
@@ -314,8 +315,9 @@ def add_evidence_file(request):
             """)
 
             # Saving the information in the database
-            document = Document(
+            document = Evidence(
                 title= comment,
+                product= product,
                 uploadedFile=uploaded_file
             )
             document.save()
@@ -350,7 +352,7 @@ def modify_evidence_file(request):
         """)
 
         if og_comment != comment:
-            documents = Document.objects.filter(title=f"{og_comment}")
+            documents = Evidence.objects.filter(title=f"{og_comment}")
             for document in documents:
                 if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
                     document.title = comment
@@ -386,7 +388,7 @@ def delete_evidence_file(request):
         DETACH DELETE f
         SET d.last_update='{last_update}'
         """)
-        documents = Document.objects.filter(title=comment)
+        documents = Evidence.objects.filter(title=comment)
         for document in documents:
             if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
                 print(document.uploadedFile.path)

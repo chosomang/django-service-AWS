@@ -9,10 +9,12 @@
             <th>Section</th>
             <th>Article</th>
             <th>Comment</th>
+            {% if compliance_type == 'ISMS-P' %}
             <th>Comply</th>
-            <th>Policy</th>
-            <th>Last Update</th>
+            <th>Related Policy</th>
+            <th>Last Updated</th>
             <th>Details</th>
+            {% endif %}
         </tr>
         </thead>
         <tfoot>
@@ -21,10 +23,12 @@
             <th>Section</th>
             <th>Article</th>
             <th>Comment</th>
+            {% if compliance_type == 'ISMS-P' %}
             <th>Comply</th>
-            <th>Policy</th>
+            <th>Related Policy</th>
             <th>Last Updated</th>
             <th>Details</th>
+            {% endif %}
         </tr>
         </tfoot>
 
@@ -36,6 +40,7 @@
                 <td>{{com.sectionNo}} {{com.sectionName}}</td>
                 <td>{{com.articleNo}}. {{com.articleName}}</td>
                 <td width="40%">{{com.articleComment}}</td>
+                {% if compliance_type == 'ISMS-P' %}
                 <td style="width:100px;">
                     <select name="com_score" class="com_score btn btn-md" style="background-color:#FFFFFF; border-color:#E5E5E5; width:100%;" onchange="scoreChange(this)">
                         <option value="{{com.complyScore}}" selected>
@@ -64,11 +69,13 @@
                     </select>
                     <input type="hidden" class="com_article" value="{{com.articleNo}}">
                 </td>
-                <td style="width:150px;">제규정관리규정</td>
-                <td style="width:150px;">5555-55-55T55:55:55Z</td>
+                <td style="width:150px;">{{com.policy}}</td>
+                <td style="width:150px;">{{com.lastUpdate}}</td>
                 <td>
                     <form  method="POST" action="/compliance/lists/{{compliance_type}}/details/">
                         {% csrf_token %}
+                        <input type="hidden" name="version" value="{{com.version}}">
+                        <input type="hidden" name="product" value="{{product}}"/>
                         <input type="hidden" name="no" value="{{com.articleNo}}"/>
                         <input type="hidden" name="name" value="{{com.articleName}}"/>
                         <button class="btn btn-md btn-teiren">
@@ -76,6 +83,7 @@
                         </button>
                     </form>
                 </td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>

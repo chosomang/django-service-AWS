@@ -35,6 +35,24 @@
     margin: 0 15px 0 0;
 }
 
+.searchcard .searchcard-body .search-input {
+    display: flex;
+    align-items: center;
+    width: 85%;
+    margin: 0 auto;
+    padding: 8px 15px;
+    color: #57626F;
+    background-color: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+.searchcard .searchcard-body .search-input:focus {
+    outline: none;
+    border: 1px solid #24b6d4;
+}
+
 .searchcard .searchcard-body .btn-select {
     display: flex;
     align-items: center;
@@ -69,6 +87,7 @@
     padding: 5px 15px;
     margin-left: 20px;
     transition: all 0.3s;
+    font-size:15px;
 }
 
 .searchcard .searchcard-body .btn-search:hover {

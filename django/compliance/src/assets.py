@@ -2,7 +2,7 @@ from django.conf import settings
 from py2neo import Graph
 import os
 from datetime import datetime
-from ..models import Document
+from ..models import Asset
 
 ## Graph DB 연동
 host = settings.NEO4J['HOST']
@@ -196,7 +196,8 @@ def add_asset_file(request):
         if not uploadedFile:
             response = 'Please Select File'
         elif 0 < graph.evaluate(f"""
-        MATCH (e:Compliance:Evidence:File{{name:'{uploadedFile.name.replace(' ', '_')}'}})
+        MATCH (p:Product:Compliance:Evidence{{name:'Asset Manage'}})-[:DATA]->(a:Compliance:Evidence:Data{{name:'File'}})
+        MATCH (a)-[:FILE]->(e:Compliance:Evidence:File{{name:'{uploadedFile.name.replace(' ', '_')}'}})
         RETURN COUNT(e)
         """):
             response = "Already Exsisting File. Please Insert Different File."
@@ -208,13 +209,11 @@ def add_asset_file(request):
             author = data.get('author', '')
             version = data.get('version', '')
             # Saving the information in the database
-            document = Document(
+            document = Asset(
                 title=fileComment,
                 uploadedFile=uploadedFile
             )
             document.save()
-
-            documents = Document.objects.all()
             # Add current timestamp
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             uploadedFile.name = uploadedFile.name.replace(' ', '_')
@@ -227,28 +226,29 @@ def add_asset_file(request):
             """
             graph.run(add_evidence)
 
-            response = "Successfully Added File"
+            response = "Successfully Added Asset File"
     except Exception as e:
-        response = f"Failed To Add File. Please Try Again."
+        response = f"Failed To Add Asset File. Please Try Again."
     finally:
         return response
 
 def delete_asset_file(request):
-    data = dict(request.POST.items())
-    file_name = data['file_name']
-    delete_evidence = f"""
-    MATCH (p:Product:Compliance:Evidence{{name:'Asset Manage'}})-[:DATA]->(d:Data:Compliance:Evidence{{name:'File'}})-[:FILE]->(n:Compliance:Evidence:File{{name:'{file_name}'}})
-    DETACH DELETE n
-    """
-
-    file_path = os.path.join(settings.MEDIA_ROOT, 'result', file_name)
-
     try:
-        os.remove(file_path)
-        graph.evaluate(delete_evidence)
-        response = "Successfully Deleted File"
-    except:
-        response = 'Error'
+        data = dict(request.POST.items())
+        graph.evaluate(f"""
+        MATCH (p:Product:Compliance:Evidence{{name:'Asset Manage'}})-[:DATA]->(d:Data:Compliance:Evidence{{name:'File'}})-[:FILE]->(n:Compliance:Evidence:File{{name:'{data['file_name']}'}})
+        DETACH DELETE n
+        """)
+        documents = Asset.objects.filter(title=data['file_comment'])
+        for document in documents:
+            if document.uploadedFile.name.endswith(data['file_name'].replace('[','').replace(']','')):
+                print(document.uploadedFile.path)
+                document.uploadedFile.delete(save=False)
+                document.delete()
+        response = "Successfully Deleted Asset File"
+    except Exception as e:
+        print(e)
+        response = 'Failed To Delete Asset File. Please Try Again.'
     finally:
         return response
 
@@ -259,11 +259,14 @@ def modify_asset_file(request):
         og_fileName = data.get('og_fileName','')
         file_name = data.get('fileName','')
         file_comment = data.get('fileComment','')
+        og_comment = data.get('og_comment', '')
         if not file_name:
             response = "Please Check File Name"
         elif not file_comment:
             response = "Please Enter File Comment"
         elif og_fileName != file_name:
+            raise Exception
+        elif not og_comment:
             raise Exception
         else:
             file_author = data.get('fileAuthor','')
@@ -283,11 +286,17 @@ def modify_asset_file(request):
                 n.poc = '{file_poc}',
                 n.last_update = '{timestamp}'
             """
-            graph.run(add_assets)
-
-            response = "Successfully Modified File"
+            graph.evaluate(add_assets)
+            documents = Asset.objects.filter(title=og_comment)
+            for document in documents:
+                if document.uploadedFile.name.endswith(file_name.replace('[','').replace(']','')):
+                    document.title = file_comment
+                    document.save()
+                    print('modified')
+            response = "Successfully Modified Asset File"
     except Exception as e:
-        response = "Failed To Modify File. Please Try Again."
+        print(e)
+        response = "Failed To Modify Asset File. Please Try Again."
     finally:
         return response
 
@@ -332,7 +341,17 @@ def add_asset_data(request):
             # Create or update the node with properties
             graph.run(f"""
             MATCH (a:Compliance:Evidence:Product{{name:'Asset Manage'}})-[:DATA]->(d:Compliance:Evidence:Data{{name:'{asset_category}', product:'Asset Manage'}})
-            MERGE (n:Compliance:Evidence:Asset{{type:'{asset_type}', serial_no:'{serial_number}', name:'{asset_name}', usage:'{asset_usage}', data:'{asset_data}', level:'{asset_level}', poc:'{asset_poc}', user:'{asset_user}', date:'{timestamp}'}})
+            MERGE (n:Compliance:Evidence:Asset{{
+                type:'{asset_type}',
+                serial_no:'{serial_number}',
+                name:'{asset_name}',
+                usage:'{asset_usage}',
+                data:'{asset_data}',
+                level:'{asset_level}',
+                poc:'{asset_poc}',
+                user:'{asset_user}',
+                date:'{timestamp}'
+                }})
             MERGE (d)-[:ASSET]->(n)
             """)
 

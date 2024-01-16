@@ -28,9 +28,9 @@ urlpatterns = [
     # Evidence Management
     path('evidence/', views.evidence_view),
     path('evidence/data/<action_type>/', views.evidence_data_action),
-    path('evidence/<data_name>/', views.evidence_data_detail_view),
     path('evidence/file/<action_type>/', views.evidence_file_action),
-    path('evidence/compliance/<action_type>/', views.evidence_related_compliance),
+    path('evidence/compliance/<action_type>/', views.evidence_related_compliance),    
+    path('evidence/<product_name>/<data_name>/', views.evidence_data_detail_view),
 
     # Policy Management
     path('policy/', views.policy_view),
@@ -40,7 +40,7 @@ urlpatterns = [
     path('policy/<policy_type>/<data_type>/file/<action_type>/', views.policy_data_file_action),
 
     # File Preview
-    path('file/preview/', views.data_file_preview),
+    path('file/preview/<evidence_type>/', views.data_file_preview),
     #-------------------------------------------------------------------------------------
 
     path('integration/', views.integration),

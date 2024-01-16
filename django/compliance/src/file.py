@@ -1,10 +1,15 @@
-from ..models import Document
+from ..models import Document, Evidence, Asset, Policy
 import mimetypes
 import docx2pdf
 from aspose.slides import Presentation
 
-def get_file_preivew_details(request):
-    documents = Document.objects.filter(title=request.POST.get('comment', ''))
+def get_file_preivew_details(request, evidence_type):
+    if evidence_type == 'policy':
+        documents = Policy.objects.filter(title=request.POST.get('comment', ''))
+    elif evidence_type == 'asset':
+        documents = Asset.objects.filter(title=request.POST.get('comment', ''))
+    else:
+        documents = Evidence.objects.filter(title=request.POST.get('comment', ''), product=evidence_type)
     for document in documents:
         if document.uploadedFile.name.endswith(request.POST.get('name', '').replace('[','').replace(']','')):
             mime_type, _ = mimetypes.guess_type(document.uploadedFile.path)
@@ -30,8 +35,6 @@ def ppt_to_img(file_path, file_url):
     presentation = Presentation(file_path)
     for slide in presentation.slides:
         image_path = '\\'.join(file_path.split('\\')[:-1])+'\\preview.png'
-        print(image_path)
-        print(slide)
         slide.get_thumbnail().save(image_path)
         break
     preview_url = '/'.join(file_url.split('/')[:-1]) + '/preview.png'

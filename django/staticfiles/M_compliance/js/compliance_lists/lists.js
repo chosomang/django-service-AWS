@@ -24,18 +24,13 @@ $("#dataTable").DataTable({
 })
 
 function versionModify(){
-    var version = $('#com_version').val()
-    var product = $('#com_product').val()
     $('#com_table').fadeOut('fast')
     $.ajax({
         url:`/compliance/lists/${compliance_type}/modify/`,
         headers:{
             'X-CSRFToken': getCookie()
         },
-        data:{
-            version: version,
-            product: product
-        },
+        data: $('#search').serialize(),
         type: 'post'
     }).done(function(response){
         $("#dataTable").DataTable().destroy();

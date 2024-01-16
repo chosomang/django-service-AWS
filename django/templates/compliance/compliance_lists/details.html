@@ -20,11 +20,11 @@
 </style>
 <div class="locationbar ml-2">
     <span>Compliance Management&nbsp;&nbsp;>&nbsp;&nbsp;<a href="/compliance/lists/">Compliance List</a> &nbsp;&nbsp;>&nbsp;&nbsp; <a href="/compliance/lists/{{compliance_type}}/">{{compliance_type}}</a> &nbsp;&nbsp;>&nbsp;&nbsp;</span>
-    <span class="current">{{no}} {{name}}<span>
+    <span class="current">{{product}}&nbsp;&nbsp;>&nbsp;&nbsp;{{no}} {{name}}<span>
 </div>
 <div>
     <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{compliance_type.upper|replace:"_,-"}}</h6>
-    <p class="h4 mb-4 ml-2">{{no}} {{name}}</p>
+    <p class="h4 mb-4 ml-2">{{product}}&nbsp;&nbsp;>&nbsp;&nbsp;{{no}} {{name}}</p>
 </div>
 <div class="card shadow mb-4">
     <div class="card-header py-3">
@@ -193,18 +193,12 @@
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
                 <form id="file_add_form" enctype="multipart/form-data">
-                    <p>Product: 
-                        <select class="form-control" id="product" name="product" onchange="updateData('add')">
-                            <option value="" selected>Choose Product</option>
-                            {% for product in product_list %}
-                                <option value="{{product}}">{{product}}</option>
-                            {% endfor %}
-                            <!-- <option value="">New Evidence Data</option> -->
-                        </select>
-                    </p>
+                    <p>Product: <input type="text" class="form-control" name="product" value='{{product}}' readonly></p>
                     <p>Data: 
                         <select class="form-control" name="data_name">
-                            
+                            {% for data in data_list %}
+                            <option value="{{data}}">{{data}}</option>
+                            {% endfor %}
                         </select>
                     </p>
                     <p>File Comment: <input type="text" class="form-control" name="comment" value='' placeholder="Enter a Comment of File"></p>
@@ -214,6 +208,7 @@
                     <input type="file" name="file">
                     <input type="hidden" name="art_no" value="{{no}}"/>
                     <input type="hidden" name="compliance" value="{{compliance_type}}"/>
+                    <input type="hidden" name="com_version" value="{{version}}"/>
                     {% csrf_token %}
                 </form>
             </div>
@@ -236,16 +231,14 @@
             </div>
             <div class="modal-body card-body" style="font-size:12px;">
                 <form id="file_modify_form">
-                    <p>Product:
-                        <select class="form-control" name="product" onchange="updateData('modify')">
-                            {% for product in product_list %}
-                                <option value="{{product}}">{{product}}</option>
-                            {% endfor %}
-                            <!-- <option value="">New Evidence Data</option> -->
-                        </select>
-                    </p>
+                    <p>Product: <input type="text" class="form-control" name="product" value='{{product}}' readonly></p>
                     <p>Data:
                         <select class="form-control" name="data_name">
+                            <select class="form-control" name="data_name">
+                                {% for data in data_list %}
+                                <option value="{{data}}">{{data}}</option>
+                                {% endfor %}
+                            </select>
                         </select>
                     </p>
                     <p>File Comment: <input type="text" class="form-control" name="comment" value='' placeholder="Enter a Comment of File"></p>
@@ -299,27 +292,6 @@
 </div>
 
 <script>
-    function updateData(action_type){
-        $(`#file_${action_type}_form select[name="data_name"]`).html('')
-        $(`#file_${action_type}_form select[name="data_name"]`).append(
-            $('<option>').text('Choose Evidence Data').val('').attr('selected', true)
-        )
-        $.ajax({
-            url: '/compliance/lists/evidence/file/get_data/',
-            headers: {
-                'X-CSRFToken': "{{ csrf_token }}"
-            },
-            type: 'POST',
-            data: $(`#file_${action_type}_form`).serialize()
-        }).done(function(response){
-            $(response['data_list']).each(function(i){
-                $(`#file_${action_type}_form select[name="data_name"]`).append(
-                    $('<option>').text(this).val(this)
-                )
-            })
-        })
-    }
-
     function addEvidenceFile(){
         $.ajax({
             url: '/compliance/lists/evidence/file/add/',
@@ -427,7 +399,7 @@
             scrollTop: Math.abs($('.locationbar').offset().top)+Math.abs($('#preview_div').offset().top)+20
           }, 'slow');
         $.ajax({
-            url:'/compliance/file/preview/',
+            url:'/compliance/file/preview/{{product}}/',
             type:'POST',
             data: $(e.parentNode).serialize()
         }).done(function(response){

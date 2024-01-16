@@ -7,7 +7,7 @@
 
 <div class="locationbar ml-2">
     <span>Compliance Management&nbsp;&nbsp;>&nbsp;&nbsp;Compliance &nbsp;&nbsp;>&nbsp;&nbsp;<a href="/compliance/evidence/">Evidence Management</a>&nbsp;&nbsp;>&nbsp;&nbsp;</span>
-    <span class="current">{{data_name}}<span>
+    <span class="current">{{product_name}}&nbsp;&nbsp;>&nbsp;&nbsp;{{data_name}}<span>
 </div>
 
 
@@ -193,6 +193,7 @@
                     <p>Author: <input class="form-control" name="author" type="text" readonly></p>
                     <p>Version: <input class="form-control" name="version" type="text"></p>
                     <p>PoC: <input class="form-control" name="poc" type="text"></p>
+                    <input type="hidden" name="product" value="{{product_name}}">
                     <h6>image 파일 전체, pdf, 엑셀(xlsx, xls, csv), 한글파일(hwp, hwpx), 파워포인트(ppt, pptx), 워드(docx, doc)</h6>
                     <h6 class="mb-2">형식만 업로드 가능합니다.</h6>
                 </form>
@@ -225,6 +226,7 @@
                     <p>File Version: <input class="form-control" name="version" type="text"></p>
                     <p>File PoC: <input class="form-control" name="poc" type="text"></p>
                     <input type="hidden" name="og_comment">
+                    <input type="hidden" name="product" value="{{product_name}}">
                 </form>
             </div>
             <div class="modal-footer" id="modal_footer">
@@ -256,6 +258,7 @@
                     <p>File Version: <input class="form-control" name="version" type="text" readonly></p>
                     <p>File PoC: <input class="form-control" name="poc" type="text" readonly></p>
                     <p>Uploaded Date: <input class="form-control" name="upload_date" type="text" readonly></p>
+                    <input type="hidden" name="product" value="{{product_name}}">
                 </form>
                 <h5 class="text-danger">Will You Delete Evidence File?</h5>
             </div>
@@ -546,10 +549,10 @@ function preview(e){
     </div>
     `)
     $('.body-content').animate({
-        scrollTop: Math.abs($('.locationbar').offset().top)+Math.abs($('#preview_div').offset().top)+20
+        scrollTop: Math.abs($('.locationbar').offset().top)+$('#preview_div').offset().top+20
       }, 'slow');
     $.ajax({
-        url:'/compliance/file/preview/',
+        url:'/compliance/file/preview/{{product_name}}/',
         type:'POST',
         data: $(e.parentNode).serialize()
     }).done(function(response){

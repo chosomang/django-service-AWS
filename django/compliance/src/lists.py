@@ -1,7 +1,7 @@
 from django.conf import settings
 from py2neo import Graph
 from datetime import datetime
-from ..models import Document
+from ..models import Evidence
 
 ## Graph DB 연동
 host = settings.NEO4J['HOST']
@@ -21,23 +21,30 @@ def get_lists_version(compliance_type, data=None):
             where_product = f"WHERE p.name = '{product}'"
         else:
             where_version = f"WHERE v.date = date('{version}')"
+    else:
+        product = 'AWS'
     if compliance_type == 'Isms_p':
         results = graph.run(f"""
-        MATCH (i:Compliance:Version{{name:'{compliance_type}'}})-[:CHAPTER]->(c:Chapter:Compliance:Certification)-[:SECTION]->(n:Certification:Compliance:Section)-[:ARTICLE]->(m:Certification:Compliance:Article)
-        {where_version if where_version else ''}
+        MATCH (i:Compliance:Version{{name:'{compliance_type}'}})-[:CHAPTER]->(c:Chapter:Compliance:Certification)-[:SECTION]->
+            (n:Certification:Compliance:Section)-[:ARTICLE]->(m:Certification:Compliance:Article)
+        {where_version if where_version else "WHERE i.date = date('2023-10-31')"}
         OPTIONAL MATCH (m)<-[r:COMPLY]-(p:Product:Evidence:Compliance)
-        {where_product if where_product else ''}
-        WITH split(m.no, '.') as articleNo, c, n, m, coalesce(r, {{score: 0}}) as r, p
-        WITH toInteger(articleNo[0]) AS part1, toInteger(articleNo[1]) AS part2, toInteger(articleNo[2]) AS part3, c, n, m, r, p
+        {where_product if where_product else "WHERE p.name = 'AWS'"}
+        OPTIONAL MATCH (m)<-[:POLICY]-(d:Data:Evidence:Compliance)<-[:DATA]-(:Policy:Evidence:Compliance)
+        WITH split(m.no, '.') as articleNo, c, n, m, coalesce(r, {{score: 0}}) as r, p, i, d
+        WITH toInteger(articleNo[0]) AS part1, toInteger(articleNo[1]) AS part2, toInteger(articleNo[2]) AS part3, c, n, m, r, p, i, d
         RETURN
-            c.no as chapterNo,
-            c.name as chapterName,
-            n.no as sectionNo,
-            n.name as sectionName,
-            m.no as articleNo,
-            m.name as articleName,
-            m.comment as articleComment,
-            r.score as complyScore
+            c.no AS chapterNo,
+            c.name AS chapterName,
+            n.no AS sectionNo,
+            n.name AS sectionName,
+            m.no AS articleNo,
+            m.name AS articleName,
+            m.comment AS articleComment,
+            r.score AS complyScore,
+            m.last_update AS lastUpdate,
+            i.date AS version,
+            d.name AS policy
         ORDER BY part1, part2, part3
         """)
     else:
@@ -68,7 +75,7 @@ def get_lists_version(compliance_type, data=None):
     response = []
     for result in results:
         response.append(dict(result.items()))
-
+    
     if data:
         return response
     else:
@@ -79,6 +86,7 @@ def get_lists_version(compliance_type, data=None):
 
         results = graph.run(f"""
         MATCH (e:Evidence:Compliance{{name:'Evidence'}})-[:PRODUCT]->(p:Evidence:Compliance:Product)
+        WHERE NOT p.name ENDS WITH 'Manage'
         RETURN
             p.name as productName
             order by productName
@@ -86,10 +94,11 @@ def get_lists_version(compliance_type, data=None):
         resource_list = []
         for result in results:
             resource_list.append(dict(result.items()))
-        
         return {'compliance': response,
                 'version_list': version_list,
-                'resource_list': resource_list}
+                'resource_list': resource_list,
+                'product': product
+                }
 
 
 def modify_lists_comply(compliance_type, data):
@@ -131,9 +140,9 @@ def modify_lists_comply(compliance_type, data):
         
 
 def get_lists_details(compliance_type, data):
-    no = data['no']
     results  = graph.run(f"""
-    OPTIONAL MATCH (l:Law)-[:VERSION]->(v:Version)-[*]->(a:Article)<-[:MAPPED]->(i:Certification{{no:'{no}'}})
+    OPTIONAL MATCH (l:Law)-[:VERSION]->(v:Version)-[*]->(a:Article)<-[:MAPPED]->(i:Certification{{no:'{data['no']}'}})<-[*]-
+        (i:Compliance:Version{{name:'{compliance_type}', date:date('{data['version']}')}})
     WITH l, v, a, i
     OPTIONAL MATCH (v)-[:CHAPTER]->(c:Chapter)-[:SECTION]->(s:Section)-[:ARTICLE]->(a)<-[:MAPPED]->(i)
     WITH l, v, c, a, i, s
@@ -154,7 +163,8 @@ def get_lists_details(compliance_type, data):
     
     # query 수정 완
     results = graph.run(f"""
-    MATCH (n:Certification:Compliance:Article{{compliance_name:'{compliance_type}', no:'{no}'}})
+    MATCH (n:Certification:Compliance:Article{{compliance_name:'{compliance_type}', no:'{data['no']}'}})<-[*]-
+        (i:Compliance:Version{{name:'{compliance_type}', date:date('{data['version']}')}})
     RETURN
         n.no as articleNo,
         n.name as articleName,
@@ -168,9 +178,11 @@ def get_lists_details(compliance_type, data):
 
     #query 수정 완 
     results = graph.run(f"""
-    MATCH (f:File:Compliance:Evidence)<-[:FILE]-(d:Compliance:Evidence:Data)-[:EVIDENCE]->(a:Compliance:Certification:Article{{compliance_name:'{compliance_type}', no:'{no}'}})
-    WITH f, d
-    MATCH (d)<-[:DATA]-(p:Product:Compliance:Evidence)
+    MATCH (f:File:Compliance:Evidence)<-[:FILE]-(d:Compliance:Evidence:Data)-[:EVIDENCE]->
+        (a:Compliance:Certification:Article{{compliance_name:'{compliance_type}', no:'{data['no']}'}})<-[*]-
+        (i:Compliance:Version{{name:'{compliance_type}', date:date('{data['version']}')}})
+    WITH DISTINCT(d), f
+    MATCH (d)<-[:DATA]-(p:Product:Compliance:Evidence{{name:'{data['product']}'}})
     RETURN
         f.name as fileName,
         f.comment as fileComment,
@@ -188,46 +200,19 @@ def get_lists_details(compliance_type, data):
     for result in results:
         evidence.append(dict(result.items()))
 
-    results = graph.run(f"""
-    MATCH (c:Compliance:Evidence:Data)-[:EVIDENCE]->(a:Compliance:Certification:Article{{compliance_name:'{compliance_type}', no:'{no}'}})
-    RETURN
-        c.name as dataName,
-        c.comment as dataComment,
-        a.no as art_no
+    data_list = graph.evaluate(f"""
+    MATCH (p:Product:Evidence:Compliance{{name:'{data['product']}'}})-[:DATA]->(d:Compliance:Evidence:Data)
+    WITH d.name as data ORDER BY d.name
+    RETURN COLLECT(data)
     """)
-    category = []
-    for result in results:
-        category.append(dict(result.items()))
     
-    product_list = graph.evaluate(f"""
-    MATCH (p:Product:Evidence:Compliance)
-    WHERE NOT p.name ENDS WITH "Manage"
-    WITH p.name as product ORDER BY p.name
-    RETURN COLLECT(product)
-    """)
     return {'law': law,
             'article_list': article,
             'evidence_list' : evidence,
-            'category' : category,
-            'product_list': product_list
+            'data_list' : data_list,
+            'product': data['product'],
+            'version': data['version']
     }
-
-def get_product_data_list(request):
-    try:
-        product = request.POST.get('product', '')
-        if product:
-            response = graph.evaluate(f"""
-            MATCH (p:Product:Evidence:Compliance {{name:'{product}'}})-[:DATA]->(d)
-            WITH d.name as data ORDER BY d.name
-            RETURN COLLECT(data)
-            """)
-        else:
-            raise Exception
-    except Exception as e:
-        print(e)
-        response = []
-    finally:
-        return response
 
 def add_compliance_evidence_file(request):
     print(request.POST.dict())
@@ -243,27 +228,29 @@ def add_compliance_evidence_file(request):
         author = request.POST.get('author', '')
         poc = request.POST.get('poc', '')
         version = request.POST.get('version', '')
+        com_version = request.POST.get('com_version', '')
         file = request.FILES["file"]
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         if 0 < graph.evaluate(f"""
-        MATCH (e:Compliance:Evidence:File {{name: '{file.name.replace(' ', '_')}'}})
+        MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[*]->(e:Compliance:Evidence:File {{name: '{file.name.replace(' ', '_')}'}})
         RETURN COUNT(e)
         """):
             response = "Already Exsisting File. Please Select New File."
         else:
             graph.run(f"""
-            MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})
-            MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})
-            MATCH (n:Compliance:Evidence:Data{{name:'{data_name}'}})
+            MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})<-[*]-
+                (i:Compliance:Version{{name:'{compliance.replace('-','_').capitalize()}', date:date('{com_version}')}})
+            MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[:DATA]->(n:Compliance:Evidence:Data{{name:'{data_name}'}})
             MERGE (e:Compliance:Evidence:File{{name:'{file.name.replace(' ', '_')}', comment:'{comment}', upload_date:'{timestamp}', last_update:'{timestamp}', version:'{version}', author:'{author}', poc:'{poc}'}})
-            MERGE (p)-[:DATA]->(n)
             MERGE (a)<-[:EVIDENCE]-(n)
             MERGE (n)-[:FILE]->(e)
+            SET a.last_update = '{timestamp}'
             """)
             # 디비에 파일 정보 저장
-            document = Document(
+            document = Evidence(
                 title=comment,
+                product=product,
                 uploadedFile=file
             )
             document.save()
@@ -293,10 +280,12 @@ def modify_compliance_evidence_file(request):
         author = request.POST.get('author', '')
         poc = request.POST.get('poc', '')
         version = request.POST.get('version', '')
+        com_version = request.POST.get('com_version', '')
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if data_name != og_data_name:
             cypher = f"""
-            MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})
+            MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})<-[*]-
+                (i:Compliance:Version{{name:'{compliance.replace('-','_').capitalize()}', date:date('{com_version}')}})
             MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[:DATA]->(d:Compliance:Evidence:Data{{name:'{data_name}'}})
             MATCH (od:Compliance:Evidence:Data{{name:'{og_data_name}'}})
             MATCH (a)<-[evidence_rel:EVIDENCE]-(od)-[file_rel:FILE]->(f:Compliance:Evidence:File{{name:'{name}', comment:'{og_comment}'}})
@@ -309,12 +298,14 @@ def modify_compliance_evidence_file(request):
                 f.poc = '{poc}',
                 f.last_update = '{timestamp}',
                 od.last_update = '{timestamp}',
-                d.last_update = '{timestamp}'
+                d.last_update = '{timestamp}',
+                a.last_update = '{timestamp}'
             """
         else:
             # Create or update the node with properties
             cypher = f"""
-            MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})
+            MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})<-[*]-
+                (i:Compliance:Version{{name:'{compliance.replace('-','_').capitalize()}', date:date('{com_version}')}})
             MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[:DATA]->(d:Compliance:Evidence:Data{{name:'{data_name}'}})
             MATCH (a)<-[:EVIDENCE]-(d)-[:FILE]->(f:Compliance:Evidence:File{{name:'{name}', comment:'{og_comment}'}})
             SET f.comment = '{comment}',
@@ -322,11 +313,12 @@ def modify_compliance_evidence_file(request):
                 f.version = '{version}',
                 f.poc = '{poc}',
                 f.last_update = '{timestamp}',
-                d.last_update = '{timestamp}'
+                d.last_update = '{timestamp}',
+                a.last_update = '{timestamp}'
             """
         graph.run(cypher)
         if og_comment != comment:
-            documents = Document.objects.filter(title=f"{og_comment}")
+            documents = Evidence.objects.filter(title=f"{og_comment}")
             for document in documents:
                 if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
                     document.title = comment
@@ -353,15 +345,18 @@ def delete_compliance_evidence_file(request):
         author = request.POST.get('author', '')
         poc = request.POST.get('poc', '')
         version = request.POST.get('version', '')
+        com_version = request.POST.get('com_version', '')
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         graph.run(f"""
-        MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})
+        MATCH (a:Compliance:Certification:Article{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{art_no}'}})<-[*]-
+                (i:Compliance:Version{{name:'{compliance.replace('-','_').capitalize()}', date:date('{com_version}')}})
         MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[:DATA]->(d:Compliance:Evidence:Data{{name:'{data_name}'}})
         MATCH (a)<-[:EVIDENCE]-(d)-[:FILE]->(f:Compliance:Evidence:File{{name:'{name}', comment:'{comment}', version:'{version}', author:'{author}', poc:'{poc}'}})
-        SET d.last_update = '{timestamp}'
+        SET d.last_update = '{timestamp}',
+            a.last_update = '{timestamp}'
         DETACH DELETE f
         """)
-        documents = Document.objects.filter(title=comment)
+        documents = Evidence.objects.filter(title=comment)
         for document in documents:
             if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
                 print(document.uploadedFile.path)

@@ -1,11 +1,22 @@
 <div class="searchcard shadow mb-4">
-    <div class="searchcard-body py-3">
-        <div class="d-flex align-items-end text-center mb-2 w-100">
+    <form id="search">
+        <div class="searchcard-body py-3">
+            <div class="d-flex align-items-end text-center mb-2 w-100">
+                <select class="btn-select" name="main_search_key" style="width:15%">
+                    <option value="chapter">Chapter</option>
+                    <option value="section">Section</option>
+                    <option value="article">Article</option>
+                    <option value="comment">Comment</option>
+                </select>
+                <input class="search-input ml-0" name="main_search_value" style="width:90% !important;" placeholder="Search"/>
+            </div>
+        </div>
+        <div class="searchcard-body pt-0">
             <div class="search-select">
                 <div class="searchbox-header">
                     Version
                 </div>
-                <select id="com_version" name="com_version" class="btn-select">
+                <select id="com_version" name="version" class="btn-select" onChange="versionModify()">
                     {% for version in version_list %}
                     <option value="{{version}}">{{version}}</option>
                     {% endfor %}
@@ -15,23 +26,17 @@
                 <div class="searchbox-header">
                     Resource
                 </div>
-                <select id="com_product" name="com_product" class="btn-select">
+                <select id="com_product" name="product" class="btn-select" onChange="versionModify()">
                     {% for resource in resource_list %}
                     <option value="{{resource.productName}}">{{resource.productName}}</option>
                     {% endfor %}
                 </select>
             </div>
-            <button class="btn-search" onclick="versionModify()">
-                <span class="material-symbols-outlined">
-                    search
-                </span>
+            <button type="button" class="btn-search ml-auto" onclick="versionModify()">
+                <i class="fa-solid fa-magnifying-glass mr-2"></i>
+                Search
             </button>
-            <button class="btn-collapse" type="button">
-                <span class="material-symbols-outlined" style="font-size:30px">
-                    expand_more
-                </span>
-            </button>
-        </div>
+        </form>
     </div>
 
     <div class="collapsecard" style="display:none;">

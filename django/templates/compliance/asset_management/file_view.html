@@ -31,7 +31,12 @@
                         <td>{{file.uploadDate}}</td>
                         <td>{{file.fileAuthor}}</td>
                         <td>
-                            <button class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-file-arrow-down mr-2"></i>Download</button>
+                            <form method="POST" action="/compliance/assets/file/download/" target="_blank">
+                                {% csrf_token %}
+                                <input type="hidden" name="name" value="{{file.fileName}}">
+                                <input type="hidden" name="comment" value="{{file.fileComment}}">
+                                <button type="submit" class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-file-arrow-down mr-2"></i>Download</button>
+                            </form>
                         </td>
                         <td>
                             <input type="hidden" name="fileName" id="fileName" value="{{file.fileName}}"/>
@@ -42,7 +47,8 @@
                             <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#file_modify" onclick="fileModifyModal(this)"><i class="fa-solid fa-pen-to-square mr-2"></i>Modify</button>
                         </td>
                         <td>
-                            <form method="post">
+                            <form>
+                                <input type="hidden" name="file_comment" id="file_comment" value="{{file.fileComment}}"/>
                                 <input type="hidden" name="file_name" id="file_name" value="{{file.fileName}}"/>
                                 <button type="button" class="btn btn-md btn-danger" onclick="deleteAssetFile(this)"><i class="fa-solid fa-trash mr-2"></i>Delete</button>
                             </form>
@@ -102,6 +108,7 @@
                     <p>Version: <input type="text" class="form-control" id='fileVersion' name="fileVersion" value=''></p>
                     <p>Author: <input type="text" class="form-control" id='fileAuthor' name="fileAuthor" value=''></p>
                     <p>Poc: <input type="text" class="form-control" id='filePoC' name="filePoC" value=''></p>
+                    <input type="hidden" id="og_comment" name="og_comment">
                     {% csrf_token %}
                 </div>
                 </form>
@@ -124,7 +131,7 @@
             processData: false,
             contentType: false,
         }).done(function (response) {
-            if(response === 'Successfully Added File'){
+            if(response === 'Successfully Added Asset File'){
                 $('#file_add').modal('hide')
                 alert(response);
                 assetChange('File')
@@ -138,8 +145,11 @@
         var data = $(e.parentNode).find('input')
         data.each(function(){
             $(`#file_modify #${this.name}`).val(this.value)
+            console.log(this.name)
             if (this.name === 'fileName'){
                 $('#file_modify #og_fileName').val(this.value)
+            } else if (this.name === 'fileComment'){
+                $('#file_modify #og_comment').val(this.value)
             }
         })
     }
@@ -151,7 +161,7 @@
             data: data,
             type: 'post'
         }).done(function(response){
-            if(response === 'Successfully Modified File'){
+            if(response === 'Successfully Modified Asset File'){
                 $('#file_modify').modal('hide')
                 alert(response)
                 assetChange('File')
@@ -172,7 +182,7 @@
             type: 'post'
         }).done(function(response){
             alert(response)
-            if(response === 'Successfully Deleted File'){
+            if(response === 'Successfully Deleted Asset File'){
                 assetChange('File')
                 return 0
             }
