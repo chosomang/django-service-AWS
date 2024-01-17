@@ -23,6 +23,12 @@ $("#dataTable").DataTable({
     info: false
 })
 
+$('#search').on('keypress', function(e){
+    if (e.which === 13){
+        event.preventDefault();
+    }
+})
+
 function versionModify(){
     $('#com_table').fadeOut('fast')
     $.ajax({

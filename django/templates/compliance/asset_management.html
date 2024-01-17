@@ -2,6 +2,7 @@
 {% load static %}
 {% block head %}
 <link rel="stylesheet" href="{% static '/M_compliance/css/asset_management/tab.css' %}">
+<link rel="stylesheet" href="{% static '/M_compliance/css/asset_management/searchcard.css' %}">
 {% endblock head %}
 {% block content %}
 <!-- Begin Page Content -->
@@ -35,8 +36,9 @@
 </div>
 
 <div class="card shadow mb-4 ml-2" id="asset_table">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-teiren">All Asset Management</h6>
+    <div class="card-header py-3 mt-2">
+        <h6 class="m-0 mb-3 font-weight-bold text-teiren">All Asset Management</h6>
+        {% include "./asset_management/searchcard.html" %} 
     </div>
     <div class="card-body" style="font-size:15px;">
         <div class="table-responsive" style="overflow:hidden;">
@@ -44,16 +46,16 @@
                    style="text-align:center;font-size:15px;">
                 <thead>
                     <tr>
-                        <th>Category</th>
-                        <th>Type</th>
+                        <th style="width:10%">Category</th>
+                        <th style="width:10%">Type</th>
                         <th>Serial No</th>
                         <th>Name</th>
                         <th>Usage</th>
                         <th>Data</th>
                         <th>Level</th>
                         <th>PoC</th>
-                        <th>User</th>
-                        <th>Upload Date</th>
+                        <th style="width:10%">User</th>
+                        <th style="width:15%">Upload Date</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -163,7 +165,7 @@
         $(event.target).addClass('active');
     });
 </script>
-
+<script src="{% static '/M_compliance/js/asset_management/searchcard.js' %}"></script>
 {% endblock %}
 
 

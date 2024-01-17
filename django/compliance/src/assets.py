@@ -12,49 +12,52 @@ password = settings.NEO4J['PASSWORD']
 graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 
 # Asset List
-def get_asset_list(asset_type=None):
-    if asset_type:
-        results = graph.run(f"""
-        MATCH (c:Evidence:Compliance:Product{{name:'Asset Manage'}})-[:DATA]->(n:Evidence:Compliance:Data{{name:'{asset_type}', product:'Asset Manage'}})
-        OPTIONAL MATCH (n)-[:ASSET]->(m:Evidence:Compliance:Asset)
-        RETURN
-            n.name as dataType,
-            n.comment as dataComment,
-            m.type as assetType,
-            m.serial_no as assetNo,
-            m.name as assetName,
-            m.usage as assetUsage,
-            m.data as assetData,
-            m.level as assetLevel,
-            m.poc as assetPoC,
-            m.user as assetUser,
-            m.date as assetDate,
-            id(m) as assetId
-        """)
-        assets = []
-        for result in results:
-            assets.append(dict(result.items()))
-            
+def get_asset_list(asset_type):
+    results = graph.run(f"""
+    MATCH (c:Evidence:Compliance:Product{{name:'Asset Manage'}})-[:DATA]->(n:Evidence:Compliance:Data{{name:'{asset_type}', product:'Asset Manage'}})
+    OPTIONAL MATCH (n)-[:ASSET]->(m:Evidence:Compliance:Asset)
+    RETURN
+        n.name as dataType,
+        n.comment as dataComment,
+        m.type as assetType,
+        m.serial_no as assetNo,
+        m.name as assetName,
+        m.usage as assetUsage,
+        m.data as assetData,
+        m.level as assetLevel,
+        m.poc as assetPoC,
+        m.user as assetUser,
+        m.date as assetDate,
+        id(m) as assetId
+    """)
+    assets = []
+    for result in results:
+        assets.append(dict(result.items()))
+        
 
-        results = graph.run(f"""
-        MATCH (c:Evidence:Compliance:Product{{name:'Asset Manage'}})-[:DATA]->(n:Evidence:Compliance:Data{{name:'{asset_type}', product:'Asset Manage'}})
-        return
-            n.name as dataType,
-            n.comment as dataComment
-        """)
-        data_list = []
-        for result in results:
-            data_list.append(dict(result.items()))
+    results = graph.run(f"""
+    MATCH (c:Evidence:Compliance:Product{{name:'Asset Manage'}})-[:DATA]->(n:Evidence:Compliance:Data{{name:'{asset_type}', product:'Asset Manage'}})
+    return
+        n.name as dataType,
+        n.comment as dataComment
+    """)
+    data_list = []
+    for result in results:
+        data_list.append(dict(result.items()))
 
-        return {'assets': assets, 'data_list': data_list, 'asset_type': asset_type}
-    else:
-        return get_all_asset_list()
+    return {'assets': assets, 'data_list': data_list, 'asset_type': asset_type}
 
 
-def get_all_asset_list():
+def get_all_asset_list(request):
+    print(request.POST.dict())
+    search_key = request.POST.get('main_search_key', '')
+    search_value = request.POST.get('main_search_value', '')
+    where_cypher = ''
+    if search_key and search_value:
+        where_cypher = f"WHERE toLower({search_key}) CONTAINS toLower('{search_value}')"
     results = graph.run(f"""
     MATCH (c:Evidence:Compliance:Product{{name:'Asset Manage'}})-[:DATA]->(n:Evidence:Compliance:Data)-[:ASSET]->(m:Evidence:Compliance:Asset)
-    RETURN
+    WITH
         n.name as dataType,
         m.type as assetType,
         m.serial_no as assetNo,
@@ -67,6 +70,8 @@ def get_all_asset_list():
         m.date as assetDate
     ORDER BY
         dataType asc
+    {where_cypher}
+    RETURN *
     """)
     assets = []
     for result in results:

@@ -117,6 +117,11 @@ $('#evidence_dataTable').DataTable({
     lengthChange: false
 })
 
+$('#search').on('keypress', function(e){
+    if(e.which === 13){
+        e.preventDefault();
+    }
+})
 /// Search_Filter
 function searchFilter(){
     $.ajax({

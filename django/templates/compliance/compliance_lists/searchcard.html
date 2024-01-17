@@ -1,14 +1,17 @@
 <div class="searchcard shadow mb-4">
-    <form id="search">
+    <form id="search" >
         <div class="searchcard-body py-3">
             <div class="d-flex align-items-end text-center mb-2 w-100">
                 <select class="btn-select" name="main_search_key" style="width:15%">
-                    <option value="chapter">Chapter</option>
-                    <option value="section">Section</option>
-                    <option value="article">Article</option>
+                    {% if compliance_type == 'ISMS-P' %}
+                    <option value="all">All</option>
+                    <option value="c">Chapter</option>
+                    <option value="s">Section</option>
+                    {% endif %}
+                    <option value="a">Article</option>
                     <option value="comment">Comment</option>
                 </select>
-                <input class="search-input ml-0" name="main_search_value" style="width:90% !important;" placeholder="Search"/>
+                <input type="text" class="search-input ml-0" name="main_search_value" style="width:90% !important;" placeholder="Search"/>
             </div>
         </div>
         <div class="searchcard-body pt-0">

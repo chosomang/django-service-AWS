@@ -58,6 +58,13 @@ def compliance_lists_file_action(request, action_type):
                     file_path = document.uploadedFile.path
                     return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=document.uploadedFile.name)
 
+def compliance_lists_policy_action(request, action_type):
+    if request.method == 'POST':
+        if action_type == 'add':
+            return HttpResponse(lists.add_related_policy(request))
+        elif action_type == 'delete':
+            return HttpResponse(lists.delete_related_policy(request))
+
 #Assets Management
 @login_required
 def assets_view(request, asset_type=None):
@@ -65,13 +72,13 @@ def assets_view(request, asset_type=None):
         if asset_type == 'File':
             context = ({'files':assets.get_file_list()})
             return render(request, f"compliance/asset_management/file_view.html", context)
-        if asset_type == 'All':
-            context = assets.get_asset_list()
+        elif asset_type == 'All' or asset_type == 'search':
+            context = assets.get_all_asset_list(request)
         else:
             context = assets.get_asset_list(asset_type)
         return render(request, f"compliance/asset_management/dataTable.html", context)
     else:
-        context= assets.get_asset_list()
+        context= assets.get_all_asset_list(request)
         return render(request, f"compliance/asset_management.html", context)
 
 @login_required

@@ -1,13 +1,20 @@
-<div class="searchcard shadow mb-4">
-    <form id="search" method="POST" action="">
-        {% csrf_token %}
+<div class="searchcard mb-2">
+    <form id="search">
         <div class="searchcard-body py-3">
             <select class="btn-select" name="main_search_key">
-                <option value="policy">Policy name</option>
-                <option value="data">Data name</option>
+                <option value="dataType">Category</option>
+                <option value="assetType">Type</option>
+                <option value="assetNo">Serial Number</option>
+                <option value="assetName">Name</option>
+                <option value="assetUsage">Usage</option>
+                <option value="assetData">Data</option>
+                <option value="assetLevel">Level</option>
+                <option value="assetPoC">PoC</option>
+                <option value="assetUser">User</option>
+                <option value="assetDate">Uploaded Date</option>
             </select>
-            <input class="search-input" name="main_search_value" style="width:76% !important;" placeholder="Search"/>
-            <button class="btn-search" type="submit">
+            <input class="search-input" name="main_search_value" placeholder="Search"/>
+            <button class="btn-search" type="button" onClick="searchFilter()">
                 <span class="material-symbols-outlined">
                     search
                 </span>
@@ -17,9 +24,8 @@
                     expand_more
                 </span>
             </button> -->
-            <button type="button" class="btn btn-md btn-teiren ml-2 mr-2" style="padding: 8.5px 15px;"data-toggle="modal" data-target="#policy_add_modal"><i class="fa-solid fa-plus mr-2"></i>Add Policy</button>
         </div>
-    </form>
+    </form> 
         <div class="collapsecard" style="display:none;">
             <div class="searchcard-collapse pb-3" style="display:none;">
                 <div class="collapsebox">

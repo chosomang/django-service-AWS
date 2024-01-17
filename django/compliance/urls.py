@@ -18,6 +18,7 @@ urlpatterns = [
     path('lists/<compliance_type>/details/', views.compliance_lists_detail_view),
     path('lists/<compliance_type>/download/', views.download_compliance_report),
     path('lists/evidence/file/<action_type>/', views.compliance_lists_file_action),
+    path('lists/evidence/policy/<action_type>/', views.compliance_lists_policy_action),
     
     # Asset Management
     path('assets/', views.assets_view),

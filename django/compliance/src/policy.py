@@ -21,7 +21,7 @@ def get_policy_data_list(request):
             cypher=f"""
                 MATCH (:Evidence:Compliance)-[:PRODUCT]->(:Product{{name:'Policy Manage'}})-[:POLICY]->(p:Policy)
                 WHERE toLower(p.name) CONTAINS toLower('{main_search_value}')
-                OPTIONAL MATCH (policy)-[:DATA]->(d:Data:Evidence:Compliance)
+                OPTIONAL MATCH (p)-[:DATA]->(d:Data:Evidence:Compliance)
                 RETURN p AS policy, COLLECT(d) AS data
                 ORDER BY policy.name ASC
             """
@@ -41,6 +41,7 @@ def get_policy_data_list(request):
                 ORDER BY policy.name ASC
             """
         results = graph.run(cypher)
+        print(cypher)
         for result in results:
             response.append(result)
     except Exception as e:

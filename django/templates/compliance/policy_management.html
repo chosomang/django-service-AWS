@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filter %}
 {% block head %}
 <link rel="stylesheet" href="{% static '/M_compliance/css/policy_management/searchcard.css' %}">
 {% endblock head %}
@@ -20,10 +21,13 @@
         <div>
             <div class="card shadow mb-4">
                 <div class="card-header py-3 row">
-                    <h4 class="m-0 font-weight-bold text-teiren">{{p.policy.name}}</h4>
-                    <button class="btn btn-md btn-outline-teiren ml-auto" data-toggle="modal" data-target="#policy_modify_modal" data-policy-name="{{p.policy.name}}"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <h4 class="d-flex align-items-center m-0 font-weight-bold text-teiren">{{p.policy.name}}</h4>
+                    {% make_list 'Articles of Association' 'Rules' 'Guidelines' 'Regulation' as essential_policy_list %}
+                    {% if not p.policy.name in essential_policy_list%}
+                    <button class="btn btn-md btn-outline-teiren ml-2" data-toggle="modal" data-target="#policy_modify_modal" data-policy-name="{{p.policy.name}}"><i class="fa-solid fa-pen-to-square"></i></button>
                     <button class="btn btn-md btn-outline-danger ml-2" data-toggle="modal" data-target="#policy_delete_modal" data-policy-name="{{p.policy.name}}"><i class="fa-solid fa-trash"></i></button>
-                    <button class="btn btn-md btn-teiren ml-2" data-toggle="modal" data-target="#data_add_modal" data-policy-name="{{p.policy.name}}"><i class="fa-solid fa-plus mr-2"></i>Add Policy Data</button>          
+                    {% endif %}
+                    <button class="btn btn-md btn-teiren ml-auto" data-toggle="modal" data-target="#data_add_modal" data-policy-name="{{p.policy.name}}"><i class="fa-solid fa-plus mr-2"></i>Add Policy Data</button>
                 </div>
                 <div class="card-body" style="font-size:15px; overflow:scroll;">
                     <div class="table-responsive overflow-auto" style="max-height:350px;">
@@ -374,145 +378,6 @@ function deletePolicyData(){
         }
     })
 }
-
-//---------------------------------------------------------------------------------------------------------------------------
-
-$('#add_data_accept').click(function() {
-    // Call your Ajax function here
-    var policy_name = $('input[name="add_data_policy_name"]').val();
-    var data_name = $('input[name="add_data_name"]').val();
-    var data_comment = $('input[name="add_data_comment"]').val();
-    var data_author = $('input[name="add_data_author"]').val();
-
-    console.log(data_author)
-
-    $.ajax({
-        url: '/compliance/policy/data_add/',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {
-            'policy_name': policy_name,
-            'data_name': data_name,
-            'data_comment': data_comment,
-            'data_author': data_author,
-        },        success: function(response){
-            if(response.startsWith('\n<meta')){
-                location.reload()
-            }
-            if(response === 'success'){
-                alert('Saved Successfully')
-                location.reload()
-            }else if(response === 'already exist'){
-            alert('Data name is already exist. Try Again') 
-            }else if(response === 'NULL'){
-                alert('Data name must be entered. Try Again')
-            }
-            else {
-                alert('Failed To Save. Please Try Again')
-            }
-        },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
-        }
-    })
-})
-
-$('#data_mod').on('shown.bs.modal', function (e) {
-    var button = $(e.relatedTarget);
-    var last_name = button.data('name');
-    var data_name = button.data('name'); 
-    var policy_name = button.data('policy-name'); 
-
-    // 모달 내부 필드에 데이터 표시
-    $('input[name="last_name"]').val(last_name);
-    $('input[name="mod_name"]').val(data_name);
-    $('input[name="policy_name"]').val(policy_name);
-});
-
-$('#mod_accept').click(function() {
-    // Call your Ajax function here
-    var last_name=$('input[name="last_name"]').val();
-    var mod_name = $('input[name="mod_name"]').val();
-    var policy_name=$('input[name="policy_name"]').val();
-
-
-    $.ajax({
-        url: '/compliance/policy/data_mod/',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {
-            'policy_name':policy_name,
-            'last_name':last_name,
-            'mod_name': mod_name
-        },
-        success: function(response){
-            if(response.startsWith('\n<meta')){
-                location.reload()
-            }
-            if(response === 'success'){
-                alert('Saved Successfully')
-                window.location.href= '/compliance/policy/'
-            }else if(response === 'already exist'){
-                alert('Data is already exist. Try Again') //중복된거면 카테고리 comment라도 수정할 건지 물어볼 수 있어야 되는데,,,
-            }else if(response === 'NULL'){
-                alert('Data must be entered. Try Again')
-            }
-            else {
-                alert('Failed To Save. Please Try Again')
-            }
-        },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
-        }
-    })
-});
-
-
-$('#policy_data_delete').on('shown.bs.modal', function (e) {
-    var button = $(e.relatedTarget);
-    console.log($(e.relatedTarget).data())
-    return 0
-    var data_name = button.data('name'); 
-    var policy_name = button.data('policy-name'); 
-
-    // 모달 내부 필드에 데이터 표시
-    $('input[name="last_name"]').val(last_name);
-    $('input[name="mod_name"]').val(data_name);
-    $('input[name="policy_name"]').val(policy_name);
-});
-
-function del_data(policy_name, data_name){
-    $.ajax({
-        url: '/compliance/policy/data_del/',
-        headers: {
-            'X-CSRFToken': "{{ csrf_token }}"
-        },
-        type: 'POST',
-        data: {
-            'policy_name':policy_name,
-            'data_name': data_name
-        },
-        success: function(response){
-            if(response.startsWith('\n<meta')){
-                location.reload()
-            }
-            if(response === 'success'){
-                alert('Deleted Successfully')
-                window.location.href= '/compliance/policy/'
-            } else {
-                alert('Failed To Save. Please Try Again')
-            }
-        },
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText); 
-        }
-    })
-}
 </script>
-<script src="{% static '/M_compliance/js/policy_management/searchcard.js' %}"></script>
 {% endblock %}
 

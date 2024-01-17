@@ -6,7 +6,7 @@
         <th>Comment</th>
         <th>Author</th>
         <th>Last update</th>
-        <th>Files</th>
+        <th>Details</th>
         <th>Modify</th>
         <th>Delete</th>
     </tr>
@@ -21,8 +21,8 @@
             <td>{{data.data.author}}</td>
             <td>{{data.data.last_update}}</td>
             <td>
-                <a href="/compliance/evidence/{{ data.data.name }}/">
-                    <button type="button" class="btn btn-md btn-teiren">바로가기</button>
+                <a href="/compliance/evidence/{{data.product.name}}/{{ data.data.name }}/">
+                    <button type="button" class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-circle-info mr-2"></i>Details</button>
                 </a>
             </td>
             <td>
@@ -30,7 +30,8 @@
                 data-name="{{data.data.name}}" data-comment="{{data.data.comment}}" data-author="{{data.data.author}}"><i class="fa-solid fa-pen-to-square mr-2"></i>Modify</button>
             </td>
             <td>
-                <button type="button" class="btn btn-md btn-danger" onclick="del_data('{{data.data.name}}')"><i class="fa-solid fa-trash mr-2"></i>Delete</button>
+                <button type="button" class="btn btn-md btn-danger" data-toggle="modal" data-target="#data_delete"
+                data-name="{{data.data.name}}" data-comment="{{data.data.comment}}" data-author="{{data.data.author}}"><i class="fa-solid fa-trash mr-2"></i>Delete</button>
             </td>
         </tr>
     {% endfor %}

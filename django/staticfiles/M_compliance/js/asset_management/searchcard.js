@@ -13,10 +13,17 @@ function getCookie(name = 'csrftoken') {
     return cookieValue;
 }
 
+$('#search').on('keypress', function(e){
+    if(e.which === 13){
+        e.preventDefault();
+    }
+})
+
 /// Search_Filter
 function searchFilter(){
+    $('#asset_table').hide()
     $.ajax({
-        url: '',
+        url: '/compliance/assets/search/',
         headers:{
             'X-CSRFToken': getCookie()
         },
@@ -27,16 +34,29 @@ function searchFilter(){
             location.reload()
             return 0
         }
-        $('#evidence_dataTable').DataTable().destroy()
-        $('#evidence_dataTable').html(response)
-        $('#evidence_dataTable').DataTable({
+        $('#dataTable').DataTable().destroy()
+        $('#asset_table').html(response)
+        $('#dataTable').DataTable({
             info: true,
             searching: false,
             lengthChange: false
         })
+        $('#asset_table').show()
     })
 }
 
+$('.btn-collapse').on('click', function(){
+    var chevron = $($(this).find('.material-symbols-outlined')[0])
+    if ($.trim(chevron.text()) == 'expand_more'){
+        chevron.text('expand_less')
+        $('.searchcard-collapse').fadeIn()
+        $('.collapsecard').slideDown()
+    } else {
+        chevron.text('expand_more')
+        $('.collapsecard').slideUp()
+        $('.searchcard-collapse').fadeOut()
+    }
+})
 
 $('.btn-reset').hover(
     function(){
