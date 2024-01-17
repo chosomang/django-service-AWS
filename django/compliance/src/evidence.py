@@ -208,19 +208,20 @@ def modify_evidence_data(request):
 def delete_evidence_data(request):
     try:
         name = request.POST.get('name', '')
+        comment = request.POST.get('comment', '')
+        author = request.POST.get('author', '')
         if not name:
             raise Exception
+        elif 0 < graph.evaluate(f"""
+        MATCH (d:Compliance:Evidence:Data{{name:'{name}', comment:'{comment}', author:'{author}'}})
+        OPTIONAL MATCH (d)-[:FILE]->(f:File:Compliance:Evidence)
+        RETURN COUNT(f)
+        """):
+            response = f"There Are Files In [ {name} ] Data. Please Try After Deleting The Files."
         else:
-            comment = request.POST.get('comment', '')
-            author = request.POST.get('author', '')
             graph.evaluate(f"""
             MATCH (d:Compliance:Evidence:Data{{name:'{name}', comment:'{comment}', author:'{author}'}})
-            WITH d
-            OPTIONAL MATCH (d)-[:FILE]->(f:File:Compliance:Evidence)
-            WITH d, COLLECT(f) AS file_list
-            FOREACH (f IN file_list| DETACH DELETE f)
             DETACH DELETE d
-            RETURN count(d)
             """)
             response = "Successfully Deleted Data"
     except Exception as e:
