@@ -19,7 +19,9 @@ def check_account(request):
         return ['Password Does Not Match','Please Try Again']
     return 'check'
 
+import uuid
 def register_account(request, ip):
+    user_uuid = str(uuid.uuid4())
     cypher = f"""
     MERGE (super:Super:Teiren {{name:'Teiren'}})
     WITH super
@@ -29,6 +31,7 @@ def register_account(request, ip):
         email: '{request['email_add']}',
         createdTime: '{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}',
         ipAddress: '{ip}',
+        uuid: '{user_uuid}',
         failCount: 0
     }})
     RETURN COUNT(a)
@@ -40,3 +43,19 @@ def register_account(request, ip):
             raise Exception
     except Exception:
         return 'fail'
+
+def get_uuid(username, password):
+    cypher = f"""
+    MATCH (node:Teiren:Account)
+    WHERE node.userName = '{username}'
+    AND node.userPassword = '{password}'
+    
+    RETURN node.uuid as uuid LIMIT 1
+    """
+    result = graph.run(cypher)
+    uuid = None
+    for record in result:
+        uuid = record["uuid"]
+        break
+    
+    return str(uuid) if uuid else None
