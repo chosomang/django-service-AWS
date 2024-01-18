@@ -14,13 +14,17 @@ function getCookie(name = 'csrftoken') {
 }
 
 /// Search_Filter
-function searchFilter(){
+function searchFilter(data_type=null){
+    var request = $('#search').serialize()
+    if (data_type){
+        console.log(data_type)
+    }
     $.ajax({
         url: '',
         headers:{
             'X-CSRFToken': getCookie()
         },
-        data: $('#search').serialize(),
+        data: request,
         type: 'post'
     }).done(function(response){
         if(response.trim().startsWith('<head')){
