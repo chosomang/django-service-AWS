@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from auth.src import register, authentication
 from django.conf import settings
 from py2neo import Graph
+from .src.register import get_uuid
 
 # AWS
 host = settings.NEO4J['HOST']
@@ -15,6 +16,7 @@ graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 def login_view(request):
     if 1 > graph.evaluate("MATCH (a:Teiren:Account) RETURN COUNT(a)"):
         return redirect('/auth/register/')
+    
     if request.method == 'POST':
         data = dict(request.POST.items())
         username, password = authentication.login_account(data, get_client_ip(request))
@@ -30,10 +32,15 @@ def login_view(request):
                 new_user = User.objects.create_user(username=username, password=password)
                 new_user.set_password(password)
                 new_user.save()
+                
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             next_url = request.GET.get('next')
+            # Add user_id field in reqeust.session
+            request.session['user_id'] = username
+            request.session['uuid'] = get_uuid(username, password)
+            
             if next_url is not None:
                 return redirect(next_url)
             else:
@@ -41,6 +48,7 @@ def login_view(request):
         else:
             data['error'] = "Failed To Login. Please Try Again"
             return render(request, 'auth/login.html', data)
+        
     return render(request, 'auth/login.html')
 
 def logout_view(request):
