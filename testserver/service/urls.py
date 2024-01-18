@@ -38,7 +38,8 @@ urlpatterns = [
     path('configurations/', include('configurations.urls')),
     path(f'api/{API_VERSION}/', include('api.urls')),
     path('compliance/', include('compliance.urls')),
-    path('test/', include('testing.urls'))
+    path('test/', include('testing.urls')),
+    path('monitoring/', include('monitoring.urls'))
     # path(f'compliance/{COMPLIANCE_VERSION}/', include(f'compliance.{COMPLIANCE_VERSION}.urls')),
     # path('', include(f'ajax_handler.{AJAX_VERSION}.urls')),
     # path('', include('TeirenSIEM.urls')),

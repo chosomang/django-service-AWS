@@ -20,21 +20,50 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-76dtlqs!mq_1(mxvkd@ep-)9!sk=e4(u(7^hy&c%2bqw5iepev'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = ['*']
 # REST API DRF SETTINGS #
 from rest_framework import permissions
 
+# REST Framework Settings
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
     ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework_api_key.permissions.HasAPIKey",
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
 }
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=365*100),  # 토큰 유효 기간을 매우 길게 설정 (예: 100년)
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=365*100),  # 갱신 시간도 동일하게 설정
+    'SLIDING_TOKEN_LIFETIME': timedelta(days=365*100),  # 최대 유효 기간도 동일하게 설정
+    'SLIDING_TOKEN_REFRESH_LIFETIME_ALTERNATIVE': timedelta(days=365*100),
+    'SLIDING_TOKEN_LIFETIME_ALTERNATIVE': timedelta(days=365*100),
+}
+
+# DJOSER Settings
+DJOSER = {
+    'SERIALIZERS': {
+        'user_create': 'api.serializers.CustomUserCreateSerializer',  # 회원가입 시 사용할 Serializer 지정
+    },
+}
+
 # Application definition
 INSTALLED_APPS = [
     'api',
@@ -46,13 +75,16 @@ INSTALLED_APPS = [
     'dashboard',
     'compliance',
     'testing',
-    'rest_framework',
+    'monitoring',
+    "rest_framework",
+    "rest_framework_api_key",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles'
+    'django.contrib.staticfiles',
+    'rest_framework_simplejwt' # rest framework jwt token
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
