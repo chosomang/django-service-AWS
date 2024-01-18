@@ -1,23 +1,44 @@
 from django.db import models
 
-MAX_CYPHER_SIZE = 9999
-MAX_TYPE_SIZE = 100
-
-class Cypher(models.Model):
-    function_name = models.CharField(max_length=MAX_TYPE_SIZE, default='')
-    cypher_type = models.CharField(max_length=MAX_TYPE_SIZE, default='')
-    cypher = models.TextField(max_length=MAX_CYPHER_SIZE, default='')
-
-
-class ApiCypher(models.Model):
-    cypher_type = models.CharField(max_length=MAX_TYPE_SIZE, default='')
-    cypher = models.TextField(max_length=MAX_CYPHER_SIZE, default='')
-
-    
 class Metrics(models.Model):
-    cpu_usage = models.FloatField()
-    memory_usage = models.FloatField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    cpu = models.FloatField()
+    memory = models.FloatField()
+    disk_usage = models.FloatField()
+    
+    read_count = models.IntegerField()
+    write_count = models.IntegerField()
+    
+    read_bytes = models.IntegerField()
+    write_bytes = models.IntegerField()
+    
+    read_time = models.IntegerField()
+    write_time = models.IntegerField()
+    
+    read_merged_count = models.IntegerField()
+    write_merged_count = models.IntegerField()
+    
+    busy_time = models.IntegerField()
+    
+    bytes_sent = models.IntegerField()
+    bytes_recv = models.IntegerField()
+    
+    packets_sent = models.IntegerField()
+    packets_recv = models.IntegerField()
+    
+    errin = models.IntegerField()
+    errout = models.IntegerField()
+    
+    dropin = models.IntegerField()
+    dropout = models.IntegerField()
+    
+    instance_id = models.CharField(max_length=20)
+    instance_type = models.CharField(max_length=25)
+    
+    public_ipv4 = models.CharField(max_length=15)
+    local_ipv4 = models.CharField(max_length=15)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    uuid = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"CPU: {self.cpu_usage}, Memory: {self.memory_usage}"
+        return self.instance_id
