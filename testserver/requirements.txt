@@ -20,7 +20,10 @@ folium==0.14.0
 pygeoip
 graphene-django
 djangorestframework
+djangorestframework-api-key
 django-filter
 docker
 whitenoise
 neo4j
+djangorestframework-simplejwt
+djoser
