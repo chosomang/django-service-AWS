@@ -2,8 +2,8 @@
 python manage.py makemigrations TeirenSIEM
 python manage.py migrate --no-input
 
-python manage.py makemigrations api
-python manage.py migrate --no-input
+# python manage.py makemigrations api
+# python manage.py migrate --no-input
 
 python manage.py collectstatic --no-input
 python manage.py createsuperuser --noinput --username=yoonan --email=yoonan@teiren.io --password=cute428!
