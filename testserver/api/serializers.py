@@ -1,13 +1,18 @@
 from rest_framework import serializers
-from .models import Cypher, ApiCypher
+from djoser.serializers import UserCreateSerializer
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+from .models import Metrics
 
-class CypherSerializer(serializers.ModelSerializer):
+
+class MetricsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Cypher
+        model = Metrics
         fields = '__all__'
-
-
-class ApiCypherSerializer(serializers.ModelSerializer):
+        
+        
+User = get_user_model()
+class CustomUserCreateSerializer(UserCreateSerializer):
     class Meta:
-        model = ApiCypher
-        fields = '__all__'
+        model = User
+        fields = ('id', 'password')
