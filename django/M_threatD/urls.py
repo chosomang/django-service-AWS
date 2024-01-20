@@ -6,6 +6,7 @@ urlpatterns = [
     # Risk Management
     ## alert
     path('notifications/<threat>/', views.notification_view),
+    # test
     # ## rules
     path('rules/<resourceType>/<logType>/', views.rules_view),
     ## visuals
@@ -20,21 +21,21 @@ urlpatterns +=[
     # Update Rule Table
     path('rules/<resourceType>/<logType>/<ruleType>/filter/', rule_ajax.rule_update),
 
-    # Detail Modal
+    # Rule Detail Modal
     path('rules/<resourceType>/<logType>/<ruleType>/details/', rule_ajax.rule_details),
 
-    # Edit Modal
+    # Rule Edit Modal
     path('rules/<resourceType>/<logType>/edit/', rule_ajax.rule_edit_modal),
     path('custom/edit/', rule_ajax.edit_rule),
 
-    # Delete Modal
+    # Rule Delete Modal
     path('custom/delete/', rule_ajax.delete_rule),
 
-    # Add Modal
+    # Rule Add Modal
     path('rules/<resourceType>/<logType>/add/', rule_ajax.rule_add_modal),
     path('custom/add/<section>/', rule_ajax.add_rule_section),
     path('custom/add/', rule_ajax.add_rule),
 
-    # On/Off Action
+    # Rule On/Off Action
     path('rules/<resourceType>/<logType>/on_off/', rule_ajax.on_off),
 ]

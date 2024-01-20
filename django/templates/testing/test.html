@@ -14,6 +14,8 @@
 <script src="https://unpkg.com/@popperjs/core@2"></script>
 <script src="https://unpkg.com/tippy.js@6"></script>
 
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css"/>
 {% endblock %}
 {% block content %}
 <style>
@@ -46,6 +48,100 @@
         </table>
     </div>
 </div>
+
+
+<!--<style>
+    .tabs{
+        width:40px;
+        color: black;
+        background: transparent;
+        border: none;
+        border-bottom: 0px solid #24b6d4;
+        margin: 0 15px;
+        transition: all 0.5s ease-in-out;
+        &:hover{
+            border-bottom-width: 20px;
+        }
+    }
+</style>
+<div style="margin-top:200px;">
+    <div style="display:flex; flex-direction:row;">
+        <button class="tabs">1</button>
+        <button class="tabs">2</button>
+        <button class="tabs">3</button>
+        <button class="tabs">4</button>
+    </div>
+</div> -->
+
+<style>
+
+    a {
+        text-decoration: none!important;
+        text-align: center;
+    }
+
+    .tabs {
+        &.tabs-center {
+            margin: auto;
+        }
+        &.tabs-justify {
+            width: 100%;
+            table-layout: fixed;
+        }
+        a.tab {
+            position: relative;
+            display: table-cell;
+            transition: all ease .3s;
+            padding: 1em 1.6em;
+            transform: translate3d(0, 0, 0);
+            color: #636d84;
+            white-space: nowrap;
+            cursor: pointer;
+            &:hover {
+                color: rgb(60, 180, 250);
+            }
+            &:after {
+                transition: all .3s cubic-bezier(1, 0, 0, 1);
+                will-change: transform, box-shadow, opacity;
+                position: absolute;
+                content: '';
+                height: 3px;
+                bottom: 0px;
+                left: 0px;
+                right: 0px;
+                border-radius: 3px 3px 0px 0px;
+                background:  rgb(60, 180, 250);
+                box-shadow: 0px 4px 10px 3px rgba(60, 180, 250, .15);
+                opacity: 0;
+                transform: scale(0, 1);
+            }
+            &.active {
+                color: rgb(60, 180, 250);
+                &:after {
+                    opacity: 1;
+                    transform: scale(1, 1);
+                }
+            }
+        }
+    }
+</style>
+
+
+    <div class="tabs tabs-center">
+        <a class="tab" onclick="test()">
+            responsive
+        </a>
+        <a class="tab">
+            center
+        </a>
+        <a class="tab">
+            justify
+        </a>
+        <a class="tab">
+            sticky
+        </a>
+    </div>
+
 {% endblock %}
 {% block script %}
 
@@ -61,6 +157,10 @@
         onHidden(instance){
             instance.setContent('Loading...')
         }
-      });
+    });
+    $('.tabs > a.tab').on('click', (event) => {
+            $(event.target).parent('.tabs').find('> a.tab.active').removeClass('active');
+            $(event.target).addClass('active');
+    });
 </script>
 {% endblock %}

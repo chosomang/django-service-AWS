@@ -384,6 +384,15 @@ nav>a {
     margin-bottom: 20px;
 }
 
+.locationbar a{
+    color: #94A2B3;
+    text-decoration: none;
+}
+
+.locationbar a:hover{
+    color: #24b6d4;
+}
+
 .locationbar .current{
     color: #24B6D4 !important;
     font-weight: 800 !important;

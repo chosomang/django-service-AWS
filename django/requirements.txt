@@ -24,3 +24,5 @@ django-filter
 docker
 whitenoise
 neo4j
+docx2pdf
+aspose.slides

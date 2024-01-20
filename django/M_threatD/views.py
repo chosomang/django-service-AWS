@@ -10,14 +10,20 @@ from django.http import JsonResponse, HttpResponseRedirect
 @login_required
 def notification_view(request, threat):
     if request.method == 'POST':
-        context = notification.alert_off(dict(request.POST.items()))
-        context.update(detection.neo4j_graph(context))
-        return render(request, f"M_threatD/notifications/{threat}.html", context)
+        if threat == 'details':                
+            context = notification.alert_off(dict(request.POST.items()))
+            context.update(detection.neo4j_graph(context))
+            return render(request, f"M_threatD/notifications/{threat}.html", context)
+        elif threat == 'filter':
+            context = (notification.get_alert_logs(dict(request.POST)))
+            return render(request, f"M_threatD/notifications/dataTable.html", context)
     else:
         if threat == 'details':
             return HttpResponseRedirect('/threat/notifications/logs/')
-    context = (notification.get_alert_logs())
-    return render(request, f"M_threatD/notifications/{threat}.html", context)
+        else:
+            context = (notification.get_alert_logs({}))
+            context.update(notification.get_filter_list())
+            return render(request, f"M_threatD/notifications/{threat}.html", context)
 
 # Rules
 @login_required
@@ -39,9 +45,9 @@ def rules_view(request, resourceType, logType):
 def visuals_view(request, threat):
     if threat == 'user':
         context = {'accounts': sorted(user.get_user_visuals(), key=lambda x: x['total'], reverse=True)}
-    elif threat == 'ip':
-        map = ip.folium.folium_test('37.5985', '126.97829999999999')
-        context = {'map': map}
+    # elif threat == 'ip':
+    #     map = ip.folium.folium_test('37.5985', '126.97829999999999')
+    #     context = {'map': map}
     else:
         context = {}
     return render(request, f"M_threatD/visuals/{threat}.html", context)

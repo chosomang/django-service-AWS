@@ -81,7 +81,7 @@ TEMPLATES = [
     },
 ]
 WSGI_APPLICATION = 'service.wsgi.application'
-
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
@@ -100,20 +100,20 @@ MONGODB = {
     'LOCAL': 'local'
 }
 
-# NEO4J = {
-#     'HOST': '13.124.121.1',
-#     'PORT': '7689',
-#     'USERNAME': 'neo4j',
-#     'PASSWORD': 'dbdnjs!23'
-# }
-
-#BoB TESTING
 NEO4J = {
     'HOST': '13.124.121.1',
-    'PORT': '7689',
+    'PORT': '7687',
     'USERNAME': 'neo4j',
-    'PASSWORD': '1am^Ne04jUs2r!'
+    'PASSWORD': 'dbdnjs!23'
 }
+
+#BoB TESTING
+# NEO4J = {
+#     'HOST': '13.124.121.1',
+#     'PORT': '7687',
+#     'USERNAME': 'neo4j',
+#     'PASSWORD': '1am^Ne04jUs2r!'
+# }
 
 # For Hong
 # NEO4J = {
@@ -177,3 +177,6 @@ EMAIL_HOST_PASSWORD = 'ymdriofeqgmuuqst'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
