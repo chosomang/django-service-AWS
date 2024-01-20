@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-76dtlqs!mq_1(mxvkd@ep-)9!sk=e4(u(7^hy&c%2bqw5iepev'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ['*']
 # REST API DRF SETTINGS #
 from rest_framework import permissions
@@ -80,11 +80,12 @@ INSTALLED_APPS = [
     "rest_framework_api_key",
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites', # 여러 사이트 동시 운영
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework_simplejwt' # rest framework jwt token
+    'rest_framework_simplejwt', # rest framework jwt token
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -96,6 +97,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+AUTHENTICATION_BACKENDS = {
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+}
+
 ROOT_URLCONF = 'service.urls'
 TEMPLATES = [
     {
@@ -186,17 +192,36 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'staticfiles')
 ]
 # Neo4j
-NEO4J_HOST = '223.130.139.109'
-NEO4J_PORT = '7688'
-NEO4J_USERNAME = 'neo4j'
-NEO4J_PASSWORD = 'pY_PjwLgED8v3C7XrEE8TXo'
+# NEO4J_HOST = '223.130.139.109'
+# NEO4J_PORT = '7688'
+# NEO4J_USERNAME = 'neo4j'
+# NEO4J_PASSWORD = 'pY_PjwLgED8v3C7XrEE8TXo'
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'chosomang12@teiren.io'
-EMAIL_HOST_PASSWORD = 'ymdriofeqgmuuqst'
+# EMAIL_HOST_USER = 'chosomang12@teiren.io'
+# EMAIL_HOST_PASSWORD = 'ymdriofeqgmuuqst'
+
+EMAIL_HOST_USER = 'yoonan@teiren.io'
+EMAIL_HOST_PASSWORD = 'djlwlkxhgrprtesj'
+
+
+############# OPTIONS ###############
+
+# Email confirm
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'email_confirm_done'
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = 'email_confirm_done'
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+# ACCOUNT_EMAIL_VARIFICATION = 'optional'
+
+# Auth, Register
+ACCOUNT_PASSWORD_INPUT_RENDER_VALUE = True
+
+### DATABASE ###
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
