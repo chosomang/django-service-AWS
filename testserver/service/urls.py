@@ -28,10 +28,10 @@ API_VERSION = 'v1'
 AJAX_VERSION = 'v1'
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('', include('dashboard.urls')),
     path('', include('common.urls')),
     path('auth/', include('auth.urls')),
-    path('admin/', admin.site.urls),
     path('integration/', include('M_equipments.urls')),
     path('logs/', include('M_logs.urls')),
     path('threat/', include('M_threatD.urls')),
