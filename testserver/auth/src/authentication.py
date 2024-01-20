@@ -117,6 +117,7 @@ def login_fail(userName, srcip):
 def logout_success(sender, request, **kwargs):
     srcip = get_client_ip(request)
     dstip = get_server_ip()
+    
     graph.run(f"""
     MATCH (a:Account:Teiren{{
         userName: '{request.user}'
