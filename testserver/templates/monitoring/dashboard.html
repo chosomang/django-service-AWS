@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+<!-- Chart.js-->
+<script src="{% static '/plugin/chart.js/Chart.bundle.min.js' %}"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script> -->
+
+<!-- Gridstack -->
+<link rel="stylesheet" href="{% static '/plugin/gridstack/gridstack.css' %}">
+<script src="{% static '/plugin/gridstack/gridstack-all.js' %}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<!-- Page Essential -->
+{% endblock %}
+{% block content %}
+<!-- Begin Page Content -->
+
+<div id="charts" style="max-width: 800px; margin: 0 auto;"></div>
+{{ uuid }}
+
+{% endblock %}
+{% block script %}
+<script src="{% static '/dashboard/js/default_layout.js' %}"></script>
+<script src="{% static '/dashboard/js/dashboard.js' %}"></script>
+<script>
+    const charts = {};
+    const url = window.location.href;
+    const regex = /dashboard\/([a-f0-9\-]+)/;
+    const match = url.match(regex);
+    if (match && match.length > 1) {
+        uuid = match[1];
+    }
+    
+    async function fetchMetrics(uuid) {
+        const response = await fetch(`http://127.0.0.1:8000/api/v1/get_metrics_by_uuid/${uuid}`);
+        return await response.json();
+    }
+
+    function createOrUpdateChart(metrics, instanceId) {
+        const cpuData = metrics.map(metric => metric.cpu);
+        const memoryData = metrics.map(metric => metric.memory);
+        const diskUsageData = metrics.map(metric => metric.disk_usage);
+        const timestamps = metrics.map(metric => new Date(metric.timestamp).toLocaleTimeString());
+
+        if (!charts[instanceId]) {
+            // 차트가 존재하지 않으면 새로 생성
+            const ctx = document.createElement('canvas');
+            ctx.id = `chart-${instanceId}`;
+            ctx.width = 400;
+            ctx.height = 200;
+            document.getElementById('charts').appendChild(ctx);
+
+            charts[instanceId] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [
+                        {
+                        label: `${instanceId} CPU`,
+                        data: cpuData,
+                        borderColor: 'rgb(255, 99, 132)',
+                        fill: false
+                        },
+                        {
+                            label: `${instanceId} Memory`,
+                            data: memoryData,
+                            borderColor: 'rgb(54, 162, 235)',
+                            fill: false
+                        },
+                        {
+                            label: `${instanceId} Disk Usage`,
+                            data: diskUsageData,
+                            borderColor: 'rgb(75, 192, 192)',
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    animations: false,
+                    plugins: {
+                        tooltip: {
+                            intersect: false, // 인터섹트 비활성화
+                        },
+                    },
+                },
+            });
+            console.log('verticalLinePlugin' + instanceId)
+            const verticalLinePlugin = {
+                id: 'charts',
+                afterDraw: function (chart, easing) {
+                    if (chart.tooltip && chart.tooltip._active && chart.tooltip._active.length) {
+                        const activePoint = chart.tooltip._active[0];
+                        const ctx = chart.ctx;
+                        const x = activePoint.element.x;
+                        const topY = chart.scales.y.top;
+                        const bottomY = chart.scales.y.bottom;
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.moveTo(x, topY);
+                        ctx.lineTo(x, bottomY);
+                        ctx.strokeStyle = '#ff0000';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                },
+            };
+            Chart.register(verticalLinePlugin);
+
+        } else {
+            // 차트가 이미 존재하는 경우 데이터만 업데이트
+            const chart = charts[instanceId];
+            chart.data.labels = timestamps;
+            chart.data.datasets[0].data = cpuData;
+            chart.data.datasets[1].data = memoryData;
+            chart.data.datasets[2].data = diskUsageData;
+            chart.update();
+        }
+    }
+
+    async function renderCharts() {
+        const metricsData = await fetchMetrics(uuid);
+
+        const timestamps = metricsData.length > 0 ? metricsData[0].map(metric => new Date(metric.timestamp).toLocaleTimeString()) : [];
+
+        metricsData.forEach(metrics => {
+            if (metrics.length > 0) {
+                createOrUpdateChart(metrics, metrics[0].instance_id, timestamps);
+            }
+        });
+    }
+
+    // document.getElementById('charts').addEventListener('mousemove', function (e) {
+    //     mousePositionX = e.clientX;
+    //     for (const chartId in charts) {
+    //         if (charts.hasOwnProperty(chartId)) {
+    //             const chart = charts[chartId];
+    //             if (chart.tooltip) {
+    //                 chart.tooltip._active = [{ element: { x: e.x } }];
+    //                 chart.update();
+    //             }
+    //         }
+    //     }
+    // });
+    setInterval(renderCharts, 2000);
+    // renderCharts();
+</script>
+{% endblock %}
+    
+</body>
+</html>
