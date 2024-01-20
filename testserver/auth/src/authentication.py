@@ -22,12 +22,12 @@ def login_account(request, srcip):
         if 1 == graph.evaluate(f"{cypher} RETURN COUNT(a)"):
             if 5 <= graph.evaluate(f"{cypher} RETURN a.failCount"):
                 return 'fail', 'User Id Forbidden. Please Contact Administrator'
-            if 1 == graph.evaluate(f"{cypher} WHERE a.userPassword = '{request['user_password']}' RETURN COUNT(a)"):
-                login_success(request['user_name'], srcip)
+            if 1 == graph.evaluate(f"{cypher} WHERE a.userPassword = '{request['password1']}' RETURN COUNT(a)"):
+                login_success(request['username'], srcip)
                 userName = graph.evaluate(f"{cypher} RETURN a.userName")
-                return userName, request['user_password']
+                return userName, request['password1']
             else:
-                return login_fail(request['user_name'], srcip), 'fail'
+                return login_fail(request['username'], srcip), 'fail'
         else:
             raise Exception
     except Exception:
@@ -114,12 +114,12 @@ def login_fail(userName, srcip):
     return failCount
 
 @receiver(user_logged_out)
-def logout_success(sender, user, request, **kwargs):
+def logout_success(sender, request, **kwargs):
     srcip = get_client_ip(request)
     dstip = get_server_ip()
     graph.run(f"""
     MATCH (a:Account:Teiren{{
-        userName: '{user.username}'
+        userName: '{request.user}'
     }})
     WITH a
     OPTIONAL MATCH (a)-[:DATE]-(d:Date {{date:'{str(date.today())}'}})
