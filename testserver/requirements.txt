@@ -27,3 +27,4 @@ whitenoise
 neo4j
 djangorestframework-simplejwt
 djoser
+django-allauth
