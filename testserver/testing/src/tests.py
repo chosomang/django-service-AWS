@@ -285,3 +285,9 @@ def cloudformation(request):
         return JsonResponse(result)
     else:
         return render(request, 'testing/cloudformation.html')
+    
+def login_(request):
+    return render(request, 'testing/login.html')
+
+def register_(request):
+    return render(request, 'testing/register.html')
