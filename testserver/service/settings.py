@@ -67,6 +67,7 @@ DJOSER = {
 # Application definition
 INSTALLED_APPS = [
     'api',
+    '_auth',
     'common',
     'M_logs',
     'M_equipments',
@@ -138,10 +139,10 @@ MONGODB = {
 }
 
 NEO4J = {
-    'HOST': '13.124.121.1',
+    'HOST': '3.36.151.254',
     'PORT': '7687',
     'USERNAME': 'neo4j',
-    'PASSWORD': '1am^Ne04jUs2r!'
+    'PASSWORD': 'yuw0n!sjj@ng'
 }
 
 # For Hong
@@ -221,6 +222,7 @@ ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 ACCOUNT_PASSWORD_INPUT_RENDER_VALUE = True
 
 ### DATABASE ###
+AUTH_USER_MODEL = '_auth.CustomUser'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
