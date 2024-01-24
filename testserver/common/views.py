@@ -6,7 +6,7 @@ from .src.topbar import check_topbar_alert
 @login_required
 # Topbar Alert
 def topbar_alert(request):
-    context = check_topbar_alert()
+    context = check_topbar_alert(request.session.get('db_name'))
     return JsonResponse(context)
 
 def error_page(request, exception=None):

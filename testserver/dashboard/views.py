@@ -1,6 +1,6 @@
-from django.urls import reverse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 
 @login_required
 def dashboard_view(request):
@@ -14,9 +14,10 @@ def dashboard_view(request):
         _type_: _description_
     """
     # user_uuid = request.session.get('uuid')
+    # print(user_uuid)
     # if not user_uuid:
-    #     return render(request, "monitoring/info.html")
-    # url_with_uuid = reverse('get_metrics_by_uuid', args=[user_uuid])
-    # return redirect(url_with_uuid)
+    #     #return 404 page
+    #     pass
+    
     return render(request, "dashboard/dashboard.html")
 

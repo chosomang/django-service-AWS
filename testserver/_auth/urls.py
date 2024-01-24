@@ -1,4 +1,4 @@
-from auth import views
+from _auth import views
 from django.urls import path
 
 

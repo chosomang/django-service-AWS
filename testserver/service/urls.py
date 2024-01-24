@@ -31,7 +31,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('dashboard.urls')),
     path('', include('common.urls')),
-    path('auth/', include('auth.urls')),
+    path('auth/', include('_auth.urls')),
     path('integration/', include('M_equipments.urls')),
     path('logs/', include('M_logs.urls')),
     path('threat/', include('M_threatD.urls')),

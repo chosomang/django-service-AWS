@@ -5,8 +5,6 @@ from datetime import datetime
 # django
 from django.conf import settings
 
-
-
 # 3rd party
 from py2neo import Graph
 

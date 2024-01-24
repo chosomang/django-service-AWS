@@ -1,8 +1,8 @@
 # local
 from .src.mail import send_mail
-from auth.src import authentication
-from py2neo import Graph
+from _auth.src import authentication
 from .src.register import get_uuid, push_neo4j
+from .forms import CustomUserCreationForm
 
 # django
 from django.conf import settings
@@ -28,9 +28,6 @@ port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 
-# Neo4j Connection
-graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
-
 def login_(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -52,12 +49,16 @@ def login_(request):
         if user is not None:
             login(request, user)
             next_url = request.GET.get('next')
+            # session
             request.session['user_id'] = username
-            request.session['uuid'] = get_uuid(username, password)
+            request.session['uuid'] = str(user.uuid)
+            request.session['db_name'] = str(user.db_name)
             if next_url is not None:
+                if '?' in next_url:
+                    next_url += f'&uuid={user.uuid}'
+                else:
+                    next_url += f'?uuid={user.uuid}'
                 return redirect(next_url)
-            else:
-                return redirect('/')
         else:
             # 로그인 실패한 경우
             messages.warning(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
@@ -72,21 +73,17 @@ def logout_(request):
 def register_(request):
     context = {'color': 'teiren', 'message': ['Create Your Account', 'TEIREN CLOUD']}
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             # Save the user form
             user = form.save(commit=False)
             user.email = request.POST.get('email')
+            user.user_layout = 'default'
+            user.db_name = f"t{user.uuid}"
             user.is_active = False
             user.is_staff = False
             user.is_superuser = False
             user.save()
-            
-            # push to neo4j db
-            try:
-                push_neo4j(request.POST, _get_client_ip(request))
-            except Exception as e:
-                print(f'push neo4j error: {e}')
                 
             if send_mail(request.POST, user):
                 messages.success(request, '회원가입이 완료되었습니다. 메일 인증 후 로그인 해주세요!')
@@ -103,15 +100,26 @@ def register_(request):
     return render(request, 'auth/register.html', context)
 
 # 이메일 인증 view
+from common.neo4j.handler import Neo4jHandler, Cypher
 def activate_(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
-        user = User.objects.get(pk=uid)
-        
+        user = get_user_model().objects.get(pk=uid)
         # 토큰 검증
         if default_token_generator.check_token(user, token):
             user.is_active = True
             user.save()
+            # 메일 인증 이후, neo4j에 사용자 테이블 생성
+            try:
+                neohandler = Neo4jHandler()
+                neohandler.create_database(user.db_name)
+                neohandler.close()
+            except Exception as e:
+                print(f"neo4j: can't create database: {e}")
+            # neo4j 데이터베이스에 저장
+            cypher = Cypher()
+            cypher.push_user(user, _get_client_ip(request))
+            cypher.close()
             return render(request, 'registration/activation_success.html')
         else:
             return render(request, 'registration/activation_failure.html')
