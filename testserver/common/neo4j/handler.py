@@ -17,6 +17,12 @@ class Neo4jHandler:
         
         self.driver = GraphDatabase.driver(self.uri, auth=(self.user, self.pw))
         
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+        
     def close(self):
         self.driver.close()
     
@@ -24,7 +30,7 @@ class Neo4jHandler:
         with self.driver.session(database=database) as session:
             res = session.execute_write(self._run, query)
             return res
-    
+        
     def create_database(self, db_name):
         query = f"CREATE DATABASE `{db_name}`"
         with self.driver.session() as session:
@@ -34,9 +40,10 @@ class Neo4jHandler:
     @staticmethod
     def _run(tx, query):
         res = tx.run(query)
-        return res
-    
-# neo4j_handler = Neo4jHandler()
+        record = res.single()
+        
+        return record if record else None
+neo4j_handler = Neo4jHandler()
 
 
 class Cypher(Neo4jHandler):
@@ -64,5 +71,4 @@ RETURN ID(a) as id
 """
         res = Neo4jHandler.run(self, user.db_name, query)
         return res
-        
-# cypherhandler = Cypher()
+cypherhandler = Cypher()
