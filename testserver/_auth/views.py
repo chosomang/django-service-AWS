@@ -58,6 +58,7 @@ def login_(request):
                     next_url += f'&uuid={user.uuid}'
                 else:
                     next_url += f'?uuid={user.uuid}'
+                return redirect(next_url)
         else:
             # 로그인 실패한 경우
             messages.warning(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
@@ -77,6 +78,7 @@ def register_(request):
             # Save the user form
             user = form.save(commit=False)
             user.email = request.POST.get('email')
+            user.user_layout = 'default'
             user.db_name = f"t{user.uuid}"
             user.is_active = False
             user.is_staff = False
