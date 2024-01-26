@@ -1,9 +1,5 @@
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from django.conf import settings
-import datetime
-import json
-import time
-import psutil
 
 client = MongoClient (
     host = settings.MONGODB['HOST'],
