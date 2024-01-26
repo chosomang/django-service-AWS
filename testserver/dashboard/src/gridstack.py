@@ -148,59 +148,57 @@ def default_layout(request):
         request_test = {'request': request}
         items = json.loads(dict(request.POST.items())['layout'])
         try:
-            dhandler = DashboardHandler(request_test)
-            for item in items:
-                # request_test = {'request': request}
-                print(item['id'])
-                if item['id'] == 'logTotal':
-                    item['content'] = dhandler.logTotal()
-                    print(item['content'])
-                    continue
-                if item['id'] == 'integrationTotal':
-                    item['content'] = dhandler.integrationTotal()
-                    continue
-                if item['id'] == 'threatlogTotal':
-                    item['content'] = dhandler.threatlogTotal()
-                    continue
-                if item['id'] == 'threatRatio':
-                    item['content'] = dhandler.threatRatio()
-                    continue
-                if item['id'] == 'recentCollectedOverview':
-                    item['content'] = dhandler.recentCollectedOverview()
-                    continue
-                if item['id'] == 'threatRule':
-                    item['content'] = dhandler.threatRule()
-                    continue
-                if item['id'] == 'threatUser':
-                    item['content'] = dhandler.threatUser()
-                    continue
-                if item['id'] == 'threatLevel':
-                    item['content'] = dhandler.threatLevel()
-                    continue
-                if item['id'] == 'threatDetectionOverview':
-                    item['content'] = dhandler.threatDetectionOverview()
-                    continue
-                if item['id'] == 'threatIp':
-                    item['content'] = dhandler.threatIp()
-                    continue
-                if item['id'] == 'threatEquipment':
-                    item['content'] = dhandler.threatEquipment()
-                    continue
-                if item['id'] == 'threatSenario':
-                    item['content'] = dhandler.threatSenario()
-                    continue
-                if item['id'] == 'graphitem':
-                    item['content'] = dhandler.graphitem()
-                    continue
-                if item['id'] == 'recentDetection':
-                    print('=========')
-                    item['content'] = dhandler.recentDetection()
-                    print(item['content'])
-                    continue
-                
-            # for item in items:
-            #     print(item)
-            response = json.dumps(items)
+            with DashboardHandler(request_test) as dhandler:
+                for item in items:
+                    if item['id'] == 'logTotal':
+                        item['content'] = dhandler.logTotal()
+                        print(item['content'])
+                        continue
+                    if item['id'] == 'integrationTotal':
+                        item['content'] = dhandler.integrationTotal()
+                        continue
+                    if item['id'] == 'threatlogTotal':
+                        item['content'] = dhandler.threatlogTotal()
+                        continue
+                    if item['id'] == 'threatRatio':
+                        item['content'] = dhandler.threatRatio()
+                        continue
+                    if item['id'] == 'recentCollectedOverview':
+                        item['content'] = dhandler.recentCollectedOverview()
+                        continue
+                    if item['id'] == 'threatRule':
+                        item['content'] = dhandler.threatRule()
+                        continue
+                    if item['id'] == 'threatUser':
+                        item['content'] = dhandler.threatUser()
+                        continue
+                    if item['id'] == 'threatLevel':
+                        item['content'] = dhandler.threatLevel()
+                        continue
+                    if item['id'] == 'threatDetectionOverview':
+                        item['content'] = dhandler.threatDetectionOverview()
+                        continue
+                    if item['id'] == 'threatIp':
+                        item['content'] = dhandler.threatIp()
+                        continue
+                    if item['id'] == 'threatEquipment':
+                        item['content'] = dhandler.threatEquipment()
+                        continue
+                    if item['id'] == 'threatSenario':
+                        item['content'] = dhandler.threatSenario()
+                        continue
+                    if item['id'] == 'graphitem':
+                        item['content'] = dhandler.graphitem()
+                        continue
+                    if item['id'] == 'recentDetection':
+                        print('=========')
+                        item['content'] = dhandler.recentDetection()
+                        print(item['content'])
+                        continue
+                    
+                # for item in items:
+                #     print(item)
+                response = json.dumps(items)
         except Exception:
             traceback_message = traceback.format_exc()
             print(f"error is {traceback_message}")
