@@ -1,7 +1,10 @@
+# local
+from .mongo import get_db_handle, get_collection_handle
+# django 
+from django.conf import settings
+# 3rd party
 import folium
 import pygeoip
-from .mongo import get_db_handle, get_collection_handle
-from django.conf import settings
 
 def get_ip_info(ip):
     '''
