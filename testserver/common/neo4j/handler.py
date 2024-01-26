@@ -27,8 +27,61 @@ class Neo4jHandler:
         self.driver.close()
     
     def run(self, database, query):
+        """Execute run cypher and returns a single result.
+
+        Args:
+            database (str): The user's neo4j database address.
+            query (str): Cypher query
+        
+        Example:
+            >>> "MATCH (n) RETURN COUNT(n) AS count"
+            >>> result = self.run(database=self.user_db, query=query)
+            >>> result['count'], type(result['count'])
+                5 int
+
+        Returns:
+            list: [<dict|Record>, <dict|Record>, ...]
+        """
         with self.driver.session(database=database) as session:
             res = session.execute_write(self._run, query)
+            return res
+    
+    def run_records(self, database, query) -> list[dict]:
+        """Execute run cypher and returns a list of multiple record objects.
+
+        Args:
+            database (str): The user's neo4j database address.
+            query (str): Cypher query
+        
+        Example:
+            >>> results = self.run_records(database=self.user_db, query=query)
+            [{Record id: 1, ...}, 
+            {Record id: 2, ...}]
+
+        Returns:
+            list: [<dict|Record>, <dict|Record>, ...]
+        """
+        with self.driver.session(database=database) as session:
+            res = session.execute_write(self._run_records, query)
+            return res
+    
+    def run_data(self, database, query) -> list[dict]:
+        """Execute run cypher and returns a list of multiple dict objects.
+
+        Args:
+            database (str): The user's neo4j database address.
+            query (str): Cypher query
+        
+        Example:
+            >>> results = self.run_data(database=self.user_db, query=query)
+                [{'id': 1, 'name': 'admin'}, 
+                {'id': 2, 'name': 'yoonan'}]
+
+        Returns:
+            list: [<dict>, <dict>, ...]
+        """
+        with self.driver.session(database=database) as session:
+            res = session.execute_write(self._run_records, query)
             return res
         
     def create_database(self, db_name):
@@ -43,6 +96,16 @@ class Neo4jHandler:
         record = res.single()
         
         return record if record else None
+    
+    @staticmethod
+    def _run_records(tx, query) -> list:
+        res = tx.run(query)
+        return list(res)
+    
+    @staticmethod
+    def _run_data(tx, query) -> dict:
+        res = tx.run(query)
+        return [record.data() for record in res]
 neo4j_handler = Neo4jHandler()
 
 
