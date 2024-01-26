@@ -1,29 +1,42 @@
+# local
+import json
+## class handler
+from .src.rule.default import Default
+from .src.visual.user.user import UserThreat
+from .src.visual.ip.folium import folium_test
+from .src.notification.detection import Detection
+from .src.notification.notification import Notification
+
+# django
 from django.shortcuts import render, HttpResponse
 from django.contrib.auth.decorators import login_required
-from .src.notification import notification, detection
-from .src.rule import default
-from .src.visual.user import user
-from .src.visual import ip
 from django.http import JsonResponse, HttpResponseRedirect
+
 
 # Notifications
 @login_required
 def notification_view(request, threat):
     if request.method == 'POST':
-        context = notification.alert_off(dict(request.POST.items()))
-        context.update(detection.neo4j_graph(context))
+        context = dict(request.POST.items())
+        with Notification(request=request) as __notification:
+            __notification.alert_off()
+        with Detection(request=request) as __detection:
+            context.update(__detection.neo4j_graph())
         return render(request, f"M_threatD/notifications/{threat}.html", context)
     else:
         if threat == 'details':
             return HttpResponseRedirect('/threat/notifications/logs/')
-    context = (notification.get_alert_logs())
+    with Notification(request=request) as __notification:
+        context = (__notification.get_alert_logs())
     return render(request, f"M_threatD/notifications/{threat}.html", context)
 
 # Rules
 @login_required
 def rules_view(request, resourceType, logType):
-    context = default.get_custom_rules(logType)
-    context.update(default.get_default_rules(logType))
+    # 여긴 POST 검사 안함?
+    with Default(request=request) as __default:
+        context = __default.get_custom_rules(logType)
+        context.update(__default.get_default_rules(logType))
     if resourceType == 'cloud':
         logType = (' ').join(logType.split('_')).upper()
     else:
@@ -37,9 +50,10 @@ def rules_view(request, resourceType, logType):
 @login_required
 def visuals_view(request, threat):
     if threat == 'user':
-        context = {'accounts': sorted(user.get_user_visuals(), key=lambda x: x['total'], reverse=True)}
+        with UserThreat(request) as __uthreat:
+            context = {'accounts': sorted(__uthreat.get_user_visuals(), key=lambda x: x['total'], reverse=True)}
     elif threat == 'ip':
-        map = ip.folium.folium_test('37.5985', '126.97829999999999')
+        map = folium_test('37.5985', '126.97829999999999')
         context = {'map': map}
     else:
         context = {}
@@ -50,5 +64,21 @@ def visuals_view(request, threat):
 def user_details(request):
     if request.method == 'POST':
         context = dict(request.POST.items())
-        context.update(user.user_graph(context))
+        with UserThreat(request) as __uthreat:
+            context.update(__uthreat.user_graph(context))
         return render(request, 'M_threatD/visuals/user/details.html', context)
+    
+import json
+def neo4j_graph(request):
+    with Detection(request) as __detection:
+        if isinstance(request, dict) :
+            data = __detection.get_data()
+            details = __detection.get_log_details()
+            context = {'graph': json.dumps(data), 'details': details }
+            return context
+        elif request.method == 'POST':
+            data = __detection.get_data()
+            details = __detection.get_log_details()
+            context.update({'graph': json.dumps(data), 'details': details})
+            return render(request, 'graphdb/graph.html', context)
+        return HttpResponse('다시 시도')
