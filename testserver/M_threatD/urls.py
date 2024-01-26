@@ -1,6 +1,5 @@
 from django.urls import path
-from . import views, rule_ajax
-from .src.notification import detection
+from . import ajax_views, views
 
 urlpatterns = [
     # Risk Management
@@ -13,25 +12,25 @@ urlpatterns = [
     # User Threat AJAX ajax
     path('visuals/user/details/', views.user_details),
 
-    path("neo4j/",detection.neo4j_graph),
+    path("neo4j/",views.neo4j_graph),
 ]
 
 urlpatterns +=[
     # Detail Modal
-    path('rules/<resourceType>/<logType>/<ruleType>/details/', rule_ajax.rule_details),
+    path('rules/<resourceType>/<logType>/<ruleType>/details/', ajax_views.rule_details),
 
     # Edit Modal
-    path('rules/<resourceType>/<logType>/edit/', rule_ajax.rule_edit_modal),
-    path('custom/edit/', rule_ajax.edit_rule),
+    path('rules/<resourceType>/<logType>/edit/', ajax_views.rule_edit_modal),
+    path('custom/edit/', ajax_views.edit_rule),
 
     # Delete Modal
-    path('custom/delete/', rule_ajax.delete_rule),
+    path('custom/delete/', ajax_views.delete_rule),
 
     # Add Modal
-    path('rules/<resourceType>/<logType>/add/', rule_ajax.rule_add_modal),
-    path('custom/add/<section>/', rule_ajax.add_rule_section),
-    path('custom/add/', rule_ajax.add_rule),
+    path('rules/<resourceType>/<logType>/add/', ajax_views.rule_add_modal),
+    path('custom/add/<section>/', ajax_views.add_rule_section),
+    path('custom/add/', ajax_views.add_rule),
 
     # On/Off Action
-    path('rules/<resourceType>/<logType>/on_off/', rule_ajax.on_off),
+    path('rules/<resourceType>/<logType>/on_off/', ajax_views.on_off),
 ]
