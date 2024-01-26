@@ -1,17 +1,18 @@
+# local
 import json
+import requests
+
+# django
 from pathlib import Path
 from django.shortcuts import render, HttpResponse, redirect
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.conf import settings
-from py2neo import Graph
 from django.template.loader import render_to_string
-from M_threatD.src.notification.detection import get_node_json, get_relation_json
-import requests
-import os
-import socket
-import json
 from django.contrib.auth.signals import user_logged_out, user_logged_in
 from django.dispatch import receiver
+
+# 3rd party
+from py2neo import Graph
 # LOCAL
 # graph = Graph("bolt://127.0.0.1:7687", auth=('neo4j', 'teiren001'))
 
