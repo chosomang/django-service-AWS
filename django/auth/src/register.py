@@ -1,6 +1,7 @@
 from django.conf import settings
 from py2neo import Graph
 from datetime import datetime
+import hashlib
 
 # AWS
 host = settings.NEO4J['HOST']
@@ -25,7 +26,7 @@ def register_account(request, ip):
     WITH super
     MERGE (super)-[:SUB]->(a:Teiren:Account {{
         userName: '{request['user_name']}',
-        userPassword: '{request['user_password']}',
+        userPassword: '{hashlib.sha256(request['user_password'].encode()).hexdigest()}',
         email: '{request['email_add']}',
         createdTime: '{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}',
         ipAddress: '{ip}',
