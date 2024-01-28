@@ -17,25 +17,22 @@
     padding: 1.25rem;
 }
 
-.searchcard .searchcard-body .btn-select {
+.searchcard .searchcard-body .searchbox-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 130px;
-    max-width: 130px;
-    overflow: hidden;
-    color: #57626F;
-    background-color: #fff;
-    border: 1px solid #eaeaea;
-    border-radius: 5px;
-    margin-right:20px;
-    padding: 6px 15px;
-    font-size: 12px;
+    width: 25%;
+    color: #fff;
+    background-color: #24b6d4;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    padding: 8px 15px;
+    font-size: 15px;
+    font-weight: 700;
 }
 
-.searchcard .searchcard-body .btn-select:focus {
-    outline: none;
-    border: 1px solid #24b6d4;
+.searchcard .searchcard-body .search-select{
+    display: flex;
+    width: 45%;
+    margin: 0 15px 0 0;
 }
 
 .searchcard .searchcard-body .search-input {
@@ -56,6 +53,29 @@
     border: 1px solid #24b6d4;
 }
 
+.searchcard .searchcard-body .btn-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    overflow: hidden;
+    color: #57626F;
+    background-color: #fff;
+    border: 1px solid #eaeaea;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    margin-right:20px;
+    padding: 6px 15px;
+    font-size: 12px;
+    text-align: center;
+}
+
+.searchcard .searchcard-body .btn-select:focus {
+    outline: none;
+    border: 1px solid #24b6d4;
+}
+
+
 .searchcard .searchcard-body .btn-search {
     display: flex;
     align-items: center;
@@ -67,6 +87,7 @@
     padding: 5px 15px;
     margin-left: 20px;
     transition: all 0.3s;
+    font-size:15px;
 }
 
 .searchcard .searchcard-body .btn-search:hover {
@@ -153,8 +174,9 @@
 .searchcard .searchcard-collapse .searchbox-header {
     display: flex;
     width: 25%;
-    color: #fff;
-    background-color: #24b6d4;
+    color: #24b6d4;
+    background-color: transparent;
+    border: 1px solid #24b6d4;
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
     padding: 5px 15px;

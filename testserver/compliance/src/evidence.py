@@ -1,5 +1,4 @@
 from django.conf import settings
-from py2neo import Graph
 from datetime import datetime
 from ..models import Evidence
 
@@ -10,7 +9,6 @@ host = settings.NEO4J['HOST']
 port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
-graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 
 
 class EvidenceBase(Neo4jHandler):
@@ -36,8 +34,8 @@ class EvidenceDataList(EvidenceBase):
     # data 목록 가져오기
     def get_data_list(self, data_name=None):
         try:
-            main_search_key = self.request['main_search_key']
-            main_search_value = self.request['main_search_value']
+            main_search_key = self.request.get('main_search_key', '')
+            main_search_value = self.request.get('main_search_value', '')
             
             if data_name:
                 cypher = f"""
@@ -91,50 +89,6 @@ class EvidenceDataList(EvidenceBase):
         except Exception as e:
             return []
 
-    def get_compliance_version_list(self):
-        try:
-            compliance = self.request['compliance'].replace('-', '_').capitalize()
-            cypher = f"""
-            MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)
-            WITH toString(v.date) as version ORDER BY v.date
-            RETURN COLLECT(version) as version
-            """
-            result = self.run(database=self.user_db, query=cypher)
-            
-            return result['version']
-        except Exception as e:
-            return []
-
-    def get_compliance_article_list(self):
-        try:
-            compliance = self.request['compliance'].replace('-', '_').capitalize()
-            version = self.request['version']
-            cypher=f"""
-                OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
-                WITH a
-                WHERE a IS NOT NULL AND v.date = date('{version}')
-                RETURN a.no AS no, a.name AS name
-
-                UNION
-
-                OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:ARTICLE]->(a:Article)
-                WITH a
-                WHERE a IS NOT NULL AND v.date = date('{version}')
-                RETURN a.no AS no, a.name AS name
-
-                UNION
-
-                OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:ARTICLE]->(a:Article)
-                WITH a
-                WHERE a IS NOT NULL AND v.date = date('{version}')
-                RETURN a.no AS no, a.name AS name
-            """
-            results = self.run_data(database=self.user_db, query=cypher)
-            
-            return sorted(results, key=lambda x: [int(i) for i in x['no'].split('.')])
-        except Exception as e:
-            return []
-    
     def get_file_list(self, data_name):
         try:
             cypher = f"""
@@ -240,8 +194,8 @@ class EvidenceDataHandler(EvidenceBase):
 
     def modify_evidence_data(self):
         try:
-            og_name=self.request['og_name']
-            name = self.request['name']
+            og_name=self.request.get('og_name', '')
+            name = self.request.get('name', '')
             
             cypher = f"""
             MATCH (c:Data:Compliance:Evidence{{
@@ -257,8 +211,8 @@ class EvidenceDataHandler(EvidenceBase):
             elif og_name != name and 0 < result['count']:
                 return "Data Name Already Exsists. Please Enter New Data Name."
             else:
-                comment = self.request['comment']
-                author = self.reuqest['author']
+                comment = self.request.get('comment', '')
+                author = self.reuqest.get('author', '')
                 
                 last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 cypher = f"""
@@ -277,9 +231,9 @@ class EvidenceDataHandler(EvidenceBase):
 
     def delete_evidence_data(self):
         try:
-            name = self.request['name']
-            comment = self.request['comment']
-            author = self.request['author']
+            name = self.request.get('name', '')
+            comment = self.request.get('comment', '')
+            author = self.request.get('author', '')
             
             cypher = f"""
             MATCH (d:Compliance:Evidence:Data{{name:'{name}', comment:'{comment}', author:'{author}'}})
@@ -302,18 +256,19 @@ class EvidenceDataHandler(EvidenceBase):
             return "Successfully Deleted Data"
         except Exception as e:
             print(e)
-            response = "Failed To Delete Data. Please Try Again."
+            return "Failed To Delete Data. Please Try Again."
+            
         
 
-class EvidenceFile(EvidenceBase):
+class EvidenceFileHandler(EvidenceBase):
     def add_evidence_file(self):
         for key, value in self.request:
             if not value:
                 return f"Please Enter/Select {key.capitalize()}"
         try:
-            data_name = self.rquest['data_name']
-            uploaded_file = self.reuqest["file"]
-            product = self.request['product']
+            data_name = self.request.get('data_name', '')
+            uploaded_file = self.reuqest.get("file", '')
+            product = self.request.get('product', '')
             
             cypher = f"""
             MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[*]->(f:File:Evidence:Compliance{{name:'{uploaded_file.name}'}})
@@ -323,10 +278,10 @@ class EvidenceFile(EvidenceBase):
             if 0 < result['count']:
                 return "File Name Already Exsists. Please Enter New File Name."
             else:
-                comment = self.request['comment']
-                author = self.request['author']
-                version = self.request['version']
-                poc = self.request['poc']
+                comment = self.request.get('comment', '')
+                author = self.request.get('author', '')
+                version = self.request.get('version', '')
+                poc = self.request.get('poc', '')
                 upload_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 
                 cypher = f"""
@@ -360,13 +315,13 @@ class EvidenceFile(EvidenceBase):
             if not value:
                 return f"Please Enter/Select {key.capitalize()}"
         try:
-            data_name = self.request['data_name']
-            name = self.request['name']
-            comment = self.request['comment']
-            og_comment = self.request['og_comment']
-            author = self.request['author']
-            version = self.request['version']
-            poc = self.request['poc']
+            data_name = self.request.get('data_name', '')
+            name = self.request.get('name', '')
+            comment = self.request.get('comment', '')
+            og_comment = self.request.get('og_comment', '')
+            author = self.request.get('author', '')
+            version = self.request.get('version', '')
+            poc = self.request.get('poc', '')
             
             last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             cypher = f"""
@@ -394,13 +349,13 @@ class EvidenceFile(EvidenceBase):
 
     def delete_evidence_file(self):
         try:
-            data_name = self.request['data_name']
-            name = self.request['name']
-            comment = self.request['comment']
-            author = self.request['author']
-            version = self.request['version']
-            poc = self.request['poc']
-            upload_date = self.request['upload_date']
+            data_name = self.request.get('data_name', '')
+            name = self.request.get('name', '')
+            comment = self.request.get('comment', '')
+            author = self.request.get('author', '')
+            version = self.request.get('version', '')
+            poc = self.request.get('poc', '')
+            upload_date = self.request.get('upload_date', '')
             last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
             cypher = f"""
@@ -434,10 +389,10 @@ class ComplianceHandler(EvidenceBase):
     def add_related_compliance(self):
         try:
             print(self.request)
-            data_name = self.request['data_name']
-            compliance = self.request['compliance']
-            version = self.request['version']
-            article = self.request['article']
+            data_name = self.request.get('data_name', '')
+            compliance = self.request.get('compliance', '')
+            version = self.request.get('version', '')
+            article = self.request.get('article', '')
             
             last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             if article:
@@ -465,10 +420,10 @@ class ComplianceHandler(EvidenceBase):
     def delete_related_compliance(self):
         try:
             print(self.request)
-            data_name = self.request['data_name']
-            compliance = self.request['compliance']
-            version = self.request['version']
-            article = self.request['article']
+            data_name = self.request.get('data_name', '')
+            compliance = self.request.get('compliance', '')
+            version = self.request.get('version', '')
+            article = self.request.get('article', '')
             
             last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             if article and article != ' ':

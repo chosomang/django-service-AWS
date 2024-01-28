@@ -67,8 +67,8 @@ class AssetListAction(AssetsBase):
         return {'assets': assets, 'data_list': data_list, 'asset_type': asset_type}
 
     def get_all_asset_list(self):
-        search_key = self.request['main_search_key']
-        search_value = self.request['main_search_value']
+        search_key = self.request.get('main_search_key', '')
+        search_value = self.request.get('main_search_value', '')
         where_cypher = ''
         if search_key and search_value:
             where_cypher = f"WHERE toLower({search_key}) CONTAINS toLower('{search_value}')"
@@ -100,7 +100,7 @@ class AssetListAction(AssetsBase):
             RETURN
                 collect(dataType) as data_list
         """
-        result = self.run(get_data_list_cypher)
+        result = self.run(database=self.user_db, query=get_data_list_cypher)
 
         response = {'assets': assets, 'data_list': result['data_list']}
 
@@ -136,7 +136,7 @@ class AssetTableAction(AssetsBase):
 
     def add_asset_table(self):
         try:
-            category_name = self.request.POST['category_name']
+            category_name = self.request.get('category_name', '')
             cypher = f"""
             MATCH (n:Compliance:Evidence:Data{{name:'{category_name}', product:'Asset Manage'}})
             RETURN COUNT(n) AS count
@@ -148,7 +148,7 @@ class AssetTableAction(AssetsBase):
             if 0 < result['count']:
                 return "Already Exisiting Asset Category. Please Enter New Asset Category Name."
             
-            category_comment = self.request['category_comment']
+            category_comment = self.request.get('category_comment', '')
             cypher = f"""
             MATCH (c:Evidence:Compliance:Product{{name:'Asset Manage'}})
             MERGE (n:Compliance:Evidence:Data{{name:'{category_name}', comment:'{category_comment}', product:'Asset Manage'}})
@@ -175,8 +175,8 @@ class AssetTableAction(AssetsBase):
 
     def modify_asset_table(self):
         try:
-            asset_type = self.request['asset_type']
-            category_name = self.request['category_name']
+            asset_type = self.request.get('asset_type', '')
+            category_name = self.request.get('category_name', '')
             cypher = f"""
             MATCH (n:Compliance:Evidence:Data{{name:'{category_name}'}})
             RETURN COUNT(n) AS count
@@ -188,7 +188,7 @@ class AssetTableAction(AssetsBase):
             if asset_type != category_name and result['count']:
                 return "Already Existing Asset Category. Please Enter New Asset Category Name."
             
-            category_comment = self.request['category_comment']
+            category_comment = self.request.get('category_comment', '')
             cypher = f"""
             MATCH (a:Compliance:Evidence:Product{{name:'Asset Manage'}})-[:DATA]->(d:Compliance:Evidence:Data{{name:'{asset_type}', product:'Asset Manage'}})
             SET d.name = '{category_name}', d.comment = '{category_comment}'
@@ -217,8 +217,8 @@ class AssetFileAction(AssetsBase):
         try:
             # Extract data from the POST request
             uploadedFile = self.request.FILES.get('uploadedFile', '')
-            poc = self.request['poc']
-            fileComment = self.request.get['fileComment']
+            poc = self.request.get('poc', '')
+            fileComment = self.request.get('fileComment', '')
             
             cypher = f"""
             MATCH (p:Product:Compliance:Evidence{{name:'Asset Manage'}})-[:DATA]->(a:Compliance:Evidence:Data{{name:'File'}})
@@ -236,8 +236,8 @@ class AssetFileAction(AssetsBase):
             if not fileComment:
                 return "Please Enter Comment"
             
-            author = self.request['author']
-            version = self.request['version']
+            author = self.request.get('author', '')
+            version = self.request.get('version', '')
             
             # Saving the information in the database
             # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< 디비 부분 수정필요
@@ -350,7 +350,7 @@ class AssetDataAction(AssetsBase):
             for prop in ['asset_type', 'asset_name', 'serial_number', 'asset_usage', 'asset_data', 'asset_poc']:
                 if not self.request[prop]:
                     raise ValueError(prop)
-            serial_number = self.request['serial_number']
+            serial_number = self.request.get('serial_number', '')
             
             get_count_cypher = f"""
             MATCH (n:Compliance:Evidence:Asset {{serial_no: '{serial_number}'}})
@@ -420,8 +420,8 @@ class AssetDataAction(AssetsBase):
                 if not self.request[prop]:
                     raise ValueError(prop)
                 
-            serial_number = self.request['serial_number']
-            asset_id = self.request['asset_id']
+            serial_number = self.request.get('serial_number', '')
+            asset_id = self.request.get('asset_id', '')
             
             # <<<<<<<<<<<<<<<<<<<<<<<<<<<<< 이부분도 쿼리 두개 나누지말고 하나에서 두 개 결과 뽑게 할 수 있으면 그렇게 하기
             cypher1 = f"""
