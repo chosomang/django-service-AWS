@@ -1,274 +1,495 @@
 from django.conf import settings
 from py2neo import Graph
 from datetime import datetime
+from ..models import Evidence
+
+from common.neo4j.handler import Neo4jHandler
 
 ## Graph DB 연동
 host = settings.NEO4J['HOST']
 port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
-graph = Graph(f"neo4j://{host}:{port}", auth=(username, password))
+graph = Graph(f"bolt://{host}:7688", auth=(username, password))
 
-def get_compliance():
-    response=[]
-    cypher=f"""
-        MATCH (c:Compliance)
-        WHERE c.country IS NOT NULL
-        RETURN c.name AS comp
-    """
 
-    results = graph.run(cypher)
-    for result in results:
-        response.append(result)
+class EvidenceBase(Neo4jHandler):
+    """_summary_
     
-    return response
-
-def get_compliance_articles(dict):
-    compliance = dict['compliance_selected']
-    response=[]
-    cypher=f"""
-        MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(:Version)-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
-        WHERE c.country IS NOT NULL
-        RETURN '['+a.no+'] '+a.name AS a
-    """
-
-    results = graph.run(cypher)
-    for result in results:
-        response.append(result)
+    Args:
+        request : request from session
     
-    return response
-
-def get_laws():
-    response=[]
-    cypher=f"""
-        MATCH (c:Compliance:Law)-[:CHAPTER]->(:Chapter:Law)
-        RETURN DISTINCT c.name 
+    Example:
+        >>> def __init__(self, request) -> None:
+        >>>     super().__init__()
+        >>>     self.request = dict(request.POST) if request.method == 'POST' else dict(request.GET.items())
+        >>>     self.user_db = request.session.get('db_name')
+         
     """
+    def __init__(self, request) -> None:
+        super().__init__()
+        self.request = dict(request.POST) if request.method == 'POST' else dict(request.GET.items())
+        self.user_db = request.session.get('db_name')
 
-    results = graph.run(cypher)
-    for result in results:
-        response.append(result)
+
+class EvidenceDataList(EvidenceBase):
+    # data 목록 가져오기
+    def get_data_list(self, data_name=None):
+        try:
+            main_search_key = self.request['main_search_key']
+            main_search_value = self.request['main_search_value']
+            
+            if data_name:
+                cypher = f"""
+                MATCH (p:Product:Evidence:Compliance)-[:DATA]->(d:Data:Compliance:Evidence)
+                WHERE NOT p.name ENDS WITH "Manage" AND d.name = '{data_name}'
+                RETURN d AS data, p AS product
+                """
+            elif not main_search_key or not main_search_value:
+                cypher= f"""
+                MATCH (p:Product:Evidence:Compliance)-[:DATA]->(d:Data:Compliance:Evidence)
+                WHERE NOT p.name ENDS WITH "Manage"
+                RETURN d AS data, p AS product
+                """
+            else:
+                cypher = f"""
+                MATCH (p:Product:Evidence:Compliance)-[:DATA]->(d:Data:Compliance:Evidence)
+                WHERE NOT p.name ENDS WITH "Manage" AND toLower(d.{main_search_key}) CONTAINS toLower('{main_search_value}')
+                RETURN d AS data, p AS product
+                """
+            results = self.run_data(database=self.user_db, query=cypher)
+            
+            return results
+        except Exception as e:
+            return []
+
+    def get_product_list(self):
+        try:
+            cypher = """
+            MATCH (p:Product:Evidence:Compliance)
+            WHERE NOT p.name ENDS WITH "Manage"
+            WITH p.name as product ORDER BY p.name
+            RETURN COLLECT(product) AS product
+            """
+            result = self.run(database=self.user_db, query=cypher)
+            
+            return result['product']
+        except Exception as e:
+            return []
+
+    def get_compliance_list(self):
+        try:
+            cypher = f"""
+            MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance)
+            WHERE c.name <> 'Evidence'
+            WITH replace(toUpper(c.name), '_', '-') as compliance ORDER BY c.name
+            RETURN COLLECT(compliance) AS compliance
+            """
+            result = self.run(database=self.user_db, query=cypher)
+            
+            return result['compliance']
+        except Exception as e:
+            return []
+
+    def get_compliance_version_list(self):
+        try:
+            compliance = self.request['compliance'].replace('-', '_').capitalize()
+            cypher = f"""
+            MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)
+            WITH toString(v.date) as version ORDER BY v.date
+            RETURN COLLECT(version) as version
+            """
+            result = self.run(database=self.user_db, query=cypher)
+            
+            return result['version']
+        except Exception as e:
+            return []
+
+    def get_compliance_article_list(self):
+        try:
+            compliance = self.request['compliance'].replace('-', '_').capitalize()
+            version = self.request['version']
+            cypher=f"""
+                OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
+                WITH a
+                WHERE a IS NOT NULL AND v.date = date('{version}')
+                RETURN a.no AS no, a.name AS name
+
+                UNION
+
+                OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:ARTICLE]->(a:Article)
+                WITH a
+                WHERE a IS NOT NULL AND v.date = date('{version}')
+                RETURN a.no AS no, a.name AS name
+
+                UNION
+
+                OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:ARTICLE]->(a:Article)
+                WITH a
+                WHERE a IS NOT NULL AND v.date = date('{version}')
+                RETURN a.no AS no, a.name AS name
+            """
+            results = self.run_data(database=self.user_db, query=cypher)
+            
+            return sorted(results, key=lambda x: [int(i) for i in x['no'].split('.')])
+        except Exception as e:
+            return []
     
-    return response
+    def get_file_list(self, data_name):
+        try:
+            cypher = f"""
+            MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})-[:FILE]->(file:File:Compliance:Evidence)
+            RETURN collect(file) AS file
+            """
+            result = self.run(database=self.user_db, query=cypher)
+            
+            return result['file']
+        except Exception as e:
+            return []
 
-def get_law_chapters(dict):
-    #만약 chapter까지만 있으면 거기까지만, section까지 있으면 section까지
-    law = dict['law_selected']
-    response=[]
-    cypher=f"""
-        MATCH (c:Compliance:Law{{name:'{law}'}})-[:CHAPTER]->(ch:Chapter)-[:SECTION]->(s:Section)
-        RETURN '['+s.no+'] '+s.name AS s
-    """
+    def get_data_related_compliance(self, search_cate=None, search_content=None):
+        try:
+            if search_cate=="compliance":
+                cypher=f"""
+                MATCH (com:Compliance{{name:'{search_content}'}})-[:VERSION]->(ver:Version)-[:CHAPTER]->(chap:Chapter)-[:SECTION]->(sec:Section)-[:ARTICLE]->(arti:Article)
+                RETURN com, ver, chap, sec, arti ORDER BY arti.no
+                """
+            elif search_cate=="evidence":
+                cypher=f"""
+                MATCH (version:Version:Compliance)-[:CHAPTER]->(chapter:Chapter)-[:SECTION]->(section:Section)-[:ARTICLE]->(article:Article)<-[:EVIDENCE]-(evi:Data:Compliance:Evidence{{name:'{search_content}'}})
+                RETURN version, chapter, section, article ORDER BY article.no
 
-    results = graph.run(cypher)
-    for result in results:
-        response.append(result)
-    
-    return response
+                UNION
 
-def add_cate(dict):
-    name=dict['name']
-    comment=dict['comment']
+                MATCH (version:Version:Compliance)-[:CHAPTER]->(chapter:Chapter)-[:ARTICLE]->(article:Article)<-[:EVIDENCE]-(evi:Data:Compliance:Evidence{{name:'{search_content}'}})
+                RETURN version, chapter, '' AS section, article ORDER BY article.no
 
-    if name == '':
-        return 'NULL'
+                UNION
 
-    cypher=f"""
-        MATCH (c:Category:Compliance:Evidence{{
-            name:'{name}'
-        }})
-        RETURN count(c)
-    """
-    if graph.evaluate(cypher) >= 1:
-        return 'already exist'
+                MATCH (version:Version:Compliance)-[:ARTICLE]->(article:Article)<-[:EVIDENCE]-(evi:Data:Compliance:Evidence{{name:'{search_content}'}})
+                RETURN version, '' AS chapter, '' AS section, article ORDER BY article.no
 
-    cypher= f"""
-        MATCH (e:Compliance:Evidence{{name:'evidence'}})
-        MERGE (e)-[:CATEGORY]->
-            (c:Category:Compliance:Evidence {{
-            name:'{name}',
-            comment:'{comment}'
-        }})
-        RETURN COUNT(c)
-    """
-    try:
-        if graph.evaluate(cypher) == 1:
-            return 'success'
-        else:
-            raise Exception
-    except Exception:
-        return 'fail'
+                UNION
+
+                MATCH (version:Version:Compliance)<-[:EVIDENCE]-(evi:Data:Compliance:Evidence{{name:'{search_content}'}})
+                RETURN version, '' AS chapter, '' AS section, '' AS article
+                """
+            results = self.run_data(database=self.user_db, query=cypher)
+            
+            return results
+        except Exception as e:
+            return []
 
 
+class EvidenceDataHandler(EvidenceBase):
+    # data 추가
+    def add_evidence_data(self):
+        for key, value in self.reuqest.items():
+            if value == '' and key not in ['comment', 'author', ''] :
+                return f"Please Enter/Select {key.title()}"
+        try:
+            last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            
+            cypher = f"""
+            MATCH (c:Data:Compliance:Evidence{{
+                name:'{self.request['name']}'
+            }})
+            RETURN count(c) AS count
+            """
+            result = self.run(database=self.user_db, query=cypher)
+            if 0 < result['count']:
+                return "Data Already Exsists. Please Enter Different Name."
+            else:
+                if self.request['article'] != '':
+                    cypher = f"""
+                    MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{self.request['product']}'}})
+                    MATCH (v:Version{{name:'{self.request['compliance'].replace('-','_').capitalize()}', date:date('{self.request['version']}')}})-[*]->(a:Article{{compliance_name:'{self.request['compliance'].replace('-','_').capitalize()}', no:'{self.request['article'].split(' ')[0]}'}})
+                    MERGE (p)-[:DATA]->
+                        (d:Data:Compliance:Evidence {{
+                        name:'{self.request['name']}',
+                        comment:'{self.request['comment']}',
+                        author:'{self.request['author']}',
+                        last_update:'{last_update}'
+                    }})-[:EVIDENCE]->(a)
+                    RETURN COUNT(d) AS count
+                    """
+                elif self.request['compliance'] != '':
+                    cypher = f"""
+                    MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{self.request['product']}'}})
+                    MATCH (c:Version:Compliance{{name:'{self.request['compliance'].replace('-','_').capitalize()}', date:date('{self.request['version']}')}})
+                    MERGE (p)-[:DATA]->
+                        (d:Data:Compliance:Evidence {{
+                        name:'{self.request['name']}',
+                        comment:'{self.request['comment']}',
+                        author:'{self.request['author']}',
+                        last_update:'{last_update}'
+                    }})-[:EVIDENCE]->(c)
+                    RETURN COUNT(d) AS count
+                    """
+                else:
+                    raise Exception
+                
+                result = self.run(database=self.user_db, query=cypher)
+                if 0 == result['count']:
+                    raise Exception
+                else:
+                    return "Successfully Create Data."
+        except Exception as e:
+            print(e)
+            return "Failed To Create Data. Please Try Again."
 
-def del_cate(dict):
-    name=dict['name']
-    if name == '':
-        return 'fail'
+    def modify_evidence_data(self):
+        try:
+            og_name=self.request['og_name']
+            name = self.request['name']
+            
+            cypher = f"""
+            MATCH (c:Data:Compliance:Evidence{{
+                name:'{name}'
+            }})
+            RETURN count(c) AS count
+            """
+            result = self.run(database=self.user_db, query=cypher)
+            if not name:
+                return "Please Enter Data Name"
+            elif not og_name:
+                raise Exception
+            elif og_name != name and 0 < result['count']:
+                return "Data Name Already Exsists. Please Enter New Data Name."
+            else:
+                comment = self.request['comment']
+                author = self.reuqest['author']
+                
+                last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                cypher = f"""
+                MATCH (d:Data:Compliance{{name:'{og_name}'}})
+                SET d.name = '{name}',
+                    d.comment='{comment}',
+                    d.author='{author}',
+                    d.last_update='{last_update}' 
+                RETURN COUNT(d) AS count
+                """
+                self.run(database=self.user_db, query=cypher)
+                return "Successfully Modified Data"
+        except Exception as e:
+            print(e)
+            return 'Failed To Modify Data. Please Try Again.'
 
-    cypher=f"""
-        MATCH (e:Compliance:Evidence:Category{{name:'{name}'}})-[:DATA]->(d:Data:Compliance:Evidence)
-        RETURN count(d)
-    """
-    if graph.evaluate(cypher) == 0:
-        cypher=f"""
-            MATCH (e:Compliance:Evidence:Category{{name:'{name}'}})
-            DETACH DELETE (e)
-            RETURN count(e)
-        """
-    else:
-        #하위 노드(증적 파일들)까지 모두 삭제 해버림
-        cypher=f"""
-            MATCH (e:Compliance:Evidence:Category{{name:'{name}'}})-[:DATA]->(d:Data:Compliance:Evidence)
-            DETACH DELETE (e),(d)
-            RETURN count(e)
-        """
+    def delete_evidence_data(self):
+        try:
+            name = self.request['name']
+            comment = self.request['comment']
+            author = self.request['author']
+            
+            cypher = f"""
+            MATCH (d:Compliance:Evidence:Data{{name:'{name}', comment:'{comment}', author:'{author}'}})
+            OPTIONAL MATCH (d)-[:FILE]->(f:File:Compliance:Evidence)
+            RETURN COUNT(f) AS count
+            """
+            result = self.run(database=self.user_db, query=cypher)
+            
+            if not name:
+                raise Exception
+            elif 0 < result['count']:
+                return f"There Are Files In [ {name} ] Data. Please Try After Deleting The Files."
 
-    try:
-        if graph.evaluate(cypher) >= 1:
-            return 'success'
-        else:
-            raise Exception
-    except Exception:
-        return 'fail'
+            cypher= f"""
+            MATCH (d:Compliance:Evidence:Data{{name:'{name}', comment:'{comment}', author:'{author}'}})
+            DETACH DELETE d
+            """
+            self.run(database=self.user_db, query=cypher)
+            
+            return "Successfully Deleted Data"
+        except Exception as e:
+            print(e)
+            response = "Failed To Delete Data. Please Try Again."
+        
+
+class EvidenceFile(EvidenceBase):
+    def add_evidence_file(self):
+        for key, value in self.request:
+            if not value:
+                return f"Please Enter/Select {key.capitalize()}"
+        try:
+            data_name = self.rquest['data_name']
+            uploaded_file = self.reuqest["file"]
+            product = self.request['product']
+            
+            cypher = f"""
+            MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[*]->(f:File:Evidence:Compliance{{name:'{uploaded_file.name}'}})
+            RETURN count(f) AS count
+            """
+            result = self.run(database=self.user_db, query=cypher)
+            if 0 < result['count']:
+                return "File Name Already Exsists. Please Enter New File Name."
+            else:
+                comment = self.request['comment']
+                author = self.request['author']
+                version = self.request['version']
+                poc = self.request['poc']
+                upload_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                
+                cypher = f"""
+                MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})
+                MERGE (f:File:Compliance:Evidence {{
+                    name:'{uploaded_file.name.replace(' ', '_')}',
+                    comment:'{comment}',
+                    author:'{author}',
+                    poc:'{poc}',
+                    version:'{version}',
+                    upload_date:'{upload_date}'
+                }})
+                MERGE (d)-[:FILE]->(f)
+                SET d.last_update='{upload_date}'
+                """
+                self.run(database=self.user_db, query=cypher)
+
+                # Saving the information in the database
+                document = Evidence(
+                    title= comment,
+                    product= product,
+                    uploadedFile=uploaded_file
+                )
+                document.save()
+                return "Successfully Added Evidence File"
+        except Exception as e:
+            return 'Failed To Add Evidence File. Please Try Again.'
+
+    def modify_evidence_file(self):
+        for key, value in self.request:
+            if not value:
+                return f"Please Enter/Select {key.capitalize()}"
+        try:
+            data_name = self.request['data_name']
+            name = self.request['name']
+            comment = self.request['comment']
+            og_comment = self.request['og_comment']
+            author = self.request['author']
+            version = self.request['version']
+            poc = self.request['poc']
+            
+            last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            cypher = f"""
+            MATCH (d:Data:Compliance{{name:'{data_name}'}})-[:FILE]->(f:File:Evidence:Compliance{{name:'{name}'}})
+            SET f.comment='{comment}', 
+                f.author='{author}', 
+                f.version='{version}',
+                f.poc='{poc}',
+                f.last_update='{last_update}',
+                d.last_update='{last_update}'
+            """
+            self.run(database=self.user_db, query=cypher)
+
+            if og_comment != comment:
+                documents = Evidence.objects.filter(title=f"{og_comment}")
+                for document in documents:
+                    if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
+                        document.title = comment
+                        document.save()
+
+            return "Successfully Modified Evidence File"
+        except Exception as e:
+            print(e)
+            return "Failed To Modify Evidence File"
+
+    def delete_evidence_file(self):
+        try:
+            data_name = self.request['data_name']
+            name = self.request['name']
+            comment = self.request['comment']
+            author = self.request['author']
+            version = self.request['version']
+            poc = self.request['poc']
+            upload_date = self.request['upload_date']
+            last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            
+            cypher = f"""
+            MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})-[:FILE]->
+                (f:File:Evidence {{
+                    name:'{name}',
+                    comment:'{comment}',
+                    author:'{author}',
+                    poc:'{poc}',
+                    version:'{version}',
+                    upload_date: '{upload_date}'
+                }})
+            DETACH DELETE f
+            SET d.last_update='{last_update}'
+            """
+            self.run(database=self.user_db, query=cypher)
+            
+            documents = Evidence.objects.filter(title=comment)
+            for document in documents:
+                if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
+                    print(document.uploadedFile.path)
+                    document.uploadedFile.delete(save=False)
+                    document.delete()
+            return "Successfully Deleted Evidence File"
+        except Exception as e:
+            print(e)
+            return "Failed To Delete Evidence File"
 
 
-def add_data(dict):
-    cate=dict['cate']
-    name=dict['name']
-    comment=dict['comment']
-    author=dict['author']
-    version_date=datetime.now()
+class ComplianceHandler(EvidenceBase):
+    def add_related_compliance(self):
+        try:
+            print(self.request)
+            data_name = self.request['data_name']
+            compliance = self.request['compliance']
+            version = self.request['version']
+            article = self.request['article']
+            
+            last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            if article:
+                cypher= f"""
+                MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})
+                MATCH (a:Article:Compliance{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{article.split(' ')[0]}'}})
+                MERGE (d)-[:EVIDENCE]->(a)
+                SET d.last_update='{last_update}'
+                RETURN COUNT(d)
+                """
+            elif compliance:
+                cypher= f"""
+                MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})
+                MATCH (v:Version:Compliance{{name:'{compliance.replace('-','_').capitalize()}', date:date('{version}')}})
+                MERGE (d)-[:EVIDENCE]->(v)
+                SET d.last_update='{last_update}'
+                RETURN COUNT(d)
+                """
+            self.run(database=self.user_db, query=cypher)
+            return "Successfully Added Related Complicance"
+        except Exception as e:
+            print(e)
+            return "Failed To Add Related Complicance. Please Try Again."
 
-    if name=='':
-        return 'NULL'
-
-    cypher=f"""
-        MATCH (c:Category:Compliance{{name:'{cate}'}})-[:DATA]->(d:Data:Evidence:Compliance{{name:'{name}'}})
-        RETURN count(d)
-    """
-    if graph.evaluate(cypher) >= 1:
-        return 'already exist'
-
-    cypher= f"""
-        MATCH (c:Category:Compliance:Evidence{{name:'{cate}'}})
-        MERGE (c)-[:DATA]->(d:Compliance:Data:Evidence {{
-            name:'{name}',
-            comment:'{comment}',
-            version_date:'{version_date}',
-            author:'{author}'
-        }})
-        RETURN count(d)
-    """
-    graph.evaluate(cypher)
-
-    try:
-        if graph.evaluate(cypher) == 1:
-            return 'success'
-        else:
-            raise Exception
-    except Exception:
-        return 'fail'
-
-def del_data(dict):
-    cate=dict['cate']
-    name=dict['name']
-
-    cypher= f"""
-        MATCH (c:Category:Compliance:Evidence{{name:'{cate}'}})-[:DATA]->(d:Compliance:Data:Evidence {{name:'{name}'}})
-        DETACH DELETE d
-        RETURN count(d)
-    """
-
-    try:
-        if 1 == graph.evaluate(cypher):
-            return 'success'
-        else:
-            raise Exception
-    except Exception:
-        return 'fail'
-
-def get_category_list():
-    results = graph.run("""
-    MATCH (c:Category:Compliance:Evidence)
-    RETURN
-        c.name AS name,
-        c.comment AS comment
-    """)
-    response = []
-    for result in results:
-        data = dict(result.items())
-        response.append(data)
-    return response
-
-def get_evidence_data(dataName):
-    try:
-        cypher = f"""
-        MATCH (c:Category:Compliance:Evidence)-[:DATA]->(d:Compliance:Data:Evidence)
-        WHERE c.name='{dataName}'
-        """
-        response = graph.run(f"{cypher} RETURN c.name AS cateName, c.comment As cateComment LIMIT 1").data()[0]
-    except:
-        response = {}
-    
-    data_list=[]
-    results = graph.run(f"""{cypher}
-    RETURN
-        d.name AS name,
-        d.comment AS comment,
-        d.version_date AS version,
-        d.author AS author,
-        d.file AS file
-    """)
-    for result in results:
-        data_list.append(dict(result.items()))
-    
-    law_list = []
-    results = graph.run(f"""
-    MATCH (com:Compliance)-[:VERSION]->(ver:Version)-[:CHAPTER]->(chap:Chapter)-[:SECTION]->(sec:Section)-[:ARTICLE]->(arti:Article)<-[:EVIDENCE]-(evi:Evidence)
-    WHERE evi.name="{dataName}"
-    RETURN 
-        com.no AS comNo,
-        com.name AS comName,
-        ver.date AS verDate,
-        chap.no AS chapNo,
-        chap.name AS chapName,
-        sec.no AS secNo,
-        sec.name AS secName,
-        arti.no AS articleNo,
-        arti.name AS articleName
-        ORDER BY arti.no
-    """)
-    for result in results:
-        law_list.append(dict(result.items()))
-    response.update({'data_list': data_list, 'law_list': law_list})
-    return response
-
-
-
-def get_law_list(search_cate=None, search_content=None):
-    '''
-        MATCH (l:Law:Compliance)-[:CHAPTER]->(c:Chapter:Law:Compliance)-[:SECTION]->(s:Section)-[:MAPPED]->(a:Article:Compliance:Isms_p)<-[:EVIDENCE]-(e:Evidence:Category)
-        WHERE e.name='{evidence_cate}'
-        RETURN l AS law, c AS chapter, a AS article, s AS section
-    '''
-    response=[]
-    
-    if search_cate=="com":
-        cypher=f"""
-            MATCH (com:Compliance)-[:VERSION]->(ver:Version)-[:CHAPTER]->(chap:Chapter)-[:SECTION]->(sec:Section)-[:ARTICLE]->(arti:Article)
-            WHERE {search_cate}.name="{search_content}"
-            RETURN com, ver, chap, sec, arti ORDER BY arti.no
-        """
-    elif search_cate=="evi":
-        cypher=f"""
-            MATCH (com:Compliance)-[:VERSION]->(ver:Version)-[:CHAPTER]->(chap:Chapter)-[:SECTION]->(sec:Section)-[:ARTICLE]->(arti:Article)<-[:EVIDENCE]-(evi:Evidence)
-            WHERE {search_cate}.name="{search_content}"
-            RETURN com, ver, chap, sec, arti ORDER BY arti.no
-        """
-
-    results = graph.run(cypher)
-    for result in results:
-     response.append(result)
-
-    return response
+    def delete_related_compliance(self):
+        try:
+            print(self.request)
+            data_name = self.request['data_name']
+            compliance = self.request['compliance']
+            version = self.request['version']
+            article = self.request['article']
+            
+            last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            if article and article != ' ':
+                cypher= f"""
+                MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})
+                MATCH (a:Article:Compliance{{compliance_name:'{compliance.replace('-','_').capitalize()}', no:'{article.split(' ')[0]}'}})
+                MATCH (d)-[evidence:EVIDENCE]->(a)
+                SET d.last_update='{last_update}'
+                DELETE evidence
+                """
+            elif compliance:
+                cypher= f"""
+                MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})
+                MATCH (v:Version:Compliance{{name:'{compliance.replace('-','_').capitalize()}', date:date('{version}')}})
+                MATCH (d)-[evidence:EVIDENCE]->(v)
+                SET d.last_update='{last_update}'
+                DELETE evidence
+                """
+            print(cypher)
+            self.run(database=self.user_db, query=cypher)
+            return "Successfully Deleted Related Complicance"
+        except Exception as e:
+            print(e)
+            return "Failed To Delete Related Complicance. Please Try Again."
