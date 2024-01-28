@@ -71,16 +71,21 @@ def logout_(request):
     logout(request)
     return redirect('/auth/login/?next=/')
 
+import uuid
 def register_(request):
     context = {'color': 'teiren', 'message': ['Create Your Account', 'TEIREN CLOUD']}
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             # Save the user form
+            uuid_ = uuid.uuid4()
+            print(f"uuid_: {uuid_}, type: {type(uuid_)}")
+            
             user = form.save(commit=False)
+            user.uuid = uuid_
+            user.db_name = f"t{str(uuid_)}"
             user.email = request.POST.get('email')
             user.user_layout = 'default'
-            user.db_name = f"t{user.uuid}"
             user.is_active = False
             user.is_staff = False
             user.is_superuser = False
