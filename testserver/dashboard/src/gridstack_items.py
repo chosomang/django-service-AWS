@@ -148,11 +148,13 @@ class DashboardHandler(Neo4jHandler):
         cypher = f"""
         MATCH (r:Rule)<-[:DETECTED|FLOW_DETECTED]-(:Log)
         WITH HEAD([label IN labels(r) WHERE label <> 'Rule']) AS equip
-        RETURN equip as equip, count(equip) as count
+        WITH equip as equip, count(equip) as count
+        RETURN COLLECT(equip) as equip, COLLECT(count) as count
         """
         results = self.run(self.user_db, cypher)
         # equip_color = [color.get(result['equip']) for result in results]
-        if results:
+        print(results)
+        if results['equip'] and results['count']:
             equip_threat = {
                 'name': results['equip'],
                 'count': results['count'],
@@ -160,9 +162,9 @@ class DashboardHandler(Neo4jHandler):
             }
         else:
             equip_threat = {
-                'name': 'Aws',
-                'count': '0',
-                'color': '#FF9900'
+                'name': ['None',],
+                'count': ['0',],
+                'color': ['#FF9900']
             }
         context = {'equip_threat': json.dumps(equip_threat)}
         if isinstance(self.request, dict):
@@ -661,6 +663,7 @@ def threatUser(request):
     return JsonResponse(response)
 
 # 위협 발생 장비 추이
+# RESORUCE OVERVIEW
 def threatEquipment(request):
     global graph
     cypher = f"""

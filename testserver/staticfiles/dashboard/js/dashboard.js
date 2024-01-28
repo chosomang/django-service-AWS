@@ -39,7 +39,6 @@ $.ajax({
     data: {
         name: 'default'
     },
-    
     type: 'post'
 }).done(function (data) {
     var data = JSON.parse(data)

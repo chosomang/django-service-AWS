@@ -1,9 +1,10 @@
-from ..models import Document, Evidence, Asset, Policy
+from ..models import Evidence, Asset, Policy
 import mimetypes
 import docx2pdf
 from aspose.slides import Presentation
 
 def get_file_preivew_details(request, evidence_type):
+    # user_uuid = request.session.get('uuid')
     if evidence_type == 'policy':
         documents = Policy.objects.filter(title=request.POST.get('comment', ''))
     elif evidence_type == 'asset':

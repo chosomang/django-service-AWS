@@ -29,6 +29,7 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 
 def login_(request):
+    print('='*30)
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']

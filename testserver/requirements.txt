@@ -28,3 +28,5 @@ neo4j
 djangorestframework-simplejwt
 djoser
 django-allauth
+Aspose.Slides
+docx2pdf

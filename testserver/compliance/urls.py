@@ -44,10 +44,7 @@ urlpatterns = [
     path('file/preview/<evidence_type>/', views.data_file_preview),
     #-------------------------------------------------------------------------------------
 
-    path('integration/', views.integration),
-    path('integration_add/', views.add_integration),
+    # path('integration/', views.integration),
+    # path('integration_add/', views.add_integration),
 
-    re_path(r'^media/(?P<path>.*)$', protected_serve, {
-        'document_root': settings.MEDIA_ROOT,
-    }),
 ]
