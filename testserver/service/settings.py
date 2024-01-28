@@ -66,8 +66,8 @@ DJOSER = {
 
 # Application definition
 INSTALLED_APPS = [
-    'api',
     '_auth',
+    'api',
     'common',
     'M_logs',
     'M_equipments',

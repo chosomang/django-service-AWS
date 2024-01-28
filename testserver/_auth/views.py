@@ -29,6 +29,7 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 
 def login_(request):
+    print('='*30)
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -116,11 +117,6 @@ def activate_(request, uidb64, token):
                 neohandler.close()
             except Exception as e:
                 print(f"neo4j: can't create database: {e}")
-            # if init_database(user.db_name):
-            #     pass
-            # else:
-            #     print(f"neo4j: can't write database: {e}")
-            
             # neo4j 데이터베이스에 저장
             cypher = Cypher()
             cypher.push_user(user, _get_client_ip(request))
@@ -130,13 +126,6 @@ def activate_(request, uidb64, token):
             return render(request, 'registration/activation_failure.html')
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         return render(request, 'registration/activation_failure.html')
-
-# from .src.initial import InitDatabase
-# def init_database(user_db):
-#     with InitDatabase(user_db=user_db) as init:
-#         if not init.compliance():
-#             return False
-#         return True
 
 def _get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')

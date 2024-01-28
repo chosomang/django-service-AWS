@@ -8,3 +8,4 @@ class CustomUser(AbstractUser):
     user_layout = models.CharField(max_length=50)
     db_name = models.CharField(max_length=50, default=False, unique=True)
     is_active = models.BooleanField(default=False)
+    

@@ -18,6 +18,5 @@ def dashboard_view(request):
     # if not user_uuid:
     #     #return 404 page
     #     pass
-    
     return render(request, "dashboard/dashboard.html")
 
