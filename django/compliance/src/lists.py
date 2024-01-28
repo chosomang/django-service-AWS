@@ -169,6 +169,7 @@ def modify_lists_comply(compliance_type, data):
         
 
 def get_lists_details(compliance_type, data):
+    print(data)
     results  = graph.run(f"""
     OPTIONAL MATCH (l:Law)-[:VERSION]->(v:Version)-[*]->(a:Article)<-[:MAPPED]->(i:Certification{{no:'{data['no']}'}})<-[*]-
         (i:Compliance:Version{{name:'{compliance_type}', date:date('{data['version']}')}})

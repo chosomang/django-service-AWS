@@ -258,9 +258,10 @@ def send_alert_mail(rule, log, rel_id):
 
 # 위협 알림 확인 후 Alert Off
 def alert_off(request):
+    print(request)
     if 'alert' in request:
         graph.evaluate(f"""
-        MATCH (r:Rule:{request['logType']} {{ruleName:'{request['detected_rule']}'}})<-[d:DETECTED|FLOW_DETECTED]-(l:Log:{request['logType']} {{eventTime:'{request['eventTime']}'}})
+        MATCH (r:Rule:{request['resource']} {{ruleName:'{request['detected_rule']}'}})<-[d:DETECTED|FLOW_DETECTED]-(l:Log:{request['resource']} {{eventTime:'{request['eventTime']}'}})
         WHERE
             d.alert IS NOT NULL AND
             d.alert = 0 AND

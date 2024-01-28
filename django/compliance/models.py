@@ -11,6 +11,8 @@ class Document(models.Model):
 def evidence_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/evidence/<product>/<filename>
     # Use slugify to convert the product name to a URL-friendly format
+    print(slugify(instance.product))
+    print(filename)
     return f'evidence/{slugify(instance.product)}/{filename}'
 
 class Evidence(models.Model):

@@ -106,7 +106,7 @@ def get_log_details(request):
 def get_static(request):
     detected_rule = request['detected_rule']
     eventTime = request['eventTime']
-    logType = request['logType']
+    logType = request['resource']
     id = request['id']
     cypher = f"""
     MATCH (rule:Rule:{logType}{{ruleName: '{detected_rule}'}})<-[detect:DETECTED]-(log:Log:{logType}{{eventTime:'{eventTime}'}})
@@ -478,14 +478,19 @@ def get_relation_json(relation):
 def get_static_details(request):
     detected_rule = request['detected_rule']
     eventTime = request['eventTime']
-    logType = request['logType']
+    logType = request['resource']
     id = request['id']
     cypher = f"""
     MATCH p=(rule:Rule:{logType}{{ruleName:'{detected_rule}'}})<-[detected:DETECTED|FLOW_DETECTED]-(log:Log:{logType} {{eventTime:'{eventTime}'}})
     WHERE ID(detected) = {id}
     WITH log
-    MATCH p=(log)<-[:ACTED*..15]-(:Log)
+    OPTIONAL MATCH p=(log)<-[:ACTED*..15]-(:Log)
     WITH NODES(COLLECT(p)[-1]) AS nodes, log
+    WITH log,
+        CASE
+            WHEN nodes IS NULL THEN [log]
+            ELSE nodes
+        END AS nodes
     UNWIND nodes as node
     WITH DISTINCT(node), log
     RETURN
@@ -512,6 +517,7 @@ def get_static_details(request):
         END AS type
     ORDER BY eventTime DESC
     """
+    print(cypher)
     results = graph.run(cypher).data()
     response = []
     for result in results:
