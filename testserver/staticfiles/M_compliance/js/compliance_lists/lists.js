@@ -51,7 +51,6 @@ function versionModify(){
         })
         $('#com_table').fadeIn('fast')
     })
-    
 }
 
 function scoreChange(e){
@@ -72,6 +71,7 @@ function scoreChange(e){
         },
         type: 'post'
     }).done(function(response){
+        console.log(response)
         if (response === 'Fail'){
             alert('Comply Modification Fail')
             versionModify()
