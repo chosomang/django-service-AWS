@@ -1,14 +1,17 @@
 from django.db import models
 from django.utils.text import slugify
-import os
 
-# Define a function for the upload_to parameter
 def evidence_directory_path(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/evidence/<product>/<filename>
-    # Use slugify to convert the product name to a URL-friendly format
-    return f'evidence/{slugify(instance.product)}/{filename}'
+    return f'{instance.user_uuid}/Evidence/{slugify(instance.product)}/{filename}'
+
+def policy_directory_path(instance, filename):
+    return f'{instance.user_uuid}/Policy/{filename}'
+
+def asset_directory_path(instance, filename):
+    return f'{instance.user_uuid}/Asset/{filename}'
 
 class Evidence(models.Model):
+    user_uuid = models.CharField(max_length=50)
     title = models.CharField(max_length=200)
     product = models.CharField(max_length=500)
     uploadedFile = models.FileField(upload_to=evidence_directory_path)
@@ -16,12 +19,14 @@ class Evidence(models.Model):
 
 
 class Policy(models.Model):
+    user_uuid = models.CharField(max_length=50)
     title = models.CharField(max_length=200)
-    uploadedFile = models.FileField(upload_to=f"policy/") # /policy
+    uploadedFile = models.FileField(upload_to=policy_directory_path)
     dateTimeOfUpload = models.DateTimeField(auto_now=True)
 
 
 class Asset(models.Model):
+    user_uuid = models.CharField(max_length=50)
     title = models.CharField(max_length=200)
-    uploadedFile = models.FileField(upload_to=f"asset/") # /
+    uploadedFile = models.FileField(upload_to=asset_directory_path) # /
     dateTimeOfUpload = models.DateTimeField(auto_now=True)
