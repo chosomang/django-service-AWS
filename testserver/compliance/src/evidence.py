@@ -26,7 +26,7 @@ class EvidenceBase(Neo4jHandler):
     """
     def __init__(self, request) -> None:
         super().__init__()
-        self.request = dict(request.POST) if request.method == 'POST' else dict(request.GET.items())
+        self.request = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
         self.user_db = request.session.get('db_name')
 
 
@@ -138,7 +138,7 @@ class EvidenceDataList(EvidenceBase):
 class EvidenceDataHandler(EvidenceBase):
     # data 추가
     def add_evidence_data(self):
-        for key, value in self.reuqest.items():
+        for key, value in self.request.items():
             if value == '' and key not in ['comment', 'author', ''] :
                 return f"Please Enter/Select {key.title()}"
         try:
@@ -257,18 +257,24 @@ class EvidenceDataHandler(EvidenceBase):
         except Exception as e:
             print(e)
             return "Failed To Delete Data. Please Try Again."
-            
-        
 
-class EvidenceFileHandler(EvidenceBase):
+
+class EvidenceFileHandler(Neo4jHandler):
+    def __init__(self, request) -> None:
+        super().__init__()
+        self.request = request
+        self.request_data = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
+        self.user_db = request.session.get('db_name')
+        self.user_uuid = request.session.get('uuid')
+        
     def add_evidence_file(self):
-        for key, value in self.request:
+        for key, value in self.request_data.items():
             if not value:
                 return f"Please Enter/Select {key.capitalize()}"
         try:
-            data_name = self.request.get('data_name', '')
-            uploaded_file = self.reuqest.get("file", '')
-            product = self.request.get('product', '')
+            data_name = self.request_data.get('data_name', '')
+            uploaded_file = self.request.FILE.get("file", '')
+            product = self.request_data.get('product', '')
             
             cypher = f"""
             MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[*]->(f:File:Evidence:Compliance{{name:'{uploaded_file.name}'}})
@@ -278,10 +284,10 @@ class EvidenceFileHandler(EvidenceBase):
             if 0 < result['count']:
                 return "File Name Already Exsists. Please Enter New File Name."
             else:
-                comment = self.request.get('comment', '')
-                author = self.request.get('author', '')
-                version = self.request.get('version', '')
-                poc = self.request.get('poc', '')
+                comment = self.request_data.get('comment', '')
+                author = self.request_data.get('author', '')
+                version = self.request_data.get('version', '')
+                poc = self.request_data.get('poc', '')
                 upload_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 
                 cypher = f"""
@@ -301,8 +307,9 @@ class EvidenceFileHandler(EvidenceBase):
 
                 # Saving the information in the database
                 document = Evidence(
-                    title= comment,
-                    product= product,
+                    user_uuid=self.user_uuid,
+                    title=comment,
+                    product=product,
                     uploadedFile=uploaded_file
                 )
                 document.save()
@@ -311,17 +318,17 @@ class EvidenceFileHandler(EvidenceBase):
             return 'Failed To Add Evidence File. Please Try Again.'
 
     def modify_evidence_file(self):
-        for key, value in self.request:
+        for key, value in self.request_data.items():
             if not value:
                 return f"Please Enter/Select {key.capitalize()}"
         try:
-            data_name = self.request.get('data_name', '')
-            name = self.request.get('name', '')
-            comment = self.request.get('comment', '')
-            og_comment = self.request.get('og_comment', '')
-            author = self.request.get('author', '')
-            version = self.request.get('version', '')
-            poc = self.request.get('poc', '')
+            data_name = self.request_data.get('data_name', '')
+            name = self.request_data.get('name', '')
+            comment = self.request_data.get('comment', '')
+            og_comment = self.request_data.get('og_comment', '')
+            author = self.request_data.get('author', '')
+            version = self.request_data.get('version', '')
+            poc = self.request_data.get('poc', '')
             
             last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             cypher = f"""
@@ -336,7 +343,7 @@ class EvidenceFileHandler(EvidenceBase):
             self.run(database=self.user_db, query=cypher)
 
             if og_comment != comment:
-                documents = Evidence.objects.filter(title=f"{og_comment}")
+                documents = Evidence.objects.filter(user_uuid=self.user_uuid, title=f"{og_comment}")
                 for document in documents:
                     if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
                         document.title = comment
@@ -349,13 +356,13 @@ class EvidenceFileHandler(EvidenceBase):
 
     def delete_evidence_file(self):
         try:
-            data_name = self.request.get('data_name', '')
-            name = self.request.get('name', '')
-            comment = self.request.get('comment', '')
-            author = self.request.get('author', '')
-            version = self.request.get('version', '')
-            poc = self.request.get('poc', '')
-            upload_date = self.request.get('upload_date', '')
+            data_name = self.request_data.get('data_name', '')
+            name = self.request_data.get('name', '')
+            comment = self.request_data.get('comment', '')
+            author = self.request_data.get('author', '')
+            version = self.request_data.get('version', '')
+            poc = self.request_data.get('poc', '')
+            upload_date = self.request_data.get('upload_date', '')
             last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
             cypher = f"""
@@ -373,7 +380,7 @@ class EvidenceFileHandler(EvidenceBase):
             """
             self.run(database=self.user_db, query=cypher)
             
-            documents = Evidence.objects.filter(title=comment)
+            documents = Evidence.objects.filter(user_uuid=self.user_uuid, title=comment)
             for document in documents:
                 if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
                     print(document.uploadedFile.path)

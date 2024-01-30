@@ -15,25 +15,32 @@ password = settings.NEO4J['PASSWORD']
 class ComplianceListBase(Neo4jHandler):
     def __init__(self, request) -> None:
         super().__init__()
-        self.request = dict(request.POST) if request.method == 'POST' else dict(request.GET.items())
+        self.request = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
         self.user_db = request.session.get('db_name')
     
 
-class ComplianceFileHandler(ComplianceListBase):
+class ComplianceFileHandler(Neo4jHandler):
+    def __init__(self, request) -> None:
+        super().__init__()
+        self.request = request
+        self.request_data = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
+        self.user_db = request.session.get('db_name')
+        self.user_uuid = request.session.get('uuid')
+        
     def add_compliance_evidence_file(self):
-        print(self.request)
-        for key, value in self.request.items():
+        for key, value in self.request_data.items():
             if not value and key not in ['version', 'poc']:
                 return f"Please Enter/Select {key.replace('_', ' ').title()}"
-        art_no = self.request.get('art_no', '')
-        compliance = self.request.get('compliance', '')
-        data_name = self.request.get('data_name', '')
-        product = self.request.get('product', '')
-        comment = self.request.get('comment', '')
-        author = self.request.get('author', '')
-        poc = self.request.get('poc', '')
-        version = self.request.get('version', '')
-        com_version = self.request.get('com_version', '')
+        art_no = self.request_data.get('art_no', '')
+        compliance = self.request_data.get('compliance', '')
+        data_name = self.request_data.get('data_name', '')
+        product = self.request_data.get('product', '')
+        comment = self.request_data.get('comment', '')
+        author = self.request_data.get('author', '')
+        poc = self.request_data.get('poc', '')
+        version = self.request_data.get('version', '')
+        com_version = self.request_data.get('com_version', '')
+        
         file = self.request.FILES["file"]
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -66,6 +73,7 @@ class ComplianceFileHandler(ComplianceListBase):
                 self.run(database=self.user_db, query=cypher)
                 # 디비에 파일 정보 저장
                 document = Evidence(
+                    user_uuid=self.user_uuid,
                     title=comment,
                     product=product,
                     uploadedFile=file
@@ -73,27 +81,28 @@ class ComplianceFileHandler(ComplianceListBase):
                 document.save()
                 return "Successfully Added Evidence File"
         except Exception as e:
+            print(e)
             return 'Failed To Add Evidence File. Please Try Again.'
 
     def modify_compliance_evidence_file(self):
-        for key, value in self.request.items():
+        for key, value in self.request_data.items():
             if not value and key not in ['version', 'author', 'poc']:
                 return f"Please Enter/Select {key.replace('_', ' ').title()}"
             elif not value and key in ['art_no', 'og_data_name', 'name', 'og_file_comment']:
                 return "Failed To Modify Evidence File. Please Try Again"
         # Extract data from the POST request
-        art_no = self.request.get('art_no', '')
-        compliance = self.request.get('compliance', '')
-        data_name = self.request.get('data_name', '')
-        og_data_name = self.request.get('og_data_name', '')
-        product = self.request.get('product', '')
-        name = self.request.get('name', '')
-        comment = self.request.get('comment', '')
-        og_comment = self.request.get('og_comment', '')
-        author = self.request.get('author', '')
-        poc = self.request.get('poc', '')
-        version = self.request.get('version', '')
-        com_version = self.request.get('com_version', '')
+        art_no = self.request_data.get('art_no', '')
+        compliance = self.request_data.get('compliance', '')
+        data_name = self.request_data.get('data_name', '')
+        og_data_name = self.request_data.get('og_data_name', '')
+        product = self.request_data.get('product', '')
+        name = self.request_data.get('name', '')
+        comment = self.request_data.get('comment', '')
+        og_comment = self.request_data.get('og_comment', '')
+        author = self.request_data.get('author', '')
+        poc = self.request_data.get('poc', '')
+        version = self.request_data.get('version', '')
+        com_version = self.request_data.get('com_version', '')
         try:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             if data_name != og_data_name:
@@ -130,7 +139,7 @@ class ComplianceFileHandler(ComplianceListBase):
                 """
             self.run(database=self.user_db, query=cypher)
             if og_comment != comment:
-                documents = Evidence.objects.filter(title=f"{og_comment}")
+                documents = Evidence.objects.filter(user_uuid=self.user_uuid, title=f"{og_comment}")
                 for document in documents:
                     if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
                         document.title = comment
@@ -140,20 +149,20 @@ class ComplianceFileHandler(ComplianceListBase):
             return f'Failed To Modify Evidence File. Please Try Again.'
 
     def delete_compliance_evidence_file(self):
-        for key, value in self.request.items():
+        for key, value in self.request_data.items():
             if not value and key not in ['version', 'author', 'poc']:
                 return f"Please Enter/Select {key.replace('_', ' ').title()}"
         try:
-            art_no = self.request.get('art_no', '')
-            compliance = self.request.get('compliance', '')
-            data_name = self.request.get('data_name', '')
-            product = self.request.get('product', '')
-            name = self.request.get('name', '')
-            comment = self.request.get('comment', '')
-            author = self.request.get('author', '')
-            poc = self.request.get('poc', '')
-            version = self.request.get('version', '')
-            com_version = self.request.get('com_version', '')
+            art_no = self.request_data.get('art_no', '')
+            compliance = self.request_data.get('compliance', '')
+            data_name = self.request_data.get('data_name', '')
+            product = self.request_data.get('product', '')
+            name = self.request_data.get('name', '')
+            comment = self.request_data.get('comment', '')
+            author = self.request_data.get('author', '')
+            poc = self.request_data.get('poc', '')
+            version = self.request_data.get('version', '')
+            com_version = self.request_data.get('com_version', '')
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
             cypher = f"""
@@ -166,7 +175,7 @@ class ComplianceFileHandler(ComplianceListBase):
             """
             self.run(database=self.user_db, query=cypher)
             
-            documents = Evidence.objects.filter(title=comment)
+            documents = Evidence.objects.filter(user_uuid=self.user_uuid, title=comment)
             for document in documents:
                 if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
                     print(document.uploadedFile.path)
@@ -177,6 +186,7 @@ class ComplianceFileHandler(ComplianceListBase):
             return "Failed To Delete Evidence File. Please Try Again."
 
 
+class ComplianceListHandler(ComplianceListBase):
 # ---
     def get_lists_version(self, compliance_type, data=None):
         where_version = ''
@@ -280,7 +290,6 @@ class ComplianceFileHandler(ComplianceListBase):
             MATCH (n:Compliance:Version{{name:'{compliance_type}'}})       
             return COLLECT(n.date) AS version_list
             """
-            
             result = self.run(database=self.user_db, query=cypher)
             version_list = result['version_list']
             
@@ -291,16 +300,12 @@ class ComplianceFileHandler(ComplianceListBase):
                 p.name as productName
                 order by productName
             """
-            results = self.run(database=self.user_db, query=cypher)
+            results = self.run_data(database=self.user_db, query=cypher)
             
-            resource_list = []
-            for result in results:
-                resource_list.append(dict(result.items()))
             return {'compliance': compliance_results,
                     'version_list': version_list,
                     'resource_list': results,
-                    'product': product
-                    }
+                    'product': product}
 
     def modify_lists_comply(self, compliance_type, data):
         version = data['version']
@@ -317,7 +322,8 @@ class ComplianceFileHandler(ComplianceListBase):
                 """
                 self.run(database=self.user_db, query=cypher)
                 return "Success"
-            except:
+            except Exception as e:
+                print('1', e)
                 return "Fail"
         elif 1 <= int(score) <= 2:
             try:
@@ -333,13 +339,15 @@ class ComplianceFileHandler(ComplianceListBase):
                 return value.score AS score
                 """
                 result = self.run(database=self.user_db, query=cypher)
-                if 2 >= result >= 1 :
+                if 1 <= result['score'] <= 2:
                     return "Success"
                 else:
                     raise Exception
-            except Exception:
+            except Exception as e:
+                print('2', e)
                 return "Fail"
         else:
+            print('else fail')
             return "Fail"
             
     def get_lists_details(self, compliance_type, data):
@@ -400,9 +408,9 @@ class ComplianceFileHandler(ComplianceListBase):
         cypher = f"""
         MATCH (p:Product:Evidence:Compliance{{name:'{data['product']}'}})-[:DATA]->(d:Compliance:Evidence:Data)
         WITH d.name as data ORDER BY d.name
-        RETURN COLLECT(data)
+        RETURN COLLECT(data) AS data_list
         """
-        data_list = self.run_data(database=self.user_db, query=cypher)
+        data_list = self.run(database=self.user_db, query=cypher)
         
         cypher = f"""
         MATCH (p:Policy)-[:DATA]->(d:Compliance:Evidence:Data)-[:POLICY]->
@@ -417,16 +425,17 @@ class ComplianceFileHandler(ComplianceListBase):
         MATCH (p:Policy:Evidence:Compliance)-[:DATA]->(d:Compliance:Evidence:Data)
         WITH DISTINCT(d), p ORDER BY toLower(p.name), toLower(d.name)
         WITH p.name+' > '+d.name AS policy_data
-        RETURN COLLECT(policy_data) AS policy_data
+        RETURN COLLECT(policy_data) AS policy_data_list
         """
-        policy_data_list = self.run_data(database=self.user_db, query=cypher)
+        policy_data_list = self.run(database=self.user_db, query=cypher)
 
+        print(policy_data_list['policy_data_list'])
         return {'law_list': law_list,
                 'article_list': article_list,
                 'evidence_list' : evidence_list,
-                'data_list' : data_list,
+                'data_list' : data_list['data_list'],
                 'policy_list': policy_list,
-                'policy_data_list': policy_data_list,
+                'policy_data_list': policy_data_list['policy_data_list'],
                 'product': data['product'],
                 'version': data['version']
         }

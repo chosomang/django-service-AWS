@@ -28,24 +28,24 @@ class DashboardLogHandler(Neo4jHandler):
     """
     def __init__(self, request) -> None:
         super().__init__()
-        self.request = dict(request.POST) if request.method == 'POST' else dict(request.GET.items())
+        self.request = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
         print(f'self.request: {self.request}')
         self.user_db = request.session.get('db_name')
     
     # 로그 디테일 모달
     def get_log_detail_modal(self):
-        id = self.request['id']
+        id_ = self.request['id']
         logType = self.request['logType']
         cypher = f"""
         MATCH (l:Log:{logType})
-        WHERE ID(l) = {id}
+        WHERE ID(l) = {id_}
         WITH ID(l) as id, PROPERTIES(l) as details
         RETURN id, details
         """
-        results = self.run(database=self.user_db, query=cypher)
+        results = self.run_data(database=self.user_db, query=cypher)
         response = {}
         for result in results:
-            for key, value in dict(result).items():
+            for key, value in result.items():
                 if key == 'details':
                     value = {keys:value[keys] for keys in sorted(value.keys())}
                 response[key] = value

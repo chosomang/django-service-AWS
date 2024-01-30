@@ -1,12 +1,16 @@
+# local
+import requests
+from datetime import datetime, date
+from common.neo4j.handler import Neo4jHandler
+
+# django
 from django.conf import settings
-from neo4j import GraphDatabase
-from py2neo import Graph
 from django.contrib.auth.signals import user_logged_out
 from django.contrib.auth import get_user_model
-
 from django.dispatch import receiver
-from datetime import datetime, date
-import requests
+
+# 3rd party
+from neo4j import GraphDatabase
 
 # AWS
 HOST = settings.NEO4J['HOST']
@@ -14,35 +18,12 @@ PORT = settings.NEO4J["PORT"]
 USER = settings.NEO4J['USERNAME']
 PW = settings.NEO4J['PASSWORD']
 
-URI = f"bolt://{HOST}:{PORT}"
-graph = Graph(URI, auth=(USER, PW))
+URI = f"bolt://{settings.NEO4J['HOST']}:{settings.NEO4J['PORT']}"
 
-from common.neo4j.handler import Neo4jHandler
 
 class AuthTrigger(Neo4jHandler):
     def __init__(self) -> None:
         super().__init__()
-    
-    def login_account(self, request, srcip):
-        cypher = f"""
-        MATCH (a:Teiren:Account{{
-            userName: '{request['user_name']}'
-        }})    
-        """
-        # try:
-        #     if 1 == graph.evaluate(f"{cypher} RETURN COUNT(a)"):
-        #         if 5 <= graph.evaluate(f"{cypher} RETURN a.failCount"):
-        #             return 'fail', 'User Id Forbidden. Please Contact Administrator'
-        #         if 1 == graph.evaluate(f"{cypher} WHERE a.userPassword = '{request['password1']}' RETURN COUNT(a)"):
-        #             login_success(request['username'], srcip)
-        #             userName = graph.evaluate(f"{cypher} RETURN a.userName")
-        #             return userName, request['password1']
-        #         else:
-        #             return login_fail(request['username'], srcip), 'fail'
-        #     else:
-        #         raise Exception
-        # except Exception:
-        #     return 'fail', 'Failed To Login. Please Register'
 
 def login_success(userName, srcip):
     user = get_user_model().objects.get(username=userName)
