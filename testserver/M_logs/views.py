@@ -29,5 +29,5 @@ def log_modal(request, resourceType, logType):
             return render(request, "M_logs/help.html")
         elif logType == 'details':
             with DashboardLogHandler(request=request) as lhandler:
-                context = lhandler.get_log_detail_modal(dict(request.POST.items()))
+                context = lhandler.get_log_detail_modal()
             return render(request, "M_logs/detail_modal.html", context)
