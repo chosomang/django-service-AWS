@@ -23,7 +23,7 @@
     <span class="current">{{product}}&nbsp;&nbsp;>&nbsp;&nbsp;{{no}} {{name}}<span>
 </div>
 <div>
-    <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{compliance_type.upper|replace:"_,-"}}</h6>
+    <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{ compliance_type.upper|cut:"_" }}-</h6>
     <p class="h4 mb-4 ml-2">{{product}}&nbsp;&nbsp;>&nbsp;&nbsp;{{no}} {{name}}</p>
 </div>
 <div class="card shadow mb-4">
