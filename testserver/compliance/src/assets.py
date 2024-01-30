@@ -30,8 +30,9 @@ class AssetsBase(Neo4jHandler):
     """
     def __init__(self, request) -> None:
         super().__init__()
-        self.request = dict(request.POST) if request.method == 'POST' else dict(request.GET.items())
+        self.request = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
         self.user_db = request.session.get('db_name')
+        self.user_uuid = request.session.get('uuid')
     
 
 class AssetListAction(AssetsBase):
@@ -200,25 +201,33 @@ class AssetTableAction(AssetsBase):
             return f"{e}: Failed to Modify Asset Category. Please Try Again."
 
 
-class AssetFileAction(AssetsBase):
+class AssetFileAction(Neo4jHandler):
+    def __init__(self, request) -> None:
+        super().__init__()
+        self.request = request
+        self.request_data = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
+        self.user_db = request.session.get('db_name')
+        self.user_uuid = request.session.get('uuid')
+        
     # Asset File Action
     def asset_file_action(self, action_type):
         if action_type == 'add':
-            response = self.add_asset_file()
+            return self.add_asset_file()
         elif action_type == 'delete':
-            response = self.delete_asset_file()
+            return self.delete_asset_file()
         elif action_type == 'modify':
-            response = self.modify_asset_file()
+            return self.modify_asset_file()
         else:
-            response = 'Fail'
-        return response
+            return 'Fail'
 
     def add_asset_file(self):
         try:
             # Extract data from the POST request
             uploadedFile = self.request.FILES.get('uploadedFile', '')
-            poc = self.request.get('poc', '')
-            fileComment = self.request.get('fileComment', '')
+            poc = self.request_data.get('poc', '')
+            fileComment = self.request_data.get('fileComment', '')
+            author = self.request_data.get('author', '')
+            version = self.request_data.get('version', '')
             
             cypher = f"""
             MATCH (p:Product:Compliance:Evidence{{name:'Asset Manage'}})-[:DATA]->(a:Compliance:Evidence:Data{{name:'File'}})
@@ -236,12 +245,10 @@ class AssetFileAction(AssetsBase):
             if not fileComment:
                 return "Please Enter Comment"
             
-            author = self.request.get('author', '')
-            version = self.request.get('version', '')
-            
             # Saving the information in the database
             # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< 디비 부분 수정필요
             document = Asset(
+                user_uuid = self.user_uuid,
                 title=fileComment,
                 uploadedFile=uploadedFile
             )
@@ -273,9 +280,9 @@ class AssetFileAction(AssetsBase):
             RETURN 1 LIMIT 1
             """
             self.run(database=self.user_db, query=cypher)
-            documents = Asset.objects.filter(title=self.reuqest['file_comment'])
+            documents = Asset.objects.filter(user_uuid=self.user_uuid, title=self.reuqest['file_comment'])
             for document in documents:
-                if document.uploadedFile.name.endswith(self.reuqest['file_name'].replace('[','').replace(']','')):
+                if document.uploadedFile.name.endswith(self.reuqest_data['file_name'].replace('[','').replace(']','')):
                     print(document.uploadedFile.path)
                     document.uploadedFile.delete(save=False)
                     document.delete()
@@ -286,22 +293,22 @@ class AssetFileAction(AssetsBase):
     def modify_asset_file(self):
         try:
             # Extract data from the POST request
-            og_fileName = self.request.get('og_fileName','')
-            file_name = self.request.get('fileName','')
-            file_comment = self.request.get('fileComment','')
-            og_comment = self.request.get('og_comment', '')
+            og_fileName = self.request_data.get('og_fileName','')
+            file_name = self.request_data.get('fileName','')
+            file_comment = self.request_data.get('fileComment','')
+            og_comment = self.request_data.get('og_comment', '')
             if not file_name:
-                response = "Please Check File Name"
+                return "Please Check File Name"
             elif not file_comment:
-                response = "Please Enter File Comment"
+                return "Please Enter File Comment"
             elif og_fileName != file_name:
                 raise Exception
             elif not og_comment:
                 raise Exception
             else:
-                file_author = self.request.get('fileAuthor','')
-                file_version = self.request.get('fileVersion','')
-                file_poc = self.request.get('filePoC','')
+                file_author = self.request_data.get('fileAuthor','')
+                file_version = self.request_data.get('fileVersion','')
+                file_poc = self.request_data.get('filePoC','')
 
                 # Add current timestamp
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -319,7 +326,7 @@ class AssetFileAction(AssetsBase):
                 """
                 self.run(database=self.user_db, query=add_assets)
                 
-                documents = Asset.objects.filter(title=og_comment)
+                documents = Asset.objects.filter(user_uuid=self.user_uuid, title=og_comment)
                 for document in documents:
                     if document.uploadedFile.name.endswith(file_name.replace('[','').replace(']','')):
                         document.title = file_comment
