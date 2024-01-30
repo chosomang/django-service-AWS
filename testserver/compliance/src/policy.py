@@ -16,7 +16,7 @@ password = settings.NEO4J['PASSWORD']
 class CompliancePolicyBase(Neo4jHandler):
     def __init__(self, request) -> None:
         super().__init__()
-        self.request = dict(request.POST) if request.method == 'POST' else dict(request.GET.items())
+        self.request = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
         self.user_db = request.session.get('db_name')
 
 
@@ -50,7 +50,6 @@ class CompliancePolicyHandler(CompliancePolicyBase):
                     ORDER BY policy.name ASC
                 """
             results = self.run_data(database=self.user_db, query=cypher)
-            print(f"results: {results}")
             return results
         except Exception as e:
             print(f"Fail to CompliancePlicyBase Class in get_policy_data_list() -> {e}")
@@ -277,13 +276,23 @@ class CompliancePolicyHandler(CompliancePolicyBase):
                     'file_list':[]}
 
 
+class PolicyFileHandler(Neo4jHandler):
+    def __init__(self, request) -> None:
+        super().__init__()
+        self.request = request
+        self.request_data = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
+        self.user_db = request.session.get('db_name')
+        self.user_uuid = request.session.get('uuid')
+        
+        
     def add_policy_data_file(self):
-        for key, value in self.request.items():
+        for key, value in self.request_data.items():
             if not value:
                 return f"Please Enter/Select Data {key.title()}"
         try:
             file = self.request.FILES.get('file', '')
             file_name = file.name.replace(' ', '_')
+            print(f"file name: {file_name}")
             
             cypher = f"""
             MATCH (f:File:Compliance:Evidence {{name:'{file_name}'}})
@@ -293,12 +302,12 @@ class CompliancePolicyHandler(CompliancePolicyBase):
             if 0 < result['count']:
                 return "Data File Already Exsists. Please Select New File"
             else:
-                policy = self.request.get('policy', '')
-                name = self.request.get('name', '')
-                comment = self.request.get('comment', '')
-                author = self.request.get('author', '')
-                version = self.request.get('version', '')
-                poc = self.request.get('poc', '')
+                policy = self.request_data.get('policy', '')
+                name = self.request_data.get('name', '')
+                comment = self.request_data.get('comment', '')
+                author = self.request_data.get('author', '')
+                version = self.request_data.get('version', '')
+                poc = self.request_data.get('poc', '')
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
                 cypher = f"""
@@ -319,6 +328,7 @@ class CompliancePolicyHandler(CompliancePolicyBase):
                 
                 # 디비에 파일 정보 저장
                 document = Policy(
+                    user_uuid=self.user_uuid,
                     title=comment,
                     uploadedFile=file
                 )
@@ -329,18 +339,18 @@ class CompliancePolicyHandler(CompliancePolicyBase):
             return "Failed To Add Policy Data File. Please Try Again."
 
     def modify_policy_data_file(self):
-        for key, value in self.request.items():
+        for key, value in self.request_data.items():
             if not value:
                 return f"Please Enter/Select {key.capitalize()}"
         try:
-            policy = self.request.get('policy', '')
-            data_name = self.request.get('name', '')
-            file_name = self.request.get('file', '')
-            comment = self.request.get('comment', '')
-            og_comment = self.request.get('og_comment', '')
-            author = self.request.get('author', '')
-            version = self.request.get('version', '')
-            poc = self.request.get('poc', '')
+            policy = self.request_data.get('policy', '')
+            data_name = self.request_data.get('name', '')
+            file_name = self.request_data.get('file', '')
+            comment = self.request_data.get('comment', '')
+            og_comment = self.request_data.get('og_comment', '')
+            author = self.request_data.get('author', '')
+            version = self.request_data.get('version', '')
+            poc = self.request_data.get('poc', '')
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
             cypher = f"""
@@ -362,7 +372,7 @@ class CompliancePolicyHandler(CompliancePolicyBase):
                 """
                 self.run(database=self.user_db, query=cypher)
                 if og_comment != comment:
-                    documents = Policy.objects.filter(title=f"{og_comment}")
+                    documents = Policy.objects.filter(user_uuid=self.user_uuid, title=f"{og_comment}")
                     for document in documents:
                         if document.uploadedFile.name.endswith(file_name.replace('[','').replace(']','')):
                             document.title = comment
@@ -377,10 +387,10 @@ class CompliancePolicyHandler(CompliancePolicyBase):
 
     def delete_policy_data_file(self):
         try:
-            policy = self.request.get('policy', '')
-            data_name = self.request.get('name', '')
-            file_name = self.request.get('file', '')
-            comment = self.request.get('comment', '')
+            policy = self.request_data.get('policy', '')
+            data_name = self.request_data.get('name', '')
+            file_name = self.request_data.get('file', '')
+            comment = self.request_data.get('comment', '')
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
             cypher = f"""
@@ -403,7 +413,7 @@ class CompliancePolicyHandler(CompliancePolicyBase):
                 DETACH DELETE f SET d.last_update = '{timestamp}'
                 """
                 self.run(database=self.user_db, query=cypher)
-                documents = Policy.objects.filter(title=comment)
+                documents = Policy.objects.filter(user_uuid=self.user_uuid, title=comment)
                 for document in documents:
                     if document.uploadedFile.name.endswith(file_name.replace('[','').replace(']','')):
                         print(document.uploadedFile.path)

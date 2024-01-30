@@ -5,8 +5,8 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin, xfra
 
 from .src.assets import AssetListAction, AssetTableAction, AssetFileAction, AssetDataAction
 from .src.evidence import EvidenceDataList, EvidenceDataHandler, EvidenceFileHandler, ComplianceHandler
-from .src.lists import ComplianceFileHandler
-from .src.policy import CompliancePolicyHandler
+from .src.lists import ComplianceFileHandler, ComplianceListHandler
+from .src.policy import CompliancePolicyHandler, PolicyFileHandler
 from .src.file import get_file_preivew_details
 
 from .models import Evidence, Asset, Policy
@@ -16,9 +16,9 @@ from .models import Evidence, Asset, Policy
 @login_required
 def compliance_lists_view(request, compliance_type=None):
     if compliance_type:
-        with ComplianceFileHandler(request=request) as compliance_file:
+        with ComplianceListHandler(request=request) as listhandler:
             if compliance_type == 'ISMS-P':
-                context= compliance_file.get_lists_version('Isms_p')
+                context= listhandler.get_lists_version('Isms_p')
             elif compliance_type == 'Another':
                 context= 'Another'
             context.update({'compliance_type': compliance_type})
@@ -29,15 +29,15 @@ def compliance_lists_view(request, compliance_type=None):
 def compliance_lists_modify(request, compliance_type):
     if request.method == "POST":
         data = dict(request.POST.items())
-        print(data)
-        with ComplianceFileHandler(request=request) as compliance_file:
+        with ComplianceListHandler(request=request) as listhandler:
             if "article" in data :
-                return HttpResponse(compliance_file.modify_lists_comply(
+                return HttpResponse(listhandler.modify_lists_comply(
                     compliance_type=compliance_type.capitalize().replace('-','_'),
                     data=data))
-            data.update({'compliance':compliance_file.get_lists_version(
+            data.update({'compliance':listhandler.get_lists_version(
                 compliance_type=compliance_type.capitalize().replace('-','_'),
                 data=data)})
+            
         data.update({'compliance_type': compliance_type})
         return render(request, f"compliance/compliance_lists/dataTable.html", data)
 
@@ -53,9 +53,9 @@ def compliance_lists_detail_view(request, compliance_type):
         if data['no'] == '' or not compliance_type.lower().startswith('isms'):
             return redirect(f"/compliance/lists/{compliance_type}")
         else:
-            with ComplianceFileHandler(request=request) as compliance_file:
-                data.update(compliance_file.get_lists_details(compliance_type=compliance_type.capitalize().replace('-','_'),
-                                                              data=data))
+            with ComplianceListHandler(request=request) as listhandler:
+                data.update(listhandler.get_lists_details(compliance_type=compliance_type.capitalize().replace('-','_'), 
+                                                          data=data))
             data.update({'compliance_type': compliance_type})
             return render(request, f"compliance/compliance_lists/details.html", data)
     else:
@@ -78,14 +78,13 @@ def compliance_lists_file_action(request, action_type):
                 elif action_type == 'delete':
                     return HttpResponse(compliance_file.delete_compliance_evidence_file())
 
-
 def compliance_lists_policy_action(request, action_type):
     if request.method == 'POST':
-        with ComplianceFileHandler(request=request) as compliance_file:
+        with ComplianceListHandler(request=request) as listhandler:
             if action_type == 'add':
-                return HttpResponse(compliance_file.add_related_policy())
+                return HttpResponse(listhandler.add_related_policy())
             elif action_type == 'delete':
-                return HttpResponse(compliance_file.delete_related_policy())
+                return HttpResponse(listhandler.delete_related_policy())
 
 #Assets Management
 @login_required
@@ -246,14 +245,13 @@ def policy_data_file_action(request, policy_type, data_type, action_type):
                     file_path = document.uploadedFile.path
                     return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=document.uploadedFile.name)
         else:
-            with CompliancePolicyHandler(request=request) as compliance_policy:
+            with PolicyFileHandler(request=request) as file_handler:
                 if action_type == 'add':
-                    return HttpResponse(compliance_policy.add_policy_data_file())
+                    return HttpResponse(file_handler.add_policy_data_file())
                 elif action_type == 'modify':
-                    return HttpResponse(compliance_policy.modify_policy_data_file())
+                    return HttpResponse(file_handler.modify_policy_data_file())
                 elif action_type == 'delete':
-                    return HttpResponse(compliance_policy.delete_policy_data_file())
-
+                    return HttpResponse(file_handler.delete_policy_data_file())
 
 def data_file_preview(request, evidence_type):
     if request.method == 'POST':
