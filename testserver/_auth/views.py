@@ -1,25 +1,20 @@
 # local
-from .src.mail import send_mail
-from _auth.src import authentication
-from .src.register import get_uuid, push_neo4j
 from .forms import CustomUserCreationForm
+from .src.mail import send_mail
+from .src.initial import InitDatabase
+from _auth.src import authentication
+from common.neo4j.handler import Neo4jHandler, Cypher
 
 # django
 from django.conf import settings
-
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm 
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import get_user_model
-
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
-
 from django.shortcuts import render, redirect, HttpResponse
-
-# Excpetion
+## Excpetion
 from django.core.exceptions import ObjectDoesNotExist
 
 # AWS
@@ -29,7 +24,6 @@ username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
 
 def login_(request):
-    print('='*30)
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -79,7 +73,6 @@ def register_(request):
         if form.is_valid():
             # Save the user form
             uuid_ = uuid.uuid4()
-            print(f"uuid_: {uuid_}, type: {type(uuid_)}")
             
             user = form.save(commit=False)
             user.uuid = uuid_
@@ -106,7 +99,6 @@ def register_(request):
     return render(request, 'auth/register.html', context)
 
 # 이메일 인증 view
-from common.neo4j.handler import Neo4jHandler, Cypher
 def activate_(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
@@ -122,6 +114,12 @@ def activate_(request, uidb64, token):
                 neohandler.close()
             except Exception as e:
                 print(f"neo4j: can't create database: {e}")
+            
+            if init_database(user.db_name):
+                print('neo4j: Create Done.')
+            else:
+                print('neo4j: Can not write database.')
+            
             # neo4j 데이터베이스에 저장
             cypher = Cypher()
             cypher.push_user(user, _get_client_ip(request))
@@ -131,6 +129,23 @@ def activate_(request, uidb64, token):
             return render(request, 'registration/activation_failure.html')
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         return render(request, 'registration/activation_failure.html')
+
+def init_database(db_name):
+    with InitDatabase(db_name) as __init:
+        try:
+            if not __init.compliance():
+                return False
+            if not __init.product():
+                return False
+            if not __init.product_2():
+                return False
+            if not __init.isms_p_mapping():
+                return False
+            if not __init.gdpr():
+                return False
+        except Exception as e:
+            print(e)
+    return True
 
 def _get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
