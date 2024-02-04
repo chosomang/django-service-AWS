@@ -8,7 +8,7 @@ host = settings.NEO4J['HOST']
 port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
-graph = Graph(f"bolt://{host}:7688", auth=(username, password))
+graph = Graph(f"bolt://{host}:7688", auth=(username, 'dbdnjs!23'))
 
 def get_lists_version(compliance_type, data=None):
     where_version = ''
@@ -169,6 +169,7 @@ def modify_lists_comply(compliance_type, data):
         
 
 def get_lists_details(compliance_type, data):
+    print(data)
     results  = graph.run(f"""
     OPTIONAL MATCH (l:Law)-[:VERSION]->(v:Version)-[*]->(a:Article)<-[:MAPPED]->(i:Certification{{no:'{data['no']}'}})<-[*]-
         (i:Compliance:Version{{name:'{compliance_type}', date:date('{data['version']}')}})
