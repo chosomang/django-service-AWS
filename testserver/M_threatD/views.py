@@ -75,7 +75,7 @@ def user_details(request):
 import json
 def neo4j_graph(request):
     with Detection(request) as __detection:
-        if isinstance(request, dict) :
+        if isinstance(request, dict):
             data = __detection.get_data()
             details = __detection.get_log_details()
             context = {'graph': json.dumps(data), 'details': details }
