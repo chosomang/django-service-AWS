@@ -6,6 +6,7 @@ from django.conf import settings
 from py2neo import Graph
 from django.template.loader import render_to_string
 from M_threatD.src.notification.detection import get_node_json, get_relation_json
+from .report import convert_html_to_pdf
 import requests
 import os
 import socket
@@ -46,6 +47,14 @@ def main_test(request):
     
     return render(request, 'testing/test.html', context)
 
+def report_test(request):
+    context = {'page': [1,2]}
+    html_content =  render_to_string('testing/report.html', context=context, request=request)
+    pdf_path = './staticfiles/testing/example.pdf' #폴더 실제 존재해야 됨. 자동으로 폴더는 안 만들어줌
+    convert_html_to_pdf(html_content=html_content, pdf_path=pdf_path)
+    return HttpResponse(html_content)
+
+    
 def test_ajax(request):
     return HttpResponse(str(dict(request.POST)))
 

@@ -8,5 +8,6 @@ urlpatterns = [
     path('trigger/', tests.running_trigger),
     path('trigger/trigger/', tests.trigger, name='trigger'),
     path('cloudformation/', tests.cloudformation, name='cloudformation'),
-    path('createIamPolicy/', tests.create_iam_policy, name='createIamPolicy')
+    path('createIamPolicy/', tests.create_iam_policy, name='createIamPolicy'),
+    path('report/', tests.report_test)
 ]
