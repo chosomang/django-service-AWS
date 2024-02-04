@@ -27,13 +27,12 @@ class Detection(Neo4jHandler):
             context = {'graph': json.dumps(data), 'details': details }
             return context
         except Exception as e:
-            # print(traceback.print_exc())
-            return HttpResponse('다시 시도')
+            print(traceback.print_exc())
+            return HttpResponse({'message': '다시 시도'})
 
     def get_data(self):
         rule_class = self.request['rule_class']
         if rule_class == 'static':
-            print('>>1')
             data = self.get_static()
         else:
             data = self.get_dynamic()
@@ -50,17 +49,22 @@ class Detection(Neo4jHandler):
     # Node cytoscape.js 형태로 만들기
     def get_node_json(self, node:dict, cloud):
         data = {
-            "id" : node.identity,
+            "id" : node.id,
             "name" : "",
             "score" : 400,
             "query" : True,
             "gene" : True
         }
-        property = dict(node.items())
-        property = {key:property[key] for key in sorted(property.keys())}
-        if node.has_label('Log'):
+        def has_label(target, labels:frozenset):
+            if target in labels:
+                return True
+            else:
+                False
+        property_ = dict(node.items())
+        property_ = {key:property_[key] for key in sorted(property_.keys())}
+        if 'Log' in node.labels:
             data['label'] = 'Log'
-            for key, value in property.items():
+            for key, value in property_.items():
                 if key == 'eventName':
                     data['name'] = value
                 else:
@@ -76,23 +80,23 @@ class Detection(Neo4jHandler):
                         value = value.replace('\'', ']',1)
                     data[key] = value
         else:
-            if node.has_label('Flow'):
+            if 'Flow' in node.labels:
                 data['label'] = 'Flow'
-                data['name'] = property['flowName']
-            if node.has_label('Date'):
+                data['name'] = property_['flowName']
+            if 'Date' in node.labels:
                 data['label'] = 'Date'
-            if node.has_label('Account'):
+            if 'Account' in node.labels:
                 data['label'] = 'Account'
                 data['score'] = 700
-            if node.has_label('Between'):
+            if 'Between' in node.labels:
                 data['label'] = 'Between'
-                property = dict(sorted(property.items(), key=operator.itemgetter(1), reverse=True))
-            if node.has_label('Role'):
+                property_ = dict(sorted(property_.items(), key=operator.itemgetter(1), reverse=True))
+            if 'Role' in node.labels:
                 data['label'] = 'Role'
-            if node.has_label('Rule'):
+            if 'Rule' in node.labels:
                 data['label'] = 'Rule'
-                data['name'] = property['ruleName']
-            for key, value in property.items():
+                data['name'] = property_['ruleName']
+            for key, value in property_.items():
                 if key == 'name':
                     value = str(value)
                     value = value.split('_')[0]
@@ -113,16 +117,10 @@ class Detection(Neo4jHandler):
 
     # Default Rule
     def get_static(self):
-        print('>>2')
         detected_rule = self.request['detected_rule']
         eventTime = self.request['eventTime']
-        logType = self.request['logType']
+        logType = self.request['resource']
         id_ = self.request['id']
-        print(detected_rule)
-        print(eventTime)
-        print(logType)
-        print(id_)
-        print(self.user_db)
         
         cypher = f"""
         MATCH (rule:Rule:{logType}{{ruleName: '{detected_rule}'}})<-[detect:DETECTED]-(log:Log:{logType}{{eventTime:'{eventTime}'}})
@@ -168,24 +166,30 @@ class Detection(Neo4jHandler):
             END AS relations
         UNWIND relations as relation
         WITH nodes,
-            [
-                PROPERTIES(relation),
-                ID(relation),
-                ID(STARTNODE(relation)),
-                ID(ENDNODE(relation)),
-                TYPE(relation)
-            ] AS relation
-        RETURN nodes as nodes, COLLECT(relation) as relations
+            COLLECT({{
+                relation_id: ID(relation),
+                start_node_id: ID(STARTNODE(relation)),
+                end_node_id: ID(ENDNODE(relation)),
+                relation_type: TYPE(relation)
+            }}) AS relations
+        RETURN nodes AS nodes, relations As relations
         """
         print(cypher)
         try:
             results = self.run_data(database=self.user_db, query=cypher)
         except Exception:
             print(traceback.print_exc())
+            
+        # type(results) = list
+        # results[0] = dict
+        
+        # response = list
+        # response.append(<dict>)
+        # response = list
         response = []
-        for node in results['nodes']:
+        for node in results[0]['nodes']:
             response.append(self.get_node_json(node, logType))
-        for relation in results['relations']:
+        for relation in results[0]['relations']:
             response.append(self.get_relation_json(relation))
         return response
 
@@ -193,7 +197,7 @@ class Detection(Neo4jHandler):
     def get_dynamic(self):
         detected_rule = self.request['detected_rule']
         eventTime = self.request['eventTime']
-        logType = self.request['logType']
+        logType = self.request['resource']
         id_ = self.request['id']
         cypher = f"""
         MATCH (rule:Rule:{logType}{{ruleName:'{detected_rule}'}})<-[detected:FLOW_DETECTED]-(log:Log:{logType}{{eventTime:'{eventTime}'}})-[check_rel:CHECK]->(check:Flow)
@@ -457,13 +461,12 @@ class Detection(Neo4jHandler):
         WITH nodes + value.value.nodes as nodes, relations + value.value.relations as relations
         UNWIND relations as relation
         WITH nodes,
-            COLLECT([
-                '',
-                ID(relation),
-                ID(STARTNODE(relation)),
-                ID(ENDNODE(relation)),
-                TYPE(relation)
-            ]) AS relations
+            COLLECT({{
+                relation_id: ID(relation),
+                start_node_id: ID(STARTNODE(relation)),
+                end_node_id: ID(ENDNODE(relation)),
+                relation_type: TYPE(relation)
+            }}) AS relations
         RETURN nodes, relations
         """
         results = self.run_records(database=self.user_db, query=cypher)
@@ -479,7 +482,7 @@ class Detection(Neo4jHandler):
     def get_static_details(self):
         detected_rule = self.request['detected_rule']
         eventTime = self.request['eventTime']
-        logType = self.request['logType']
+        logType = self.request['resource']
         id_ = self.request['id']
         cypher = f"""
         MATCH p=(rule:Rule:{logType}{{ruleName:'{detected_rule}'}})<-[detected:DETECTED|FLOW_DETECTED]-(log:Log:{logType} {{eventTime:'{eventTime}'}})
@@ -532,7 +535,7 @@ class Detection(Neo4jHandler):
     def get_dynamic_details(self):
         detected_rule = self.request['detected_rule']
         eventTime = self.request['eventTime']
-        logType = self.request['logType']
+        logType = self.request['resource']
         id_ = self.request['id']
         cypher = f"""
         MATCH p=(rule:Rule:{logType}{{ruleName:'{detected_rule}'}})<-[detected:DETECTED|FLOW_DETECTED]-(log:Log:{logType} {{eventTime:'{eventTime}'}})
@@ -681,12 +684,12 @@ class Detection(Neo4jHandler):
     # Relationship cytoscape.js 형태로 만들기
     def get_relation_json(self, relation):
         data = {
-            "source" : relation[2],
-            "target" : relation[3],
+            "source" : relation['start_node_id'],
+            "target" : relation['end_node_id'],
             "weight" : 1,
             "group" : "coexp",
-            "id" : "e"+str(relation[1]),
-            "name": relation[4]
+            "id" : "e"+str(relation['relation_id']),
+            "name": relation['relation_type']
         }
         response = {
             "data" : data,

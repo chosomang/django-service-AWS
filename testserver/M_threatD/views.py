@@ -21,6 +21,9 @@ def notification_view(request, threat):
         with Notification(request=request) as __notification:
             __notification.alert_off()
         with Detection(request=request) as __detection:
+            res = __detection.neo4j_graph()
+            print(f"type: {type(res)}")
+            print(res)
             context.update(__detection.neo4j_graph())
         return render(request, f"M_threatD/notifications/{threat}.html", context)
     else:
@@ -80,6 +83,6 @@ def neo4j_graph(request):
         elif request.method == 'POST':
             data = __detection.get_data()
             details = __detection.get_log_details()
-            context.update({'graph': json.dumps(data), 'details': details})
+            context = {'graph': json.dumps(data), 'details': details}
             return render(request, 'graphdb/graph.html', context)
         return HttpResponse('다시 시도')

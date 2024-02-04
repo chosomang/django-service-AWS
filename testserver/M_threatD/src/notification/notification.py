@@ -29,7 +29,7 @@ class Notification(Neo4jHandler):
         WHERE
             d.alert = 1 AND d.alert IS NOT NULL
         RETURN
-            HEAD([label IN labels(r) WHERE label <> 'Rule']) AS logType,
+            HEAD([label IN labels(r) WHERE label <> 'Rule']) AS resource,
             l.eventTime as eventTime,
             l.eventTime AS eventTime_format,
             r.ruleComment as detectedAction,
@@ -53,12 +53,12 @@ class Notification(Neo4jHandler):
         '''
         results = self.run_data(database=self.user_db, query=cypher)
         data = self.check_alert_logs()
-        filter = ['logType', 'detected_rule', 'eventTime', 'rule_name', 'id', 'rule_class']
+        filter = ['resource', 'detected_rule', 'eventTime', 'rule_name', 'id', 'rule_class']
         for _ in results:
             form = {}
             result = dict(_)
             for key in filter:
-                if key != 'logType' and key != 'rule_name':
+                if key != 'resource' and key != 'rule_name':
                     value = result.pop(key)
                 else:
                     value = result[key]
@@ -74,7 +74,7 @@ class Notification(Neo4jHandler):
         WHERE
             d.alert <> 1
         RETURN
-        HEAD([label IN labels(r) WHERE label <> 'Rule']) AS logType,
+        HEAD([label IN labels(r) WHERE label <> 'Rule']) AS resource,
             l.eventTime as eventTime,
             l.eventTime AS eventTime_format,
             r.ruleComment as detectedAction,
@@ -99,12 +99,12 @@ class Notification(Neo4jHandler):
         """
         results = self.run_data(database=self.user_db, query=cypher)
         data = []
-        filter = ['logType', 'detected_rule', 'eventTime', 'rule_name', 'alert', 'id', 'rule_class']
+        filter = ['resource', 'detected_rule', 'eventTime', 'rule_name', 'alert', 'id', 'rule_class']
         for result in results:
             detail = dict(result)
             form = {}
             for key in filter:
-                if key != 'logType' and key != 'rule_name' and key != 'alert':
+                if key != 'resource' and key != 'rule_name' and key != 'alert':
                     value = detail.pop(key)
                 else:
                     value = detail[key]
@@ -176,7 +176,7 @@ class Notification(Neo4jHandler):
     def alert_off(self):
         if 'alert' in self.request:
             detected_rule = self.request['detected_rule']
-            logType = self.request['logType']
+            logType = self.request['resource']
             eventTime = self.request['eventTime']
             id_ = self.request['id']
             cypher = f"""

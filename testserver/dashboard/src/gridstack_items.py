@@ -340,43 +340,43 @@ return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as 
     # 최근 탐지 위협 (neo4j graph 연동)
     def recentDetection(self):
         cypher = '''
-MATCH (r:Rule)<-[d:DETECTED|FLOW_DETECTED]-(l:Log)
-WITH
-    d.alert as alert,
-    id(d) AS No,
-    CASE
-        WHEN r.level = 1 THEN 'success' 
-        WHEN r.level = 2 THEN 'warning'
-        WHEN r.level = 3 THEN 'caution'
-        ELSE 'danger'
-    END AS level,
-    head([label IN labels(r) WHERE label <> 'Rule']) AS logType,
-    CASE
-        WHEN l.sourceIPAddress IS NOT NULL THEN head([label IN labels(r) WHERE label <> 'Rule'])+'/'+l.sourceIPAddress
-        WHEN l.sourceIp IS NOT NULL THEN head([label IN labels(r) WHERE label <> 'Rule'])+'/'+l.sourceIp
-        ELSE head([label IN labels(r) WHERE label <> 'Rule'])+'/-'
-    END AS system,
-    r.ruleName AS detected_rule,
-    r.ruleName+'#'+id(d) AS rule_name,
-    l.eventName AS action,
-    l.eventTime AS eventTime,
-    l.eventTime AS etime,
-    r.ruleClass AS rule_class,
-    ID(d) as id
-ORDER BY eventTime DESC LIMIT 10
-RETURN
-    COLLECT(alert) AS alert,
-    COLLECT(No) AS No,
-    COLLECT(level) AS level,
-    COLLECT(logType) AS logType,
-    COLLECT(system) AS system,
-    COLLECT(detected_rule) AS detected_rule,
-    COLLECT(rule_name) AS rule_name,
-    COLLECT(action) AS action,
-    COLLECT(eventTime) AS eventTime,
-    COLLECT(etime) AS etime,
-    COLLECT(rule_class) AS rule_class,
-    COLLECT(id) AS id
+        MATCH (r:Rule)<-[d:DETECTED|FLOW_DETECTED]-(l:Log)
+        WITH
+            d.alert as alert,
+            id(d) AS No,
+            CASE
+                WHEN r.level = 1 THEN 'success' 
+                WHEN r.level = 2 THEN 'warning'
+                WHEN r.level = 3 THEN 'caution'
+                ELSE 'danger'
+            END AS level,
+            head([label IN labels(r) WHERE label <> 'Rule']) AS resource,
+            CASE
+                WHEN l.sourceIPAddress IS NOT NULL THEN head([label IN labels(r) WHERE label <> 'Rule'])+'/'+l.sourceIPAddress
+                WHEN l.sourceIp IS NOT NULL THEN head([label IN labels(r) WHERE label <> 'Rule'])+'/'+l.sourceIp
+                ELSE head([label IN labels(r) WHERE label <> 'Rule'])+'/-'
+            END AS system,
+            r.ruleName AS detected_rule,
+            r.ruleName+'#'+id(d) AS rule_name,
+            l.eventName AS action,
+            l.eventTime AS eventTime,
+            l.eventTime AS etime,
+            r.ruleClass AS rule_class,
+            ID(d) as id
+        ORDER BY eventTime DESC LIMIT 10
+        RETURN
+            COLLECT(alert) AS alert,
+            COLLECT(No) AS No,
+            COLLECT(level) AS level,
+            COLLECT(resource) AS resource,
+            COLLECT(system) AS system,
+            COLLECT(detected_rule) AS detected_rule,
+            COLLECT(rule_name) AS rule_name,
+            COLLECT(action) AS action,
+            COLLECT(eventTime) AS eventTime,
+            COLLECT(etime) AS etime,
+            COLLECT(rule_class) AS rule_class,
+            COLLECT(id) AS id
         '''
         results = self.run(self.user_db, cypher)
         if not results['id']:
@@ -388,7 +388,7 @@ RETURN
                 'action': None,
                 'etime': None,
                 'form': {
-                    'logType': None,
+                    'resource': None,
                     'detected_rule': None,
                     'rule_name': None,
                     'eventTime': None,
@@ -408,7 +408,7 @@ RETURN
                 'action': results['action'][index],
                 'etime': results['etime'][index],
                 'form': {
-                    'logType': results['logType'][index],
+                    'resource': results['resource'][index],
                     'detected_rule': results['detected_rule'][index],
                     'rule_name': results['rule_name'][index],
                     'eventTime': results['eventTime'][index],
