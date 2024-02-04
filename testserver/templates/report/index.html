@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load custom_filter %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static '/M_compliance/css/compliance_lists/searchcard.css' %}">
+{% endblock head %}
+{% block content %}
+
+<h1> [{{ report_type }}] Report Maker</h1>
+
+{% endblock %}

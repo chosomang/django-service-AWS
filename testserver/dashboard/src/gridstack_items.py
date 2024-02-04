@@ -26,6 +26,7 @@ color = {
     "Aws" : "#FF9900",
     "NCP" : "#1EC800",
     "NHN" : "#4E73DF",
+    "Teiren": "#6FADCF",
     "OFFICEKEEPER" : "#0059A9",
     "WINDOWS_EVENT_LOG" : "#357EC7"
 }
@@ -153,12 +154,11 @@ class DashboardHandler(Neo4jHandler):
         """
         results = self.run(self.user_db, cypher)
         # equip_color = [color.get(result['equip']) for result in results]
-        print(results)
         if results['equip'] and results['count']:
             equip_threat = {
                 'name': results['equip'],
                 'count': results['count'],
-                'color': color.get(results['equip'])
+                'color': color.get(results['equip'][0])
             }
         else:
             equip_threat = {

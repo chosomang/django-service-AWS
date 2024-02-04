@@ -41,9 +41,11 @@ def compliance_lists_modify(request, compliance_type):
         data.update({'compliance_type': compliance_type})
         return render(request, f"compliance/compliance_lists/dataTable.html", data)
 
+
+
 def download_compliance_report(reqeust, compliance_type):
     file_name = "[Teiren]ISMS-P Compliance Report.docx"
-    file_path = f"C:/Users/choso/Desktop/teiren/django-service-AWS/django/media/result/{file_name}"
+    file_path = f"/home/yoonan/teiren/media/docx/{file_name}"
     return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=file_name)
 
 @login_required

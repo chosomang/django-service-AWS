@@ -23,13 +23,13 @@ class Add(Neo4jHandler):
     def __init__(self, request) -> None:
         super().__init__()
         self.request = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
-        self.user_db = request.sessoin.get('db_name')
+        self.user_db = request.session.get('db_name')
 
     def rule_merge_test(self, cypher, query_cypher, rule, logType, ruleClass):
         try:
             self.run(database=self.user_db, query=cypher)
         except Exception as e:
-            return 'Failed to add rule. Please review the rule again.' + e
+            return 'Failed to add rule. Please review the rule again.'
         rule_cypher = f"""
         MATCH (rule:Rule:{logType}
             {{
@@ -40,12 +40,12 @@ class Add(Neo4jHandler):
             }}
         )
         SET rule.query = "{query_cypher}"
-        RETURN COUNT(rule)
+        RETURN COUNT(rule) AS count
         """
         result = self.run(database=self.user_db, query=rule_cypher)
         try:
-            if result == 1:
-                return 'Added Rule Successfully'
+            if result['count'] == 1:
+                return 'Success to add rule'
         except Exception as e:
             return 'Failed to add rule'
     
@@ -144,7 +144,11 @@ class Add(Neo4jHandler):
             return "Please Enter Both Detection Count & Time Range \n(Or Leave Them Both Empty)"
         if 'check' in request:
             request.pop('check')
-            return 1
+            self.static_cypher(rule, logType)
+            return {
+                'status': 'success',
+                'message': 'modifed success'
+            }
         result = self.static_cypher(rule, logType)
         return result
 
@@ -317,18 +321,18 @@ class Add(Neo4jHandler):
             result['wheres'] = json.loads(self.request['wheres'])
         return result
 
-    def add_dynamic_rule(self):
-        logType = self.request['log_type'].split(' ')[0].capitalize()
-        count = int(self.request['count'])
+    def add_dynamic_rule(self, request):
+        logType = request['log_type'].split(' ')[0].capitalize()
+        count = int(request['count'])
         rule = {}
         flows = {}
         wheres = {}
-        for key, value in self.request.items():
+        for key, value in request.items():
             if 'ruleName' in key:
                 if not value:
                     return "Please Enter Rule Name"
                 else:
-                    if 'og_rule_name' not in self.request:
+                    if 'og_rule_name' not in request:
                         cypher = f" MATCH (r:Rule:{logType} {{ruleName:'{value}'}}) RETURN count(r) AS count"
                         result = self.run(database=self.user_db, query=cypher)
                         if result['count'] > 0 :
@@ -367,22 +371,27 @@ class Add(Neo4jHandler):
                         flows[f'{key[-3]}'][key.split('_')[1]].append(value)
                         continue
                     if 'name_' in key:
-                        if 'og_rule_name' not in self.request:
+                        if 'og_rule_name' not in request:
                             cypher = f"MATCH (flow:Flow:{logType} {{flowName:'{value}'}}) RETURN COUNT(flow) AS count"
                             result = self.run(database=self.user_db, query=cypher)
                             if result['count'] > 0:
                                 return f"Flow Detection {key[-3]}: Already Exsiting Flow Detection Name"
                     flows[f'{key[-3]}'][key.split('_')[1]] = value
-        if 'check' in self.request:
-            self.request.pop('check')
-            return 1
+        if 'check' in request:
+            request.pop('check')
+            cypher, query_cypher = self.dynamic_cypher(flows, wheres, rule, count, logType)
+            self.rule_merge_test(cypher, query_cypher, rule, logType, 'dynamic')
+            return {
+                'status': 'success',
+                'message': 'modifed success'
+            }
         cypher, query_cypher = self.dynamic_cypher(flows, wheres, rule, count, logType)
         if cypher.startswith('Dynamic Detection'):
             return cypher
         result = self.rule_merge_test(cypher, query_cypher, rule, logType, 'dynamic')
         return result
 
-    def dynamic_cypher(flows, wheres, rule, count, logType):
+    def dynamic_cypher(self, flows, wheres, rule, count, logType):
         ## Merge & Match Cypher
         cypher = ''
         where_cypher = 'WHERE '

@@ -24,6 +24,7 @@ password = settings.NEO4J['PASSWORD']
 class Edit(Neo4jHandler):
     def __init__(self, request) -> None:
         super().__init__()
+        self.request_ = request
         self.request = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
         self.user_db = request.session.get('db_name')
         
@@ -123,9 +124,9 @@ class Edit(Neo4jHandler):
     # Edit Rule Action
     def edit_rule(self):
         if self.request['ruleClass'] == 'static':
-            return self.edit_static_rule(self.request)
+            return self.edit_static_rule()
         else:
-            return self.edit_dynamic_rule(self.request)
+            return self.edit_dynamic_rule()
 
     def edit_static_rule(self):
         self.request['count'] = 1
@@ -138,19 +139,21 @@ class Edit(Neo4jHandler):
         RETURN COUNT(rule) AS count
         """
         result = self.run(database=self.user_db, query=cypher)
+        
         if ruleName != og_ruleName and result['count'] > 0:
             return f"'{ruleName}' Already Existing Rule Name"
         
         self.request['check'] = 1
-        with Add(self.request) as __add:
-            add_check = __add.add_static_rule(self.request)
-            if isinstance(add_check, str):
-                return add_check
-        with Delete(self.request) as __delete:
-            if isinstance(delete_check:=__delete.delete_static_rule(self.request), str):
-                return delete_check
+        with Add(self.request_) as __add:
+            response = __add.add_static_rule(request=self.request)
+            if response['status'] != 'success':
+                return 'Fail to Add rule'
+        with Delete(self.request_) as __delete:
+            response = __delete.delete_static_rule(request=self.request)
+            if response['status'] == 'success':
+                return response['message']
             
-        return add_check
+        return 'Unknown Error'
 
     def edit_dynamic_rule(self):
         ruleName = self.request['ruleName']
@@ -165,16 +168,19 @@ class Edit(Neo4jHandler):
         
         if ruleName != og_ruleName and result['count'] > 0:
             return f"'{ruleName}' Already Existing Rule Name"
-        self.request['check'] = 1
         
-        with Add(self.request) as __add:
-            if isinstance(add_check:=__add.add_dynamic_rule(self.request), str):
-                return add_check
-        with Delete(self.request) as __delete:
-            if isinstance(delete_check:=__delete.delete_dynamic_rule(self.request), str):
-                return delete_check
+        self.request['check'] = 1
+        with Add(self.request_) as __add:
+            response = __add.add_dynamic_rule(request=self.request)
+            if response['status'] != 'success':
+                return 'Fail to Dynamic rule'
+        
+        with Delete(self.request_) as __delete:
+            response = __delete.delete_dynamic_rule(request=self.request)
+            if response['status'] == 'success':
+                return response['message']
             
-        return add_check
+        return 'Unknown Error'
     
 
 def parse_dict(s):

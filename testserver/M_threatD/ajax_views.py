@@ -12,7 +12,7 @@ from django.shortcuts import render, redirect, HttpResponse
 def rule_details(request, resourceType, logType, ruleType):
     if request.method == 'POST':
         with Default(request) as __default:
-            context = {ruleType: __default.get_rule_details(dict(request.POST.items()), ruleType)}
+            context = {ruleType: __default.get_rule_details(ruleType=ruleType)}
         return render(request, f"M_threatD/rules/{ruleType}/details.html", context)
 
 # #############################################
@@ -25,7 +25,7 @@ def rule_edit_modal(request, resourceType, logType):
         with Edit(request) as __edit:
             context.update(__edit.get_edit_rule_page())
         with Add(request) as __add:
-            context.update({'log_properties':__add.get_log_properties(context)})
+            context.update({'log_properties':__add.get_log_properties()})
         return render(request, "M_threatD/rules/custom/edit.html", context)
 
 ## Rule Edit Action
@@ -33,7 +33,6 @@ def edit_rule(request):
     if request.method == 'POST':
         with Edit(request) as __edit:
             context = __edit.edit_rule()
-            print(context)
         return HttpResponse(context)
 
 # #############################################
@@ -43,7 +42,7 @@ def edit_rule(request):
 def delete_rule(request):
     if request.method == 'POST':
         with Delete(request) as __delete:
-            context = __delete.delete_rule(request)
+            context = __delete.delete_rule()
         return HttpResponse(context)
 
 # #############################################
@@ -60,15 +59,15 @@ def add_rule_section(request, section):
     if request.method == 'POST':
         context = dict(request.POST.items())
         with Add(request) as __add:
-            context.update({'log_properties': __add.get_log_properties(context)})
+            context.update({'log_properties': __add.get_log_properties()})
         if 'flow' in section:
             if section == 'flow_check':
-                flow_check = __add.get_flow_check(context)
+                flow_check = __add.get_flow_check()
                 if isinstance(flow_check, str):
                     return HttpResponse(flow_check)
                 context.update(flow_check)
             else:
-                context.update(__add.get_flow_slot(context))
+                context.update(__add.get_flow_slot())
             return render(request, "M_threatD/rules/custom/add/flow_slot.html", context)
         else:
             if context:
@@ -80,7 +79,8 @@ def add_rule_section(request, section):
 def add_rule(request):
     if request.method == 'POST':
         with Add(request) as __add:
-            context = __add.add_rule(dict(request.POST.items()))
+            context = __add.add_rule()
+            print(context)
         return HttpResponse(context)
 
 # #############################################

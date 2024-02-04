@@ -2,6 +2,7 @@
 from .forms import CustomUserCreationForm
 from .src.mail import send_mail
 from .src.initial import InitDatabase
+from .src.authentication import login_success
 from _auth.src import authentication
 from common.neo4j.handler import Neo4jHandler, Cypher
 
@@ -49,11 +50,9 @@ def login_(request):
             request.session['uuid'] = str(user.uuid)
             request.session['db_name'] = str(user.db_name)
             if next_url is not None:
-                if '?' in next_url:
-                    next_url += f'&uuid={user.uuid}'
-                else:
-                    next_url += f'?uuid={user.uuid}'
-                return redirect(next_url)
+                # graph db에 저장
+                login_success(userName=username, srcip='None', db_name=user.db_name)
+                return redirect(f'/dashboard/')
         else:
             # 로그인 실패한 경우
             messages.warning(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
@@ -142,6 +141,12 @@ def init_database(db_name):
             if not __init.isms_p_mapping():
                 return False
             if not __init.gdpr():
+                return False
+            if not __init.super_node():
+                return False
+            if not __init.sub_node():
+                return False
+            if not __init.detect_node():
                 return False
         except Exception as e:
             print(e)

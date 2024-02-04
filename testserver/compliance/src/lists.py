@@ -227,7 +227,6 @@ class ComplianceListHandler(ComplianceListBase):
         else:
             product = 'AWS'
             
-              
         if compliance_type == 'Isms_p':
             cypher = f"""
             MATCH (i:Compliance:Version{{name:'{compliance_type}'}})-[:CHAPTER]->(c:Chapter:Compliance:Certification)-[:SECTION]->
@@ -429,7 +428,7 @@ class ComplianceListHandler(ComplianceListBase):
         """
         policy_data_list = self.run(database=self.user_db, query=cypher)
 
-        print(policy_data_list['policy_data_list'])
+        print(data_list['data_list'])
         return {'law_list': law_list,
                 'article_list': article_list,
                 'evidence_list' : evidence_list,

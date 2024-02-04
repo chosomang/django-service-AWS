@@ -180,3 +180,64 @@ class InitDatabase(Neo4jHandler):
         except Exception as e:
             print(f'Error: Can not overwrite compliance -> {e}')
             return False
+        
+    def super_node(self) -> bool:
+        init_node_list = ['Iam', 'Root', 'Role', 'Etc', 'Ec2', 'Lambda', 'AwsAccount', 'Unknown']
+        for init_node in init_node_list:
+            cypher = f"""
+            CREATE (node:Super:{init_node})
+            SET node.name = '{init_node}'
+            RETURN 1
+            """
+            try:
+                self.run(database=self.user_db, query=cypher)
+            except Exception as e:
+                print(f'Error: Can not overwrite compliance -> {e}')
+                return False
+        return True
+
+    def sub_node(self) -> bool:
+        cloudwatch_node_list = [['Elb', 'Sub']]
+        for label_list in cloudwatch_node_list:
+            cypher = f"""
+            CREATE (node:{':'.join(label_list)})
+            RETURN node
+            """
+            try:
+                self.run(database=self.user_db, query=cypher)
+            except Exception as e:
+                print(f'Error: Can not overwrite compliance -> {e}')
+                return False
+        return True
+    
+    def detect_node(self) -> bool:
+        from .query.rule_detect_query import rule_detect_query
+        from .query.flow_rule_detect_query import flow_rule_detect_query
+        from .query.test_detect_query import test_rule_detect_query
+        from .query.init_merge_detect_node import init_merge_detect_query
+
+        for cypher in rule_detect_query:
+            try:
+                self.run(database=self.user_db, query=cypher)
+            except Exception as e:
+                print(e)
+                return False
+        for cypher in flow_rule_detect_query:
+            try:
+                self.run(database=self.user_db, query=cypher)
+            except Exception as e:
+                print(e)
+                return False
+        for cypher in test_rule_detect_query:
+            try:
+                self.run(database=self.user_db, query=cypher)
+            except Exception as e:
+                print(e)
+                return False
+        for cypher in init_merge_detect_query:
+            try:
+                self.run(database=self.user_db, query=cypher)
+            except Exception as e:
+                print(e)
+                return False
+        return True

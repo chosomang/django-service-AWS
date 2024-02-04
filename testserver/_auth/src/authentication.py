@@ -25,11 +25,8 @@ class AuthTrigger(Neo4jHandler):
     def __init__(self) -> None:
         super().__init__()
 
-def login_success(userName, srcip):
-    user = get_user_model().objects.get(username=userName)
-    db_name = user.db_name
+def login_success(userName, srcip, db_name):
     dstip = get_server_ip()
-    
     query = f"""
     MATCH (a:Account:Teiren{{
         userName: '{userName}'
@@ -122,7 +119,6 @@ def login_fail(userName, srcip):
 @receiver(user_logged_out)
 def logout_success(sender, request, **kwargs):
     db_name = request.session.get('db_name')
-    print(f"db name is: {db_name}")
     with GraphDatabase.driver(URI, auth=(USER, PW)) as driver:
         with driver.session(database=db_name) as session:
             srcip = get_client_ip(request)

@@ -54,8 +54,9 @@ class Notification(Neo4jHandler):
         results = self.run_data(database=self.user_db, query=cypher)
         data = self.check_alert_logs()
         filter = ['logType', 'detected_rule', 'eventTime', 'rule_name', 'id', 'rule_class']
-        for result in results:
+        for _ in results:
             form = {}
+            result = dict(_)
             for key in filter:
                 if key != 'logType' and key != 'rule_name':
                     value = result.pop(key)
@@ -100,7 +101,7 @@ class Notification(Neo4jHandler):
         data = []
         filter = ['logType', 'detected_rule', 'eventTime', 'rule_name', 'alert', 'id', 'rule_class']
         for result in results:
-            detail = dict(result.items())
+            detail = dict(result)
             form = {}
             for key in filter:
                 if key != 'logType' and key != 'rule_name' and key != 'alert':

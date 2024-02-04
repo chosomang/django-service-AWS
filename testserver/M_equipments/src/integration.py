@@ -1,39 +1,36 @@
 from django.http import JsonResponse
-from py2neo import Graph
 from django.conf import settings
 import json
 from .resource.aws import aws_check, aws_insert
 from common.dockerHandler.handler import DockerHandler
+from common.neo4j.handler import Neo4jHandler
 
 # AWS
 host = settings.NEO4J['HOST']
 port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
-graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
 
 ## Integration List
-def list_integration():
-    results = graph.run(f"""
-    MATCH (i:Integration)
-    RETURN
-        toLower(i.integrationType) AS integrationType,
-        i.accessKey AS accessKey,
-        i.regionName AS regionName,
-        i.logType AS logType,
-        i.groupName AS groupName,
-        i.isRunning AS isRunning,
-        i.container_id as container_id,
-        id(i) as no
-    """)
-    response = []
-    for result in results:
-        data = dict(result.items())
-        data['error'] = check_process_func(data['no'], data['container_id'])        
-        response.append(data)
-    return {'integrations': response}
+def list_integration(db_name):
+    with Neo4jHandler() as neohandler:
+        cypher = f"""
+        MATCH (i:Integration)
+        RETURN
+            toLower(i.integrationType) AS integrationType,
+            i.accessKey AS accessKey,
+            i.regionName AS regionName,
+            i.logType AS logType,
+            i.groupName AS groupName,
+            i.isRunning AS isRunning,
+            i.container_id as container_id,
+            id(i) as no
+        """
+        results = neohandler.run_data(database=db_name, query=cypher)
+    # results['error'] = check_process_func(results['no'], results['container_id'])        
+    return {'integrations': results}
 
-def check_process_func(no, container_id):
+def check_process_func(no, container_id): # << 이건 뭐하는 함수임...?
     return True
 
 def integration_check(request, equipment, logType):
@@ -46,89 +43,176 @@ def integration_insert(request, equipment):
 
 ## Integration delete
 def delete_integration(request):
-    if request['secret_key'] == '':
+    secret_key = request.POST.get('secret_key')
+    integration_type = request.POST.get('integration_type').title()
+    access_key = request.POST.get('access_key')
+    secret_key = request.POST.get('secret_key')
+    region_name = request.POST.get('region_name')
+    group_name = request.POST.get('group_name')
+    log_type = request.POST.get('log_type')
+    db_name = request.session.get('db_name')
+    
+    if not secret_key:
         return {'error': 'Please Enter Secret Key'}
-    # return {'result': str(request)}
-    cypher = f"""
-    MATCH (i:Integration {{
-            integrationType:'{request['integration_type'].title()}',
-            accessKey:'{request['access_key']}',
-            secretKey:'{request['secret_key']}',
-            regionName: '{request['region_name']}',
-            groupName: '{request['group_name']}',
-            logType: '{request['log_type']}'
-        }})
-    """
-    try:
-        if 1 == graph.evaluate(f"{cypher} RETURN COUNT(i)"):
-            graph.evaluate(f"{cypher} DETACH DELETE i RETURN COUNT(i)")
-            return {'result': 'Deleted Registered Information'}
-        else:
-            raise Exception
-    except Exception:
-        return {'error': 'Failed to Delete Information. Please Check The Information'}
 
-def container_trigger_on(integration_node, aws_config):
-    is_running = integration_node["isRunning"]
-    access_key = aws_config.get('access_key')
-    secret_key = aws_config.get('secret_key')
-    region_name = aws_config.get('region_name')
-    group_name = aws_config.get('group_name')
-    image_name = aws_config.get('image_name')
-    
+    with Neo4jHandler() as neohandler:
+        try:
+            cypher = f"""
+            MATCH (i:Integration {{
+                    integrationType:'{integration_type}',
+                    accessKey:'{access_key}',
+                    secretKey:'{secret_key}',
+                    regionName: '{region_name}',
+                    groupName: '{group_name}',
+                    logType: '{log_type}'
+                }})
+            RETURN COUNT(i) AS count
+            """
+            result = neohandler.run(database=db_name, query=cypher)
+            if result['count'] == 1:
+                cypher = f"""
+                MATCH (i:Integration {{
+                        integrationType:'{integration_type}',
+                        accessKey:'{access_key}',
+                        secretKey:'{secret_key}',
+                        regionName: '{region_name}',
+                        groupName: '{group_name}',
+                        logType: '{log_type}'
+                    }})
+                DETACH DELETE i RETURN COUNT(i)
+                """
+                neohandler.run(database=db_name, query=cypher)
+                return {'result': 'Deleted Registered Information'}
+            else:
+                raise Exception
+        except Exception:
+            return {'error': 'Failed to Delete Information. Please Check The Information'}
+
+def container_trigger_on(neohandler, config, result):
+    is_running = result["isRunning"]
+    # 이미 실행중인 경우
     if is_running:
-        result = {
+        return {
             'status': 'running',
-            'containerId': integration_node['container_id']
+            'containerId': result['container_id']
             }
-        
-        return result
-    else:
-        # docker hub에 main 브랜치의 이미지를 빌드시마다 항상 가져오기.
-        # 현재는 고정값으로 넣어둠
-        client = DockerHandler()
-        logcollector_image_name = f"magarets/teiren-image:{image_name.split('-')[0]}_v_1.0"
-        
-        environment = {
-            'AWS_ACCESS_KEY_ID': access_key,
-            'AWS_SECRET_ACCESS_KEY': secret_key,
-            'AWS_DEFAULT_REGION': region_name,
-            'LOG_GROUP_NAME': group_name
-        }
-        container = client.create_container(image_name=logcollector_image_name, 
-                                            environment=environment)
-        # Integration 노드의 isRunning 속성을 1로 업데이트
-        integration_node['isRunning'] = 1
-        integration_node['container_id'] = container.id
-        graph.push(integration_node)
-        
-        result = { 
-            'status': 'create', 
-            'containerId': container.id 
-            }
-        
-        return result
+    access_key = config['access_key']
+    secret_key = config['secret_key']
+    region_name = config['region_name']
+    group_name = config['group_name']
+    image_name = config['image_name']
+    db_name = config['db_name']
+
+    # docker hub에 main 브랜치의 이미지를 빌드시마다 항상 가져오기.
+    # 현재는 고정값으로 넣어둠
+    client = DockerHandler()
+    logcollector_image_name = f"magarets/teiren-image:{image_name}_v_1.0"
+    environment = {
+        'AWS_ACCESS_KEY_ID': access_key,
+        'AWS_SECRET_ACCESS_KEY': secret_key,
+        'AWS_DEFAULT_REGION': region_name,
+        'LOG_GROUP_NAME': group_name,
+        'DATABASE_NAME': db_name
+    }
+    container = client.create_container(image_name=logcollector_image_name, 
+                                        environment=environment)
     
-def container_trigger_off(integration_node, aws_config):
-    is_running = integration_node['isRunning']
-    container_id = integration_node['container_id']
+    # 만약, cloudtrail 로그 수집기 요청이 들어오면, 탐지로직도 같이 실행
+    if image_name == 'cloudtrail':
+        detect_image_name = "magarets/teiren-image:detect_v_1.0"
+        detect_environment = {
+            'DATABASE_NAME': db_name
+        }
+        detect_container = client.create_container(image_name=detect_image_name,
+                                                environment=detect_environment)
+        
+        cypher = f"""
+        CREATE (i:Process)
+        SET i.name = 'detect'
+        SET i.isRunning = 1
+        SET i.container_id = '{detect_container.id}'
+        RETURN 1
+        """
+        neohandler.run(database=config['db_name'], query=cypher)
+        print('detect start!')
+    
+    cypher = f"""
+    MATCH (i:Integration)
+    WHERE ID(i) = {result['id']}
+    
+    SET i.isRunning = 1
+    SET i.container_id = '{container.id}'
+    RETURN 1
+    """
+    # Integration 노드의 isRunning 속성을 1로 업데이트
+    neohandler.run(database=config['db_name'], query=cypher)
+    
+    if result:
+        return {
+            'status': 'create', 
+            'containerId': container.id
+        }
+    else:
+        return {
+            'status': 'fail', 
+            'message': 'log collector dose not created'
+        }
+    
+    
+def container_trigger_off(neohandler, config, result):
+    is_running = result['isRunning']
+    container_id = result['container_id']
     
     if not is_running:
         result = {
-            'status': 'none',
-            'containerId': integration_node['container_id']
-            }
+            'status': 'fail',
+            'message': f"{config['log_type']} log collector does not exist"
+        }
         
         return result
     else:
         client = DockerHandler()
         res = client.stop_container(container_id)
-        result = {
-            'status': 'delete',
-            'message': res
-        }
         
-        return result
+        cypher = f"""
+        MATCH (i:Integration)
+        WHERE ID(i) = '{result['id']}'
+        
+        SET i.isRunning = 0
+        SET i.container_id = 'None'
+        RETURN 1
+        """
+        result = neohandler.run(database=config['db_name'], query=cypher)
+        
+        # cloudtrail 의 종료요청이라면, 탐지 프로세스도 같이 종료
+        if config['image_name'] == 'cloudtrail':
+            cypher = f"""
+            MATCH (i:Process)
+            WHERE i.name = 'detect'
+            
+            RETURN i.container_id AS id
+            """
+            result = neohandler.run(database=config['db_name'],query=cypher)
+            res = client.stop_container(result['id'])
+            cypher = f"""
+            MATCH (i:Process)
+            WHERE i.name = 'detect'
+            
+            SET i.isRunning = 0
+            SET i.container_id = 'None'
+            """
+            result = neohandler.run(database=config['db_name'],query=cypher)
+            print('detect stop!')
+            
+        if result:
+            return {
+                'status': 'delete',
+                'message': res
+            }
+        else:
+            return {
+                'message': 'log collector delete fail'
+            }
 
 def container_trigger(request):
     """Running trigger for python script
@@ -136,16 +220,22 @@ def container_trigger(request):
     Args:
         request (bool): Return message successfully running or fail
     """
-    secret_key = request.get('secret_key')
+    secret_key = request.POST.get('secret_key')
     if secret_key == '':
         return {'error': 'Please Enter Secret Key'}
     try:
-        access_key = request.get('access_key')
-        region_name = request.get('region_name')
-        log_type = request.get('log_type') # log type (ex: cloudtrail, dns, elb ...)
-        group_name = request.get('group_name')
-        image_name = f'{log_type}-image'
-        if 1 != graph.evaluate(f"""
+        access_key = request.POST.get('access_key')
+        region_name = request.POST.get('region_name')
+        log_type = request.POST.get('log_type') # log type (ex: cloudtrail, dns, elb ...)
+        group_name = request.POST.get('group_name')
+        image_name = f'{log_type}'
+        db_name = request.session.get('db_name')
+        
+        print('=================')
+        print(log_type)
+        print(image_name)
+        print(db_name)
+        cypher = f"""
         MATCH (i:Integration{{
             accessKey: '{access_key}',
             secretKey: '{secret_key}',
@@ -154,152 +244,34 @@ def container_trigger(request):
             imageName: '{image_name}',
             logType: '{log_type}'
         }})
-        RETURN COUNT(i)
-        """):
-            return {'error': 'Wrong Information. Please Check The Information'}     
-        # isRunning을 통해, 현재 log type의 group name을 수집하는 로그 수집기가 동작중인지 확인
-        integration_node = graph.nodes.match("Integration", 
-                                accessKey=access_key, 
-                                secretKey=secret_key, 
-                                regionName=region_name,
-                                logType=log_type,
-                                groupName=group_name
-                                ).first()
-        aws_config = {
-            'access_key': access_key,
-            'secret_key': secret_key,
-            'region_name': region_name,
-            'group_name': group_name,
-            'image_name': image_name
-        }
-        is_collection_on = int(request.get('on_off'))
-        # log collector ON
-        if is_collection_on == 1:
-            result = container_trigger_on(integration_node, aws_config)
+        RETURN COUNT(i) AS count, ID(i) AS id, i.isRunning AS isRunning, i.container_id AS container_id"""
+        with Neo4jHandler() as neohandler:
+            result = neohandler.run(database=db_name, query=cypher)
+            print(f"count: {result['count']}")
+            print(f"id: {result['id']}")
+            print(f"isRunning: {result['isRunning']}")
             
-            return result         
-        # log collector OFF
-        else:
-            result = container_trigger_off(integration_node, aws_config)    
+            if 1 != result['count']:
+                return {'error': 'Wrong Information. Please Check The Information'}  
             
-            return result
+            config = {
+                'access_key': access_key,
+                'secret_key': secret_key,
+                'region_name': region_name,
+                'group_name': group_name,
+                'image_name': image_name,
+                'db_name': request.session.get('db_name')
+            }
+            
+            is_collection_on = int(request.POST.get('on_off'))
+            # log collector ON
+            if is_collection_on == 1:
+                result = container_trigger_on(neohandler=neohandler, config=config, result=result)
+                return result
+            # log collector OFF
+            else:
+                result = container_trigger_off(neohandler=neohandler, config=config, result=result)
+                return result
         
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
-
-# ## NCP Cloud Activity Tracer
-# def integration_NCP(request):
-#     from .api_ncp import CloudActivityTracer
-#     if request.method == 'POST':
-#         data = {}
-#         access_key = request.POST['access_key'].encode('utf-8').decode('iso-8859-1')  # 한글 입력 시 에러 발생 방지
-#         if access_key == '':
-#             data['class'] = 'btn btn-danger'
-#             data['value'] = 'ACCESS KEY를 입력해주세요'
-#             return JsonResponse(data)
-#         secret_key = request.POST['secret_key'].encode('utf-8').decode('iso-8859-1')  # 한글 입력 시 에러 발생 방지
-#         if secret_key == '':
-#             data['class'] = 'btn btn-danger'
-#             data['value'] = 'SECRET KEY를 입력해주세요'
-#             return JsonResponse(data)
-#         folder_name = request.POST['folder_name'].encode('utf-8').decode('iso-8859-1')
-#         bucket_name = request.POST['bucket_name'].encode('utf-8').decode('iso-8859-1')
-#         doc = {
-#             'NCP_API.ACCESS_KEY': access_key,
-#             'NCP_API.SECRET_KEY': secret_key
-#         }
-#         global collection
-#         result = collection.find_one(doc)
-#         if result:
-#             data['class'] = 'btn btn-warning'
-#             data['value'] = '이미 등록된 정보입니다.'
-#         else:
-#             if CloudActivityTracer(access_key, secret_key):
-#                 data['class'] = 'btn btn-success'
-#                 data['value'] = ' ✓ 키 인증 및 Cloudtrail 서비스 사용 확인 완료!'
-#                 data['modal'] = {}
-#                 data['modal']['access_key'] = access_key
-#                 data['modal']['secret_key'] = secret_key
-#                 data['modal']['folder_name'] = folder_name
-#                 data['modal']['bucket_name'] = bucket_name
-#             else:
-#                 data['class'] = 'btn btn-danger'
-#                 data['value'] = '인증 실패 (재시도)'
-#         return JsonResponse(data)
-#     data = {}
-#     data['class'] = 'btn btn-danger'
-#     data['value'] = '인증 실패 (재시도)'
-#     return JsonResponse(data)
-
-
-
-
-# ## Azure Cloud
-# def integration_Azure(request):
-#     if request.method == 'POST':
-#         from azure.core.exceptions import ClientAuthenticationError
-#         from azure.identity import ClientSecretCredential
-#         from azure.mgmt.monitor import MonitorManagementClient
-#         from datetime import datetime, timedelta
-#         data = {}
-#         access_key = request.POST['access_key'].encode('utf-8').decode('iso-8859-1')
-#         if access_key == '':
-#             data['class'] = 'btn btn-danger'
-#             data['value'] = 'Subscription ID 를 입력해주세요'
-#             return JsonResponse(data)
-#         tenant_id = request.POST['tenant_id'].encode('utf-8').decode('iso-8859-1')
-#         if tenant_id == '':
-#             data['class'] = 'btn btn-danger'
-#             data['value'] = 'tenant ID 를 입력해주세요'
-#             return JsonResponse(data)
-#         client_id = request.POST['client_id'].encode('utf-8').decode('iso-8859-1')
-#         if client_id == '':
-#             data['class'] = 'btn btn-danger'
-#             data['value'] = 'Client ID 를 입력해주세요'
-#             return JsonResponse(data)
-#         secret_key = request.POST['secret_key'].encode('utf-8').decode('iso-8859-1')
-#         if secret_key == '':
-#             data['class'] = 'btn btn-danger'
-#             data['value'] = 'Client Secret 을 입력해주세요'
-#             return JsonResponse(data)
-#         doc = {
-#             'Azure_API.ACCESS_KEY': access_key,
-#             'Azure_API.SECRET_KEY': secret_key
-#         }
-#         global collection
-#         result = collection.find_one(doc)
-#         if result:
-#             data['class'] = 'btn btn-warning'
-#             data['value'] = '이미 등록된 정보입니다.'
-#         else:
-#             # Configure the ClientSecretCredential instance.
-#             credentials = ClientSecretCredential(tenant_id, client_id, secret_key)
-#             # Instantiate a MonitorManagementClient instance.
-#             monitor_client = MonitorManagementClient(credentials, access_key)
-#             # Specify the time range for the activity logs.
-#             end_time = datetime.utcnow()
-#             start_time = end_time - timedelta(days=1)
-
-#             # Define the filter for the activity logs.
-#             filter_string = f"eventTimestamp ge {start_time.strftime('%Y-%m-%dT%H:%M:%S')}Z and eventTimestamp le {end_time.strftime('%Y-%m-%dT%H:%M:%S')}Z"
-#             try:
-#                 activity_logs = monitor_client.activity_logs.list(filter=filter_string)
-#                 for log in activity_logs:
-#                     break
-#                 data['class'] = 'btn btn-success'
-#                 data['value'] = ' ✓ 키 인증 및 Azure AD 서비스 사용 확인 완료!'
-#                 data['modal'] = {}
-#                 data['modal']['access_key'] = access_key
-#                 data['modal']['tenant_id'] = tenant_id
-#                 data['modal']['client_id'] = client_id
-#                 data['modal']['secret_key'] = secret_key
-#             except (ClientAuthenticationError, Exception):
-#                 data['class'] = 'btn btn-danger'
-#                 data['value'] = '인증 실패 (재시도)'
-#             finally:
-#                 return JsonResponse(data)
-#         return JsonResponse(data)
-#     data = {}
-#     data['class'] = 'btn btn-danger'
-#     data['value'] = '인증 실패 (재시도)'
-#     return JsonResponse(data)

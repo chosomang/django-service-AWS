@@ -1,5 +1,6 @@
 # local
 import json, operator
+import traceback
 from common.neo4j.handler import Neo4jHandler
 # django
 from django.conf import settings
@@ -19,11 +20,20 @@ class Detection(Neo4jHandler):
         self.request = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
         self.user_db = request.session.get('db_name')
     
-
+    def neo4j_graph(self):
+        try:
+            data = self.get_data()
+            details = self.get_log_details()
+            context = {'graph': json.dumps(data), 'details': details }
+            return context
+        except Exception as e:
+            # print(traceback.print_exc())
+            return HttpResponse('다시 시도')
 
     def get_data(self):
         rule_class = self.request['rule_class']
         if rule_class == 'static':
+            print('>>1')
             data = self.get_static()
         else:
             data = self.get_dynamic()
@@ -101,13 +111,19 @@ class Detection(Neo4jHandler):
         }
         return response
 
-
     # Default Rule
     def get_static(self):
+        print('>>2')
         detected_rule = self.request['detected_rule']
         eventTime = self.request['eventTime']
         logType = self.request['logType']
         id_ = self.request['id']
+        print(detected_rule)
+        print(eventTime)
+        print(logType)
+        print(id_)
+        print(self.user_db)
+        
         cypher = f"""
         MATCH (rule:Rule:{logType}{{ruleName: '{detected_rule}'}})<-[detect:DETECTED]-(log:Log:{logType}{{eventTime:'{eventTime}'}})
         WHERE ID(detect) = {id_}
@@ -159,15 +175,18 @@ class Detection(Neo4jHandler):
                 ID(ENDNODE(relation)),
                 TYPE(relation)
             ] AS relation
-        RETURN nodes AS nodes, COLLECT(relation) as relations
+        RETURN nodes as nodes, COLLECT(relation) as relations
         """
-        results = self.run_records(database=self.user_db, query=cypher)
+        print(cypher)
+        try:
+            results = self.run_data(database=self.user_db, query=cypher)
+        except Exception:
+            print(traceback.print_exc())
         response = []
-        for result in results:
-            for node in result['nodes']:
-                response.append(self.get_node_json(node, logType))
-            for relation in result['relations']:
-                response.append(self.get_relation_json(relation))
+        for node in results['nodes']:
+            response.append(self.get_node_json(node, logType))
+        for relation in results['relations']:
+            response.append(self.get_relation_json(relation))
         return response
 
     # Flow Rule

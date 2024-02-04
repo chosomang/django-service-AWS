@@ -1,17 +1,11 @@
-from py2neo import Graph
 from django.conf import settings
-
-# AWS
-host = settings.NEO4J['HOST']
-port = settings.NEO4J["PORT"]
-username = settings.NEO4J['USERNAME']
-password = settings.NEO4J['PASSWORD']
-graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
-
+from common.neo4j.handler import Neo4jHandler
+from botocore.exceptions import InvalidRegionError
 
 def aws_check(request, logType):
     import boto3
     if request.method == 'POST':
+        # 여기도 Form 처리 해야하는데 ....
         data = {}
         access_key = request.POST['access_key'].encode('utf-8').decode('iso-8859-1')  # 한글 입력 시 에러 발생 방지
         if access_key == '':
@@ -40,18 +34,26 @@ def aws_check(request, logType):
             AND i.secretKey = '{secret_key}'
             AND i.regionName = '{region_name}'
             AND i.groupName = '{group_name}'
-        RETURN count(i)
+        RETURN count(i) AS count
         """
-        if graph.evaluate(cypher) > 0 :
+        with Neo4jHandler() as neohandler:
+            result = neohandler.run(database=request.session.get('db_name'), query=cypher)
+        if result['count'] > 0:
             data['class'] = 'btn btn-warning'
             data['value'] = 'Already Registered Information'
+            return data
         else:
-            client = boto3.client(
-                f"{logType.lower() if logType == 'cloudtrail' else 'logs'}",
-                aws_access_key_id = access_key,
-                aws_secret_access_key = secret_key,
-                region_name=region_name
-            )
+            try:
+                client = boto3.client(
+                    f"{logType.lower() if logType == 'cloudtrail' else 'logs'}",
+                    aws_access_key_id = access_key,
+                    aws_secret_access_key = secret_key,
+                    region_name=region_name
+                )
+            except InvalidRegionError:
+                data['class'] = 'btn btn-danger'
+                data['value'] = 'Invalid Region type (Try Again)'
+                return data
             try:
                 functionName = globals()[f"{group_name if group_name =='cloudtrail' else 'cloudwatch'}_check"]
                 functionName(client, group_name)
@@ -62,16 +64,18 @@ def aws_check(request, logType):
                 data['modal']['secret_key'] = secret_key
                 data['modal']['region_name'] = region_name
                 data['modal']['group_name'] = group_name
+                
+                return data
             except Exception:
                 data['class'] = 'btn btn-danger'
                 data['value'] = 'Failed To Verify (Try Again)'
-            finally:
+                
                 return data
-        return data
-    data = {}
-    data['class'] = 'btn btn-danger'
-    data['value'] = 'Failed To Verify (Try Again)'
-    return data
+    else:
+        return {
+            'class': 'btn btn-danger',
+            'value': 'Failed To Verify (Try Again)'
+        }
 
 def cloudtrail_check(client, group_name):
     client.lookup_events()
@@ -101,14 +105,16 @@ def aws_insert(request):
                 regionName: '{region_name}',
                 logType: '{log_type}',
                 groupName: '{group_name}',
-                imageName: '{log_type.lower()}-image',
+                imageName: '{log_type.lower()}',
                 isRunning: 0,
                 container_id: 'None'
             }})
-        RETURN COUNT(i)
+        RETURN COUNT(i) AS count
         """
         try:
-            if graph.evaluate(cypher) == 1:
+            with Neo4jHandler() as neohandler:
+                result = neohandler.run(database=request.session.get('db_name'), query=cypher)
+            if result['count'] == 1:
                 data = "Successfully Registered"
             else:
                 raise Exception

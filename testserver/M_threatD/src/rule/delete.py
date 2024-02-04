@@ -22,36 +22,39 @@ class Delete(Neo4jHandler):
         self.request = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
         self.user_db = request.session.get('db_name')
     
-    
     # Delete Rule Action
     def delete_rule(self):
         if self.request['ruleClass'] == 'Dynamic':
-            if isinstance(delete_check:=self.delete_dynamic_rule(),str):
+            if isinstance(delete_check:=self.delete_dynamic_rule(self.request),str):
                 return delete_check
         else:
-            if isinstance(delete_check:=self.delete_static_rule(),str):
+            if isinstance(delete_check:=self.delete_static_rule(self.request),str):
                 return delete_check
         return 'Deleted Successfully'
 
-    def delete_static_rule(self):
-        logType = self.request['log_type']
-        ruleName = self.request['og_rule_name'] if 'og_rule_name' in self.request else self.request['rule_name']
+    def delete_static_rule(self, request):
+        logType = request['log_type']
+        ruleName = request['og_rule_name'] if 'og_rule_name' in request else request['rule_name']
         cypher = f"""
         MATCH (rule:Rule:{logType} {{ruleName:'{ruleName}'}})
         DETACH DELETE rule
         RETURN ID(rule) AS id
         """
+        
         try:
             result = self.run(database=self.user_db, query=cypher)
             cypher = f"MERGE (r:Rule {{status: 'Delete', nodeId:{result['id']}}})"
             self.run(database=self.user_db, query=cypher)
-            return 1
+            return {
+                'status': 'success',
+                'message': 'Success to Modify Rule'
+            }
         except:
             return 'Failed To Delete. Please Try Again'
 
-    def delete_dynamic_rule(self):
-        logType = self.request['log_type']
-        ruleName = self.request['og_rule_name'] if 'og_rule_name' in self.request else self.request['rule_name']
+    def delete_dynamic_rule(self, request):
+        logType = request['log_type']
+        ruleName = request['og_rule_name'] if 'og_rule_name' in request else request['rule_name']
         cypher = f"""
         MATCH (rule:Rule:{logType} {{ruleName:'{ruleName}'}})
         UNWIND KEYS(rule) as keys
@@ -93,7 +96,10 @@ class Delete(Neo4jHandler):
             result = self.run(database=self.user_db, query=cypher)
             cypher = f"MERGE (r:Rule {{status: 'Delete', nodeId:{result['id']}}})"
             self.run(database=self.user_db, query=cypher)
-            return 1
+            return {
+                'status': 'success',
+                'message': 'Success to Modify Rule'
+            }
         except:
             return 'Failed To Delete. Please Try Again'
     

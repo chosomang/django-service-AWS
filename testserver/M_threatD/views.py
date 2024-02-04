@@ -34,6 +34,7 @@ def notification_view(request, threat):
 @login_required
 def rules_view(request, resourceType, logType):
     # 여긴 POST 검사 안함?
+    print('threat rules')
     with Default(request=request) as __default:
         context = __default.get_custom_rules(logType)
         context.update(__default.get_default_rules(logType))

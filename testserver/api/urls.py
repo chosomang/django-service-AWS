@@ -17,7 +17,7 @@ urlpatterns = [
     
     # JWT Token
     path('jwt_token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    # path('get_token/', views.create_jwt_token, name='get_token')
+    
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

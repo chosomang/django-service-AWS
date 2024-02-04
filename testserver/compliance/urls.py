@@ -1,6 +1,6 @@
 from django.urls import include, path
 from django.conf import settings
-from . import views
+from . import views, report_views
 from django.conf.urls.static import static
 from django.views.static import serve
 from django.urls import re_path
@@ -11,6 +11,9 @@ def protected_serve(request, path, document_root=None, show_indexes=False):
     return serve(request, path, document_root, show_indexes)
 
 urlpatterns = [
+    # Report make api
+    path('report/v1/<compliance_type>/', report_views.index_report),
+    
     # Compliance Lists
     path('lists/', views.compliance_lists_view),
     path('lists/<compliance_type>/', views.compliance_lists_view),
