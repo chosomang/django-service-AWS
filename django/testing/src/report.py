@@ -34,7 +34,7 @@ def convert_html_to_pdf(html_content:str, pdf_path:str):
         # # wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb
         # # sudo dpkg -i wkhtmltox_0.12.5-1.bionic_amd64.deb
         # # sudo apt-get install -f
-        path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe' # <- wkhtmltopdf 경로
+        path_wkhtmltopdf = r'/usr/bin/wkhtmltopdf' # <- wkhtmltopdf 경로
         config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
         pdfkit.from_string(html_content, pdf_path, options=options, configuration=config)
         print(f"PDF generated and saved at {pdf_path}")
