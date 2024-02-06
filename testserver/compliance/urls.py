@@ -12,7 +12,7 @@ def protected_serve(request, path, document_root=None, show_indexes=False):
 
 urlpatterns = [
     # Report make api
-    path('report/v1/<compliance_type>/', report_views.index_report),
+    path('report/v1/download/<compliance_type>/', report_views.report),
     
     # Compliance Lists
     path('lists/', views.compliance_lists_view),
