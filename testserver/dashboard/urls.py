@@ -9,7 +9,7 @@ from django.conf.urls.static import static
 URL_PATH = 'dashboard'
 # dashboard/
 urlpatterns = [
-    path('', views.dashboard_view, name='dashboard'),
+    path('', views.dashboard_view, name='root'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
 ]
 # /grid
