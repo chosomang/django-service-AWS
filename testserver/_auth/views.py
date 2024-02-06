@@ -51,8 +51,11 @@ def login_(request):
             request.session['db_name'] = str(user.db_name)
             if next_url is not None:
                 # graph db에 저장
-                login_success(userName=username, srcip='None', db_name=user.db_name)
-                return redirect(f'/dashboard/')
+                login_success(userName=username, srcip=_get_client_ip(request), db_name=user.db_name)
+                return redirect(next_url)
+            else:
+                return redirect('/dashboard/')
+            
         else:
             # 로그인 실패한 경우
             messages.warning(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
