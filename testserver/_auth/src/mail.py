@@ -36,7 +36,7 @@ def send_mail(request, user):
     confirmation_link = reverse('activate', args=[uidb64, token])
     message = render_to_string('registration/activation.html', {
         'user': user,
-        'domain': 'http://127.0.0.1:8000',
+        'domain': 'http://13.124.121.1',
         'uid': uidb64,
         'token': token,
         'confirmation_link': confirmation_link,
