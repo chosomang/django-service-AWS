@@ -46,7 +46,7 @@ class Neo4jHandler:
             res = session.execute_write(self._run, query)
             return res
     
-    def run_records(self, database, query) -> list[dict]:
+    def run_records(self, database, query) -> list:
         """Execute run cypher and returns a list of multiple record objects.
 
         Args:
@@ -65,7 +65,7 @@ class Neo4jHandler:
             res = session.execute_write(self._run_records, query)
             return res
     
-    def run_data(self, database, query) -> list[dict]:
+    def run_data(self, database, query) -> list:
         """Execute run cypher and returns a list of multiple dict objects.
 
         Args:
@@ -118,20 +118,20 @@ class Cypher(Neo4jHandler):
         
     def push_user(self, user, ip):
         query = f"""
-MERGE (super:Super:Teiren {{name:'Teiren'}})
-WITH super
-MERGE (super)-[:SUB]->(a:Teiren:Account {{
-    userName: '{user.username}',
-    userPassword: '{user.password}',
-    email: '{user.email}',
-    createdTime: '{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}',
-    ipAddress: '{ip}',
-    uuid: '{user.uuid}',
-    failCount: 0,
-    emailCheck: 'False'
-}})
-RETURN ID(a) as id
-"""
+        MERGE (super:Super:Teiren {{name:'Teiren'}})
+        WITH super
+        MERGE (super)-[:SUB]->(a:Teiren:Account {{
+            userName: '{user.username}',
+            userPassword: '{user.password}',
+            email: '{user.email}',
+            createdTime: '{str(datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'))}',
+            ipAddress: '{ip}',
+            uuid: '{user.uuid}',
+            failCount: 0,
+            emailCheck: 'False'
+        }})
+        RETURN ID(a) as id
+        """
         res = Neo4jHandler.run(self, user.db_name, query)
         return res
 cypherhandler = Cypher()
