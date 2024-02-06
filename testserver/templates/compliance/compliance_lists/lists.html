@@ -13,7 +13,7 @@
 </div>
 <div class="d-flex">
     <h6 class="h3 mb-2 font-weight-bold text-gray-800 ml-2">{{compliance_type}}</h6>
-    <form class="ml-auto" method="POST" action="/compliance/lists/{{compliance_type}}/download/" target="_blank">
+    <form class="ml-auto" method="POST" action="/compliance/report/v1/download/{{compliance_type}}/" target="_blank">
         {% csrf_token %}
         <button type="submit" class="btn btn-md btn-teiren"><i class="fa-solid fa-download mr-2"></i>Download {{compliance_type}} Compliance Report</button>
     </form>
