@@ -28,8 +28,8 @@ class DashboardLogHandler(Neo4jHandler):
     """
     def __init__(self, request) -> None:
         super().__init__()
+        self.request_ = dict(request.POST)
         self.request = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
-        print(f'self.request: {self.request}')
         self.user_db = request.session.get('db_name')
     
     # 로그 디테일 모달
@@ -50,7 +50,6 @@ class DashboardLogHandler(Neo4jHandler):
                     value = {keys:value[keys] for keys in sorted(value.keys())}
                 response[key] = value
         return response
-    
     
     def create_where_dict(self, filter_dict) -> dict:
         field_mappings = {
@@ -77,7 +76,7 @@ class DashboardLogHandler(Neo4jHandler):
         return where_dict
 
     def get_log_page(self, logType):
-        now_page = self.request.get('page', [1])[0]
+        now_page = self.request_.get('page', [1])[0]
         try:
             now_page = int(now_page)
         except (ValueError, TypeError):
@@ -86,25 +85,25 @@ class DashboardLogHandler(Neo4jHandler):
         filter_check = 0
         if logType == 'filter':
             filter_check = 1
-            logType = self.request.pop('logType')[0].split(' ')[0]
+            logType = self.request_.pop('logType')[0].split(' ')[0]
         
         #Filtering
         filter_dict = {}
-        for key, value in self.request.items():
+        for key, value in self.request_.items():
             if key == 'page' or key.endswith('regex') or value[0] == 'all': 
                 continue
             if 'main' in filter_dict and key in filter_dict['main']:
                 continue
             if len(value) == 1 and value[0] == '':
                 continue
-            if key.startswith('main') and self.request['main_search_value'][0] != '':
-                filter_dict['main'] = [self.request['main_search_key'][0], self.request['main_search_value'][0]]
+            if key.startswith('main') and self.request_['main_search_value'][0] != '':
+                filter_dict['main'] = [self.request_['main_search_key'][0], self.request_['main_search_value'][0]]
                 continue
             if key.startswith('eventTime'):
-                filter_dict['eventTime'] = [self.request['eventTime_date_start'][0], self.request['eventTime_date_end'][0]]
+                filter_dict['eventTime'] = [self.request_['eventTime_date_start'][0], self.request_['eventTime_date_end'][0]]
                 continue
             if value[0] == 'regex':
-                value = [value[0], self.request[f'{key}_regex'][0]]
+                value = [value[0], self.request_[f'{key}_regex'][0]]
             filter_dict[key] = value
         where_dict = self.create_where_dict(filter_dict)
 
