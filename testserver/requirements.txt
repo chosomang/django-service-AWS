@@ -30,3 +30,4 @@ djoser
 django-allauth
 Aspose.Slides
 docx2pdf
+pdfkit
