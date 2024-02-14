@@ -88,6 +88,7 @@ class DashboardHandler(Neo4jHandler):
         '''
         total = self.run(self.user_db, cypher)
         context = {'threat': total['count']}
+        
         if isinstance(self.request, dict):
             return render_to_string('dashboard/items/threatlogTotal.html',context, self.request['request'])
         response = {'w':2, 'h':8, 'content': render_to_string('dashboard/items/threatlogTotal.html',context, self.request)}
@@ -203,9 +204,8 @@ class DashboardHandler(Neo4jHandler):
         """
         results = self.run(self.user_db, cypher)
         equip_color = [color.get(equip) for equip in results['equip']]
-        rule_detected_count = {'name': results['equip'], 'count': results['count'], 'color': equip_color}
+        rule_detected_count = {'name': results['name'], 'count': results['count'], 'color': equip_color}
         context = {'rule_detected_count': json.dumps(rule_detected_count)}
-        # print(rule_detected_count)
         if isinstance(self.request, dict):
             return render_to_string('dashboard/items/threatRule.html',context, self.request['request'])
         response = {'w':3, 'h':23, 'content': render_to_string('dashboard/items/threatRule.html',context, self.request)}
