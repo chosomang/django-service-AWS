@@ -14,7 +14,8 @@
         <div class="card-header py-3 ">
             <h6 class="m-0 font-weight-bold text-teiren ">Registered Resources</h6>
         </div>
-        <div class="card-body" style="font-size:12px">
+        <button id="refresh-button">새로고침</button>
+        <div class="card-body" id="section-to-refresh" style="font-size:12px">
             <div class="table-responsive" style="overflow:hidden;">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0" style="table-layout:fixed;text-align:center;">
                     <thead>
@@ -42,50 +43,49 @@
                     <tbody>
                         {% if integrations %}
                             {% for integration in integrations %}
-                                {% if not integration.error %}
+                                {% if not integration.status == 'running' %}
                                 <tr class="text-danger">
                                     <td><i class="fa-solid fa-triangle-exclamation fa-bounce"></i></td>
                                 {% else %}
-                                <tr>
-                                    <td><i class="text-teiren fa-solid fa-circle-check"></i></td>
+                                <tr><td><i class="text-teiren fa-solid fa-circle-check"></i></td>
                                 {% endif %}
-                                    <td>{{ integration.integrationType|title }}</td>
-                                    <td>{{ integration.logType|title }}</td>
-                                    {% if integration.logType == integration.groupName %}
-                                    <td>-</td>
-                                    {% else %}
-                                    <td>{{ integration.groupName }}</td>
-                                    {% endif %}
-                                    <td>{{ integration.accessKey }}</td>
-                                    <td>
-                                        <form>
-                                            <input type="hidden" name="integration_type" value="{{ integration.integrationType }}">
-                                            <input type="hidden" name="access_key" value="{{ integration.accessKey }}">
-                                            <input type="hidden" name="region_name" value="{{ integration.regionName }}">
-                                            <input type="hidden" name="log_type" value="{{ integration.logType }}">
-                                            <input type="hidden" name="group_name" value="{{ integration.groupName }}">
-                                            <button type="button" class="btn btn-danger btn-md" onClick="checkModal(this, 'delete')">
-                                                <i class="fas fa-trash text-gray-200"></i>
+                                <td>{{ integration.integrationType|title }}</td>
+                                <td>{{ integration.logType|title }}</td>
+                                {% if integration.logType == integration.groupName %}
+                                <td>-</td>
+                                {% else %}
+                                <td>{{ integration.groupName }}</td>
+                                {% endif %}
+                                <td>{{ integration.accessKey }}</td>
+                                <td>
+                                    <form>
+                                        <input type="hidden" name="integration_type" value="{{ integration.integrationType }}">
+                                        <input type="hidden" name="access_key" value="{{ integration.accessKey }}">
+                                        <input type="hidden" name="region_name" value="{{ integration.regionName }}">
+                                        <input type="hidden" name="log_type" value="{{ integration.logType }}">
+                                        <input type="hidden" name="group_name" value="{{ integration.groupName }}">
+                                        <button type="button" class="btn btn-danger btn-md" onClick="checkModal(this, 'delete')">
+                                            <i class="fas fa-trash text-gray-200"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form>
+                                        <input type="hidden" name="integration_type" value="{{ integration.integrationType }}">
+                                        <input type="hidden" name="access_key" value="{{ integration.accessKey }}">
+                                        <input type="hidden" name="region_name" value="{{ integration.regionName }}">
+                                        <input type="hidden" name="log_type" value="{{ integration.logType }}">
+                                        <input type="hidden" name="group_name" value="{{ integration.groupName }}">
+                                        <input type="hidden" name="on_off" value="{{integration.isRunning}}">
+                                        {% if integration.isRunning == 0 %}
+                                            <button type="button" class="btn btn-md btn-outline-teiren" onClick="checkModal(this, 'trigger')">
+                                        {% else %}
+                                            <button type="button" class="btn btn-md btn-teiren" onClick="checkModal(this, 'trigger')">
+                                        {% endif %}
+                                                <i class="fa-solid fa-power-off"></i>
                                             </button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form>
-                                            <input type="hidden" name="integration_type" value="{{ integration.integrationType }}">
-                                            <input type="hidden" name="access_key" value="{{ integration.accessKey }}">
-                                            <input type="hidden" name="region_name" value="{{ integration.regionName }}">
-                                            <input type="hidden" name="log_type" value="{{ integration.logType }}">
-                                            <input type="hidden" name="group_name" value="{{ integration.groupName }}">
-                                            <input type="hidden" name="on_off" value="{{integration.isRunning}}">
-                                            {% if integration.isRunning == 0 %}
-                                                <button type="button" class="btn btn-md btn-outline-teiren" onClick="checkModal(this, 'trigger')">
-                                            {% else %}
-                                                <button type="button" class="btn btn-md btn-teiren" onClick="checkModal(this, 'trigger')">
-                                            {% endif %}
-                                                    <i class="fa-solid fa-power-off"></i>
-                                                </button>
-                                        </form>
-                                    </td>
+                                    </form>
+                                </td>
                                 </tr>
                             {% endfor %}
                         {% else %}
@@ -153,4 +153,14 @@
 {% endblock %}
 {% block script %}
 <script src="{% static '/M_equipment/js/configuration.js' %}"></script>
+<script>
+document.getElementById('refresh-button').addEventListener('click', function() {
+    fetch('/integration/refresh/')
+    .then(response => response.text())
+    .then(data => {
+        document.getElementById('section-to-refresh').innerHTML = data;
+        $('#dataTable').DataTable();
+    });
+});
+</script>
 {% endblock %}

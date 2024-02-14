@@ -174,7 +174,6 @@ class Detection(Neo4jHandler):
             }}) AS relations
         RETURN nodes AS nodes, relations As relations
         """
-        print(cypher)
         try:
             results = self.run_data(database=self.user_db, query=cypher)
         except Exception:

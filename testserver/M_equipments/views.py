@@ -1,17 +1,22 @@
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from .src import integration
 from .src.integration import(integration_check, integration_insert, 
 delete_integration, container_trigger, list_integration)
+from .src.refresh_integrations import refresh_container_status
 
 # Integration
 @login_required
-def integration_view(request, pageType):
-    if pageType == 'configuration':
-        context = list_integration(request.session.get('db_name'))
-        return render(request, f"M_equipment/{pageType}.html", context)
-    return render(request, f"M_equipment/{pageType}.html")
+def integration_view(request):
+    context = list_integration(request.session.get('db_name'))
+    return render(request, f"M_equipment/configuration.html", context)
+
+def refresh_integration_section(request):
+    context_ = list_integration(request.session.get('db_name'))
+    context = refresh_container_status(integration_list=context_, user_db=request.session.get('db_name'))
+    
+    print(context)
+    return render(request, f"M_equipment/integration_section.html", context)
 
 def integration_config_ajax(request, actionType):
     if request.method == 'POST':
@@ -40,3 +45,4 @@ def integration_registration_ajax(request, equipment, logType, actionType):
         elif actionType == 'insert':
             context = integration_insert(request, equipment)
             return HttpResponse(context)
+        

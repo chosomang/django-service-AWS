@@ -80,7 +80,6 @@ def add_rule(request):
     if request.method == 'POST':
         with Add(request) as __add:
             context = __add.add_rule()
-            print(context)
         return HttpResponse(context)
 
 # #############################################

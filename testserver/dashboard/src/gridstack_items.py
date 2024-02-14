@@ -194,17 +194,18 @@ class DashboardHandler(Neo4jHandler):
     # 정책 별 탐지 위협 개수
     def threatRule(self):
         cypher = f"""
-MATCH (r:Rule)<-[:DETECTED|FLOW_DETECTED]-(:Log)
-WITH r, HEAD([label IN labels(r) WHERE label <> 'Rule' ]) AS equip
-WITH equip, equip+'_'+r.ruleName as name, count(equip) as count
-ORDER BY count DESC
-LIMIT 5
-RETURN COLLECT(equip) as equip, COLLECT(name) as name, COLLECT(count) as count
+        MATCH (r:Rule)<-[:DETECTED|FLOW_DETECTED]-(:Log)
+        WITH r, HEAD([label IN labels(r) WHERE label <> 'Rule' ]) AS equip
+        WITH equip, equip+'_'+r.ruleName as name, count(equip) as count
+        ORDER BY count DESC
+        LIMIT 5
+        RETURN COLLECT(equip) as equip, COLLECT(name) as name, COLLECT(count) as count
         """
         results = self.run(self.user_db, cypher)
         equip_color = [color.get(equip) for equip in results['equip']]
         rule_detected_count = {'name': results['equip'], 'count': results['count'], 'color': equip_color}
         context = {'rule_detected_count': json.dumps(rule_detected_count)}
+        # print(rule_detected_count)
         if isinstance(self.request, dict):
             return render_to_string('dashboard/items/threatRule.html',context, self.request['request'])
         response = {'w':3, 'h':23, 'content': render_to_string('dashboard/items/threatRule.html',context, self.request)}
@@ -309,10 +310,12 @@ return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as 
         }
         average = results['average'][0] if results['average'] and results['average'][0] else 1 # True Value
         average_data = {'degree': degree.get(average), 'color': color.get(average)}
+        count_list = results['count']
+        count_list.extend([0] * (4 - len(count_list)))
         context = {
             'senario': {
-                'average': json.dumps(average_data), 
-                'count': results['count']
+                'average': json.dumps(average_data),
+                'count': count_list
             }
         }
         
@@ -323,7 +326,7 @@ return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as 
 
     # 최근 수집 로그 Overview
     def recentCollectedOverview(self):
-        context = get_threat_month('collected')
+        context = self.get_threat_month('collected')
         if isinstance(self.request, dict):
             return render_to_string('dashboard/items/recentCollectedOverview.html',context, self.request['request'])
         response = {'w':4, 'h':27, 'content': render_to_string('dashboard/items/recentCollectedOverview.html',context, self.request)}
@@ -331,7 +334,7 @@ return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as 
 
     # 위협 로그 Overview
     def threatDetectionOverview(self):
-        context = get_threat_month('threat')
+        context = self.get_threat_month('threat')
         if isinstance(self.request, dict):
             return render_to_string('dashboard/items/threatDetectionOverview.html',context, self.request['request'])
         response = {'w':4, 'h':27, 'content': render_to_string('dashboard/items/threatDetectionOverview.html',context, self.request)}
@@ -424,12 +427,13 @@ return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as 
         return JsonResponse(response)
     
     # 최근 수집 및 위협 로그 Overview
-    def get_threat_month(self):
-        month_list = []
-        if self.request == 'collected':
+    def get_threat_month(self, threat_type):
+        if threat_type == 'collected':
             collected_month = []
-        else:
+        if threat_type == 'threat':
             threat_month = []
+            
+        month_list = []
         current = datetime.datetime.now()
         cur_month = current.month
         cur_year = current.year
@@ -437,28 +441,30 @@ return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as 
             if i == cur_year-1:
                 for j in range(cur_month+3,13):
                     month_list.append(str(i)+'/'+str(j))
-                    if self.request == 'collected':
-                        collected_month.append(get_collected_count(i, j))
-                    else:
+                    if threat_type == 'collected':
+                        collected_month.append(self.get_collected_count(i, j))
+                    if threat_type == 'threat':
                         threat_month.append(self.get_threat_count(i, j))
             elif i == cur_year:
                 for j in range(1,cur_month+1):
                     month_list.append(str(i)+'/'+str(j))
-                    if self.request == 'collected':
-                        collected_month.append(get_collected_count(i, j))
-                    else:
+                    if threat_type == 'collected':
+                        collected_month.append(self.get_collected_count(i, j))
+                    if threat_type == 'threat':
                         threat_month.append(self.get_threat_count(i, j))
             else:
                 for j in range(1,13):
                     month_list.append(str(i)+'/'+str(j))
-                    if self.request == 'collected':
-                        collected_month.append(get_collected_count(i, j))
-                    else:
+                    if threat_type == 'collected':
+                        collected_month.append(self.get_collected_count(i, j))
+                    if threat_type == 'threat':
                         threat_month.append(self.get_threat_count(i, j))
-        if self.request == 'collected':
+                        
+        if threat_type == 'collected':
             response = {'month': json.dumps(month_list), 'collected_month': json.dumps(collected_month)}
-        else:
+        if threat_type == 'threat':
             response = {'month': json.dumps(month_list), 'threat_month': json.dumps(threat_month)}
+        
         return response
 
     # 위협 로그 Overview

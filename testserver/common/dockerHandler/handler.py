@@ -4,11 +4,23 @@ class DockerHandler:
     def __init__(self) -> None:
         self.client = docker.from_env()
     
+    def status(self, container_id) -> str:
+        try:
+            container = self.client.containers.get(container_id)
+            return container.status
+        except docker.errors.NotFound:
+            return "Not Found"
+        except Exception as e:
+            return "Error"
+    
     def get_container_list(self) -> list:
         return self.client.containers.list()
     
     def get_container(self, container_id):
-        return self.client.containers.get(container_id)
+        try:
+            return self.client.containers.get(container_id)
+        except:
+            return False
     
     def start_container(self, container_id) -> None:
         self.client.containers.get(container_id).start()

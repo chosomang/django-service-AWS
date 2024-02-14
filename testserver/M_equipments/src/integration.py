@@ -27,8 +27,10 @@ def list_integration(db_name):
             id(i) as no
         """
         results = neohandler.run_data(database=db_name, query=cypher)
-    # results['error'] = check_process_func(results['no'], results['container_id'])        
-    return {'integrations': results}
+    # results['error'] = check_process_func(results['no'], results['container_id'])
+
+    integration_list = [{'status': 'running' if data['isRunning'] == 1 else 'exited', **dict(data)} for data in results]
+    return {'integrations': integration_list}
 
 def check_process_func(no, container_id): # << 이건 뭐하는 함수임...?
     return True

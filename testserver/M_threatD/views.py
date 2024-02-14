@@ -22,8 +22,6 @@ def notification_view(request, threat):
             __notification.alert_off()
         with Detection(request=request) as __detection:
             res = __detection.neo4j_graph()
-            print(f"type: {type(res)}")
-            print(res)
             context.update(__detection.neo4j_graph())
         return render(request, f"M_threatD/notifications/{threat}.html", context)
     else:
@@ -37,7 +35,6 @@ def notification_view(request, threat):
 @login_required
 def rules_view(request, resourceType, logType):
     # 여긴 POST 검사 안함?
-    print('threat rules')
     with Default(request=request) as __default:
         context = __default.get_custom_rules(logType)
         context.update(__default.get_default_rules(logType))

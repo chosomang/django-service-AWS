@@ -15,7 +15,6 @@ def save_layout(request):
         data = request.POST
         user = get_user_model().objects.get(username=request.session.get('user_id'))
         user_layout = user.user_layout
-        print(user_layout)
         for check in GridLayout.objects.filter(name=request.POST['name']):
             check.delete()
         GridLayout(name=request.POST['name'], data=request.POST['data'], isDefault=request.POST['isDefault']).save()
@@ -59,12 +58,9 @@ def load_layout(request):
         layouts = GridLayout.objects.filter(name=request.POST['name'])
         for layout in layouts:
             items = json.loads(layout.data)
-            print(items)
         items:list = json.loads(layouts[0]) # ==> unique data
-        print(f'items: {items}')
         
         for item in items:
-            print(f"item: {items}")
             if item['id'] == 'logTotal':
                 item['content'] = dhandler.logTotal()
                 continue
@@ -152,7 +148,6 @@ def default_layout(request):
                 for item in items:
                     if item['id'] == 'logTotal':
                         item['content'] = dhandler.logTotal()
-                        print(item['content'])
                         continue
                     if item['id'] == 'integrationTotal':
                         item['content'] = dhandler.integrationTotal()
@@ -191,9 +186,7 @@ def default_layout(request):
                         item['content'] = dhandler.graphitem()
                         continue
                     if item['id'] == 'recentDetection':
-                        print('=========')
                         item['content'] = dhandler.recentDetection()
-                        print(item['content'])
                         continue
                     
                 # for item in items:
