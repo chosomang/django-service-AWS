@@ -34,7 +34,7 @@ def get_node_json(node, cloud):
         "query" : True,
         "gene" : True
     }
-    property = dict(node.items())
+    property_ = dict(node.items())
     property = {key:property[key] for key in sorted(property.keys())}
     if node.has_label('Log'):
         data['label'] = 'Log'
