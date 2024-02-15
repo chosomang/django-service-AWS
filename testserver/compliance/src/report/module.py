@@ -14,13 +14,16 @@ def convert_img_to_base64(html_content):
     for img_path in matches:
         html_content = html_content.replace(img_path, embed_image(img_path=img_path))
     return html_content
-
+#* 
 def convert_html_to_pdf(html_content:str, pdf_path:str):
     html_content = convert_img_to_base64(html_content)
     try:
         options = {
             "enable-local-file-access": True,
             'encoding': "UTF-8",
+            'page-size': "A4",
+            # 'page-width': '794px',  # HTML과 일치하는 픽셀 단위 사용
+            # 'page-height': '1123px',  # HTML과 일치하는 픽셀 단위 사용
             'margin-top': '0mm',
             'margin-right': '0mm',
             'margin-bottom': '0mm',
@@ -35,8 +38,9 @@ def convert_html_to_pdf(html_content:str, pdf_path:str):
         # # sudo apt-get install -f
         path_wkhtmltopdf = r'/usr/bin/wkhtmltopdf' # <- wkhtmltopdf 경로
         config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
-        pdfkit.from_string(html_content, pdf_path, options=options, configuration=config)
-        print(f"PDF generated and saved at {pdf_path}")
+        pdfkit.from_string(html_content, pdf_path, configuration=config, options=options)
+        
+        return True
     except Exception as e:
-        print(f"PDF generation failedf: {e}")
+        return False
 
