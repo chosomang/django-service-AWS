@@ -13,9 +13,7 @@ urlpatterns = [
     path('visuals/user/details/', views.user_details),
 
     path("neo4j/",views.neo4j_graph),
-]
-
-urlpatterns +=[
+    
     # Detail Modal
     path('rules/<resourceType>/<logType>/<ruleType>/details/', ajax_views.rule_details),
 
@@ -32,5 +30,5 @@ urlpatterns +=[
     path('custom/add/', ajax_views.add_rule),
 
     # On/Off Action
-    path('rules/<resourceType>/<logType>/on_off/', ajax_views.on_off),
+    path('rules/<resourceType>/<logType>/on_off/', ajax_views.on_off)
 ]
