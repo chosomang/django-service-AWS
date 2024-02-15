@@ -1,8 +1,17 @@
+# local
+import os
+import pytz
+from datetime import datetime
 from common.neo4j.handler import Neo4jHandler
 from .src.report.module import convert_html_to_pdf
+
+# django
+from django.http import FileResponse
+from django.conf import settings
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
+from django.shortcuts import HttpResponse
 
 class RenderCompliance(Neo4jHandler):
     def __init__(self, request) -> None:
@@ -64,30 +73,41 @@ def make_html_to_data(request, results):
         'results': results
     }
     return render(request, f"report/index.html", context)
-        
+
+def make_compliance_file_name(compliance_type):
+    KTZ = pytz.timezone('Asia/Seoul')
+    kr_time = datetime.now(KTZ)
+
+    return f"[Teiren] {compliance_type} Compliance Report-{kr_time.strftime('%y%m%d_%H%M')}.pdf"
         
 @login_required
 def report(request, compliance_type):
+    user_uuid = request.session.get('uuid')
+    file_name = make_compliance_file_name(compliance_type)
+    compliance_folder_path = f"{settings.MEDIA_ROOT}{user_uuid}/compliance-report"
+    compliance_file_path = f"{compliance_folder_path}/{file_name}"
+    
+    try:
+        os.mkdir(f'{compliance_folder_path}')
+    except FileExistsError:
+        pass
+    except Exception as e:
+        print(e)
+        os.mkdir('Error')
+        user_uuid += '/Error'
+    
     with RenderCompliance(request=request) as comphandler:
         results:list = comphandler.get_report_data()
-        
     context = {
         'page': [1,2],
         'results': results
     }
-    pdf_path = './example.pdf' #폴더 실제 존재해야 됨. 자동으로 폴더는 안 만들어줌
+    # settings.MEDIA_URL: /home/yoonan/webAPP/DATABASE/
     html_content =  render_to_string('report/index.html', context=context)
-    convert_html_to_pdf(html_content=html_content, pdf_path=pdf_path)
-    return render(request, f"report/index.html", context)
-
-        
-    
-    # return render(request, f"report/index.html", context)
-
-# def report_test(request):
-#     context = {'page': [1,2]}
-#     html_content =  render_to_string('testing/report.html', context=context, request=request)
-#     pdf_path = './staticfiles/testing/example.pdf' #폴더 실제 존재해야 됨. 자동으로 폴더는 안 만들어줌
-#     convert_html_to_pdf(html_content=html_content, pdf_path=pdf_path)
-#     return HttpResponse(html_content)
-
+    result = convert_html_to_pdf(html_content=html_content, pdf_path=compliance_file_path)
+    if not result:
+        return HttpResponse("Error: Fail to Export Compliance PDF File")
+    if os.path.exists(compliance_folder_path+'/'):
+        return FileResponse(open(compliance_file_path, 'rb'), as_attachment=True, filename=file_name)
+    else:
+        return HttpResponse("Error: User Database Not Found")
