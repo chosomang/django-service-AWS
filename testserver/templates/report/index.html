@@ -15,33 +15,46 @@
         }
 
         .page {
-            width: 1000px;
-            height: 1415px;
+            margin: auto;
             color: black;
             position: relative;
+            /* overflow: hidden; */
+            page-break-after: always;
+        }
+
+        @media print {
+            .page {
+                width: 100%;
+                height: 1460px;
+                /* height: 1800px; */
+            }
         }
 
         .header {
             background-color: #24b6d4;
             color: white;
             width: 100%;
-            height: 5%;
+            /* height: 5%; */
         }
 
         .header .header-logo-text {
-            float: left;
-            margin-top: 15px;
-            font-size: 30px;
+            /* float: left; */
+            margin-top: 0px;
+            font-size: 45px;
             font-weight: 900;
         }
 
         .header .header-title {
             float: right;
-            margin-top: 20px;
+            margin-top: 40px;
             margin-right: 20px;
             font-size: 20px;
-            font-weight: 700;
+            font-weight: 800;
         }
+
+        /* .header .header-logo-img {
+            float: left;
+        } */
 
         .footer {
             background-color: #24b6d4;
@@ -52,7 +65,7 @@
 
         .footer .footer-title {
             float: left;
-            margin-top: 22px;
+            margin-top: 40px;
             margin-left: 2px;
             font-size: 18px;
             font-weight: 700;
@@ -60,8 +73,8 @@
 
         .footer .page-number {
             float: right;
+            margin-top: 40px;
             margin-right: 20px;
-            margin-top: 22px;
             font-size: 18px;
             font-weight: 700;
         }
@@ -116,7 +129,7 @@
     {% for data in results %}
         <div class="page">
             <div class="header">
-                <img src="{% static '/img/teiren-white-icon.png' %}" alt="Teiren Icon" width="100px">
+                <span class="header-logo-img"><img src="{% static '/img/teiren-white-icon.png' %}" alt="Teiren Icon" width="100px"></span>
                 <span class="header-logo-text">TEIREN</span>
                 <span class="header-title">{{data.chapterNo}}. {{data.chapterName}}</span>
             </div>
@@ -168,8 +181,8 @@
                         </thead>
                         <tr>
                             <td>1.1.1 Article</td>
-                            <td> 자료1 </td>
-                            <td> 운영현황1 </td>
+                            <td> 증적현황 예시 </td>
+                            <td> 운영현황 예시 </td>
                         </tr>
                     </table>
                 </div>
