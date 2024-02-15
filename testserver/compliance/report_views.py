@@ -78,7 +78,7 @@ def make_compliance_file_name(compliance_type):
     KTZ = pytz.timezone('Asia/Seoul')
     kr_time = datetime.now(KTZ)
 
-    return f"[Teiren] {compliance_type} Compliance Report-{kr_time.strftime('%y%m%d_%H%M')}.pdf"
+    return f"[Teirend] {compliance_type} Compliance Report-{kr_time.strftime('%y%m%d_%H%M')}.pdf"
         
 @login_required
 def report(request, compliance_type):
