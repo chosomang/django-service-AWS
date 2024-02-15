@@ -36,7 +36,7 @@ class DockerHandler:
         try:
             self.client.images.get(image_name)
         except docker.errors.ImageNotFound:
-            print(f"Downloading image {image_name}...")
+            # print(f"Downloading image {image_name}...")
             try:
                 self.client.images.pull(image_name)
             except Exception as e:
