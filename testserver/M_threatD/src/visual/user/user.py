@@ -1,6 +1,6 @@
 # local
-import json
-from TeirenSIEM.risk.alert.detection import get_relation_json, get_node_json
+import json, operator
+from M_threatD.src.notification.detection import Detection
 from common.neo4j.handler import Neo4jHandler
 
 # django
@@ -32,6 +32,7 @@ class UserThreat(Neo4jHandler):
             data += self.get_user_dynamic_data()
             table = self.get_user_table()
             context = {'graph': json.dumps(data), 'table': table }
+            print(context)
             return context
         return HttpResponse('다시 시도')
     
@@ -94,9 +95,9 @@ class UserThreat(Neo4jHandler):
         response = []
         for result in results:
             for node in result['nodes']:
-                response.append(get_node_json(node, logType))
+                response.append(self.get_node_json(node, logType))
             for relation in result['relations']:
-                response.append(get_relation_json(relation))
+                response.append(self.get_relation_json(relation))
         return response
     
     def get_user_dynamic_data(self):
@@ -181,9 +182,9 @@ class UserThreat(Neo4jHandler):
         response = []
         for result in results:
             for node in result['nodes']:
-                response.append(get_node_json(node, logType))
+                response.append(self.get_node_json(node, logType))
             for relation in result['relations']:
-                response.append(get_relation_json(relation))
+                response.append(self.get_relation_json(relation))
         return response
 
     def get_user_table(self):
@@ -209,6 +210,7 @@ class UserThreat(Neo4jHandler):
         results = self.run_data(database=self.user_db, query=cypher)
         response = []
         for result in results:
+            result = dict(result)
             arr = {'account': account}
             arr.update(result)
             result.update({'arr': json.dumps(arr)})
@@ -240,5 +242,84 @@ class UserThreat(Neo4jHandler):
         """
         results = self.run_data(database=self.user_db, query=cypher)
         response = [result for result in results]
+        
+        return response
+    
+    def get_node_json(self, node:dict, cloud):
+        data = {
+            "id" : node.id,
+            "name" : "",
+            "score" : 400,
+            "query" : True,
+            "gene" : True
+        }
+        property_ = dict(node.items())
+        property_ = {key:property_[key] for key in sorted(property_.keys())}
+        if 'Log' in node.labels:
+            data['label'] = 'Log'
+            for key, value in property_.items():
+                if key == 'eventName':
+                    data['name'] = value
+                else:
+                    if any(x in key for x in ['responseElements','requestParameters','tls']):
+                        continue
+                    if 'userAgent' in key:
+                        continue
+                    if 'errorMessage' in key:
+                        value = value.replace('\'', '[',1)
+                        value = value.replace('\'', ']',1)
+                    if '\'' in str(value):
+                        value = value.replace('\'', '[',1)
+                        value = value.replace('\'', ']',1)
+                    data[key] = value
+        else:
+            if 'Flow' in node.labels:
+                data['label'] = 'Flow'
+                data['name'] = property_['flowName']
+            if 'Date' in node.labels:
+                data['label'] = 'Date'
+            if 'Account' in node.labels:
+                data['label'] = 'Account'
+                data['score'] = 700
+            if 'Between' in node.labels:
+                data['label'] = 'Between'
+                property_ = dict(sorted(property_.items(), key=operator.itemgetter(1), reverse=True))
+            if 'Role' in node.labels:
+                data['label'] = 'Role'
+            if 'Rule' in node.labels:
+                data['label'] = 'Rule'
+                data['name'] = property_['ruleName']
+            for key, value in property_.items():
+                if key == 'name':
+                    value = str(value)
+                    value = value.split('_')[0]
+                if any(x in key for x in ['responseElements','requestParameters','tls','query','ruleOperators', 'ruleValues','ruleKeys']):
+                    continue
+                if 'errorMessage' in key:
+                    value = value.replace('\'', '[',1)
+                    value = value.replace('\'', ']',1)
+                if key == 'date' or key == 'userName':
+                    value = str(value)
+                    data['name'] = value
+                data[key] = value
+        response = {
+            "data": data,
+            "group" : "nodes"
+        }
+        return response
+
+    def get_relation_json(self, relation):
+        data = {
+            "source" : relation[2],
+            "target" : relation[3],
+            "weight" : 1,
+            "group" : "coexp",
+            "id" : "e"+str(relation[1]),
+            "name": relation[4]
+        }
+        response = {
+            "data" : data,
+            "group" : "edges"
+        }
         
         return response
