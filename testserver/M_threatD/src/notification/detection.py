@@ -55,11 +55,6 @@ class Detection(Neo4jHandler):
             "query" : True,
             "gene" : True
         }
-        def has_label(target, labels:frozenset):
-            if target in labels:
-                return True
-            else:
-                False
         property_ = dict(node.items())
         property_ = {key:property_[key] for key in sorted(property_.keys())}
         if 'Log' in node.labels:
