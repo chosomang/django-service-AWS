@@ -32,7 +32,6 @@ class UserThreat(Neo4jHandler):
             data += self.get_user_dynamic_data()
             table = self.get_user_table()
             context = {'graph': json.dumps(data), 'table': table }
-            print(context)
             return context
         return HttpResponse('다시 시도')
     
@@ -82,13 +81,12 @@ class UserThreat(Neo4jHandler):
         WITH COLLECT(DISTINCT(relation)) as relations, COLLECT(DISTINCT(node)) as nodes
         UNWIND relations as relation
         WITH nodes,
-            COLLECT([
-                PROPERTIES(relation),
-                ID(relation),
-                ID(STARTNODE(relation)),
-                ID(ENDNODE(relation)),
-                TYPE(relation)
-            ]) AS relations
+        COLLECT({{
+            relation_id: ID(relation),
+            start_node_id: ID(apoc.rel.startNode(relation)),
+            end_node_id: ID(apoc.rel.endNode(relation)),
+            relation_type: TYPE(relation)
+        }}) AS relations
         return nodes, relations
         """
         results = self.run_data(database=self.user_db, query=cypher)
@@ -169,13 +167,12 @@ class UserThreat(Neo4jHandler):
         WITH COLLECT(DISTINCT(node)) AS nodes, COLLECT(DISTINCT(relation)) AS relations
         UNWIND relations AS relation
         WITH nodes,
-            COLLECT([
-                PROPERTIES(relation),
-                ID(relation),
-                ID(STARTNODE(relation)),
-                ID(ENDNODE(relation)),
-                TYPE(relation)
-            ]) AS relations
+        COLLECT({{
+            relation_id: ID(relation),
+            start_node_id: ID(apoc.rel.startNode(relation)),
+            end_node_id: ID(apoc.rel.endNode(relation)),
+            relation_type: TYPE(relation)
+        }}) AS relations
         RETURN nodes, relations
         """
         results = self.run_data(database=self.user_db, query=cypher)
@@ -310,12 +307,12 @@ class UserThreat(Neo4jHandler):
 
     def get_relation_json(self, relation):
         data = {
-            "source" : relation[2],
-            "target" : relation[3],
+            "source" : relation['start_node_id'],
+            "target" : relation['end_node_id'],
             "weight" : 1,
             "group" : "coexp",
-            "id" : "e"+str(relation[1]),
-            "name": relation[4]
+            "id" : "e"+str(relation['relation_id']),
+            "name": relation['relation_type']
         }
         response = {
             "data" : data,

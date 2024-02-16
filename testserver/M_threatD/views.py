@@ -63,9 +63,10 @@ def visuals_view(request, threat):
 ## Visuals User Details Modal
 @login_required
 def user_details(request):
+    context = dict(request.POST.items())
     if request.method == 'POST':
         with UserThreat(request) as __uthreat:
-            context = __uthreat.user_graph()
+            context.update(__uthreat.user_graph())
         return render(request, 'M_threatD/visuals/user/details.html', context)
     
 import json

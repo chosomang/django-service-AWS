@@ -87,13 +87,14 @@ def report(request, compliance_type):
     compliance_folder_path = f"{settings.MEDIA_ROOT}{user_uuid}/compliance-report"
     compliance_file_path = f"{compliance_folder_path}/{file_name}"
     
+    print(compliance_folder_path)
     try:
-        os.mkdir(f'{compliance_folder_path}')
+        os.makedirs(compliance_folder_path, exist_ok=True)
     except FileExistsError:
-        pass
+        return HttpResponse("Error: User Database Not Found")
     except Exception as e:
         print(e)
-        os.mkdir('Error')
+        os.makedirs(f"{settings.MEDIA_ROOT}{user_uuid}/Error", exist_ok=True)
         user_uuid += '/Error'
     
     with RenderCompliance(request=request) as comphandler:
