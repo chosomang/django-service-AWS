@@ -4,21 +4,42 @@
 <!-- Chart.js-->
 <script src="{% static '/plugin/chart.js/Chart.bundle.min.js' %}"></script>
 <!-- <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script> -->
-
 <!-- Gridstack -->
 <link rel="stylesheet" href="{% static '/plugin/gridstack/gridstack.css' %}">
 <script src="{% static '/plugin/gridstack/gridstack-all.js' %}"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS EC2 Monitoring Dashboard</title>
+<link rel="stylesheet" href="{% static 'monitoring/css/main.css' %}"> <!-- 여기에 스타일시트 링크 추가 -->
+<!-- 기타 필요한 스타일시트 또는 스크립트 -->
 <!-- Page Essential -->
 {% endblock %}
 {% block content %}
 <!-- Begin Page Content -->
 
-<div id="charts" style="max-width: 800px; margin: 0 auto;"></div>
-{{ uuid }}
+<body>
+    <div> user uuid: {{ uuid }} </div>
+    <div class="header-container">
+        <img src="{% static 'monitoring/image/ec2-logo.png' %}" alt="AWS Logo" class="aws-logo"> <!-- AWS 로고 이미지 -->
+        <header class="dashboard-header">
+            <div class="instance-count-card">
+                <div class="card-title">Instance Count</div>
+                <div class="count-number" id="instanceCount">0</div>
+            </div>
+        </header>
+    </div>
+
+    <section id="charts" class="charts">
+        <!-- EC2 인스턴스별 차트가 여기에 동적으로 추가됨 -->
+        <!-- <div id="charts" style="max-width: 800px; margin: 0 auto;"></div> -->
+    </section>
+
+    <!-- 기타 필요한 자바스크립트 파일 -->
+</body>
+
+
 
 {% endblock %}
 {% block script %}
@@ -45,12 +66,23 @@
         const timestamps = metrics.map(metric => new Date(metric.timestamp).toLocaleTimeString());
 
         if (!charts[instanceId]) {
-            // 차트가 존재하지 않으면 새로 생성
+            // 카드 컨테이너 생성
+            const card = document.createElement('div');
+            card.className = 'chart-card';
+
+            // 인스턴스 ID 헤더 생성
+            const cardHeader = document.createElement('div');
+            cardHeader.className = 'card-header';
+            cardHeader.textContent = instanceId;
+            card.appendChild(cardHeader);
+
+            // 차트 캔버스 생성
             const ctx = document.createElement('canvas');
             ctx.id = `chart-${instanceId}`;
-            ctx.width = 400;
-            ctx.height = 200;
-            document.getElementById('charts').appendChild(ctx);
+            card.appendChild(ctx);
+
+            // 카드 컨테이너를 차트 섹션에 추가
+            document.getElementById('charts').appendChild(card);
 
             charts[instanceId] = new Chart(ctx, {
                 type: 'line',
@@ -58,19 +90,19 @@
                     labels: timestamps,
                     datasets: [
                         {
-                        label: `${instanceId} CPU`,
+                        label: `CPU`,
                         data: cpuData,
                         borderColor: 'rgb(255, 99, 132)',
                         fill: false
                         },
                         {
-                            label: `${instanceId} Memory`,
+                            label: `Memory`,
                             data: memoryData,
                             borderColor: 'rgb(54, 162, 235)',
                             fill: false
                         },
                         {
-                            label: `${instanceId} Disk Usage`,
+                            label: `Disk Usage`,
                             data: diskUsageData,
                             borderColor: 'rgb(75, 192, 192)',
                             fill: false
@@ -91,7 +123,6 @@
                     },
                 },
             });
-            console.log('verticalLinePlugin' + instanceId)
             const verticalLinePlugin = {
                 id: 'charts',
                 afterDraw: function (chart, easing) {
@@ -114,7 +145,7 @@
                 },
             };
             Chart.register(verticalLinePlugin);
-
+            updateInstanceCount(); // Agent가 설치된 EC2의 갯수를 업데이트
         } else {
             // 차트가 이미 존재하는 경우 데이터만 업데이트
             const chart = charts[instanceId];
@@ -152,6 +183,20 @@
     // });
     setInterval(renderCharts, 2000);
     // renderCharts();
+
+</script>
+<script>
+    function updateInstanceCount() {
+        // 'charts' 섹션 내에 있는 canvas 요소의 개수를 계산합니다.
+        const charts = document.getElementById('charts').getElementsByTagName('canvas');
+        const instanceCount = charts.length;
+        
+        // 'instanceCount' 요소의 텍스트를 업데이트합니다.
+        document.getElementById('instanceCount').textContent = instanceCount;
+    }
+
+    // 페이지 로드 시 실행
+    document.addEventListener('DOMContentLoaded', updateInstanceCount);
 </script>
 {% endblock %}
     
