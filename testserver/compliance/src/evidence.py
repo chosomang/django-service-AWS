@@ -1,6 +1,7 @@
 from django.conf import settings
 from datetime import datetime
 from ..models import Evidence
+import traceback
 
 from common.neo4j.handler import Neo4jHandler
 
@@ -101,7 +102,7 @@ class EvidenceDataList(EvidenceBase):
         except Exception as e:
             return []
 
-    def get_data_related_compliance(self, search_cate=None, search_content=None):
+    def get_data_related_compliance(self, search_cate=None, search_content=None) -> dict:
         try:
             if search_cate=="compliance":
                 cypher=f"""
@@ -129,8 +130,11 @@ class EvidenceDataList(EvidenceBase):
                 RETURN version, '' AS chapter, '' AS section, '' AS article
                 """
             results = self.run_data(database=self.user_db, query=cypher)
+            compliance_list = list()
+            for result in results:
+                compliance_list.append(dict(result))
             
-            return results
+            return compliance_list
         except Exception as e:
             return []
 
@@ -258,6 +262,54 @@ class EvidenceDataHandler(EvidenceBase):
             print(e)
             return "Failed To Delete Data. Please Try Again."
 
+    def get_compliance_version_list(self):
+        try:
+            compliance = self.request.get('compliance', '').replace('-', '_').capitalize()
+            cypher = f"""
+            MATCH (:Compliance)-[:COMPLIANCE]->(c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)
+            WITH toString(v.date) as version ORDER BY v.date
+            RETURN COLLECT(version)
+            """
+            response = self.run(database=self.user_db, query=cypher)
+        except Exception as e:
+            response = []
+        finally:
+            return response
+    
+    def get_compliance_article_list(self):
+        try:
+            compliance = self.request.get('compliance', '').replace('-', '_').capitalize()
+            version = self.request.get('version', '')
+            cypher=f"""
+                OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:SECTION]->(:Section)-[:ARTICLE]->(a:Article)
+                WITH a
+                WHERE a IS NOT NULL AND v.date = date('{version}')
+                RETURN a.no AS no, a.name AS name
+
+                UNION
+
+                OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:CHAPTER]->(:Chapter)-[:ARTICLE]->(a:Article)
+                WITH a
+                WHERE a IS NOT NULL AND v.date = date('{version}')
+                RETURN a.no AS no, a.name AS name
+
+                UNION
+
+                OPTIONAL MATCH (c:Compliance{{name:'{compliance}'}})-[:VERSION]->(v:Version)-[:ARTICLE]->(a:Article)
+                WITH a
+                WHERE a IS NOT NULL AND v.date = date('{version}')
+                RETURN a.no AS no, a.name AS name
+            """
+            response = []
+            results = self.run_records(database=self.user_db, query=cypher)
+            for result in results:
+                response.append({'no':result['no'], 'name': result['name']})
+            response = sorted(response, key=lambda x: [int(i) for i in x['no'].split('.')])
+        except Exception as e:
+            print(traceback.format_exc())
+            response = []
+        finally:
+            return response
 
 class EvidenceFileHandler(Neo4jHandler):
     def __init__(self, request) -> None:
@@ -383,7 +435,7 @@ class EvidenceFileHandler(Neo4jHandler):
             documents = Evidence.objects.filter(user_uuid=self.user_uuid, title=comment)
             for document in documents:
                 if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
-                    print(document.uploadedFile.path)
+                    # print(document.uploadedFile.path)
                     document.uploadedFile.delete(save=False)
                     document.delete()
             return "Successfully Deleted Evidence File"
@@ -395,7 +447,6 @@ class EvidenceFileHandler(Neo4jHandler):
 class ComplianceHandler(EvidenceBase):
     def add_related_compliance(self):
         try:
-            print(self.request)
             data_name = self.request.get('data_name', '')
             compliance = self.request.get('compliance', '')
             version = self.request.get('version', '')
@@ -426,7 +477,6 @@ class ComplianceHandler(EvidenceBase):
 
     def delete_related_compliance(self):
         try:
-            print(self.request)
             data_name = self.request.get('data_name', '')
             compliance = self.request.get('compliance', '')
             version = self.request.get('version', '')
@@ -449,7 +499,6 @@ class ComplianceHandler(EvidenceBase):
                 SET d.last_update='{last_update}'
                 DELETE evidence
                 """
-            print(cypher)
             self.run(database=self.user_db, query=cypher)
             return "Successfully Deleted Related Complicance"
         except Exception as e:

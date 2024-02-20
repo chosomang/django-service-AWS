@@ -67,7 +67,8 @@ DJOSER = {
 # Application definition
 INSTALLED_APPS = [
     '_auth',
-    'api',
+    'api.metrics',
+    'api.trigger',
     'common',
     'M_logs',
     'M_equipments',
@@ -222,3 +223,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = os.path.join('/home/yoonan/DATABASE/')
 MEDIA_URL = '/media/'
+# APPEND_SLASH = True

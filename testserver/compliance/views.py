@@ -177,6 +177,9 @@ def evidence_data_detail_view(request, product_name, data_name):
                 'related_compliance_list': datalist_handler.get_data_related_compliance(search_cate='evidence', search_content=data_name),
                 'compliance_list': datalist_handler.get_compliance_list()
             }
+            
+        context['related_compliance_list'][0]['version'] = dict(context['related_compliance_list'][0]['version']) 
+        context['related_compliance_list'][0]['version']['name'] = context['related_compliance_list'][0]['version']['name'].upper().replace("_", "-")
         return render(request, f"compliance/evidence_management/details.html", context)
 
 def evidence_file_action(request, action_type):
@@ -195,7 +198,6 @@ def evidence_file_action(request, action_type):
                     return HttpResponse(file_handler.modify_evidence_file())
                 elif action_type == 'delete':
                     return HttpResponse(file_handler.delete_evidence_file())
-
 
 def evidence_related_compliance(request, action_type):
     if request.method == 'POST':
@@ -223,6 +225,7 @@ def policy_action(request, action_type):
                 return HttpResponse(compliance_policy.delete_policy())
 
 def policy_data_action(request, action_type):
+    print(action_type)
     if request.method == 'POST':
         with CompliancePolicyHandler(request=request) as compliance_policy:
             if action_type == 'add':

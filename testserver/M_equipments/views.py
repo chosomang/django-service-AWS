@@ -37,6 +37,10 @@ def registration_page(request, equipment, logType):
     context = {'logType': logType}
     return render(request, f"M_equipment/registration/{equipment}.html", context)
 
+@login_required
+def registration_view(request):
+    return render(request, f"M_equipment/registration.html")
+
 def integration_registration_ajax(request, equipment, logType, actionType):
     if request.method == 'POST':
         if actionType == 'check':

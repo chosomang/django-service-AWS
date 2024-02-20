@@ -33,7 +33,7 @@ urlpatterns = [
     path('evidence/', views.evidence_view),
     path('evidence/data/<action_type>/', views.evidence_data_action),
     path('evidence/file/<action_type>/', views.evidence_file_action),
-    path('evidence/compliance/<action_type>/', views.evidence_related_compliance),    
+    path('evidence/compliance/<action_type>/', views.evidence_related_compliance),
     path('evidence/<product_name>/<data_name>/', views.evidence_data_detail_view),
 
     # Policy Management

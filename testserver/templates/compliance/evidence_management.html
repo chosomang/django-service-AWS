@@ -47,15 +47,18 @@
                             <td>{{data.data.author}}</td>
                             <td>{{data.data.last_update}}</td>
                             <td>
+                                <!-- Details -->
                                 <a href="/compliance/evidence/{{data.product.name}}/{{ data.data.name }}/">
                                     <button type="button" class="btn btn-md btn-outline-teiren"><i class="fa-solid fa-circle-info mr-2"></i>Details</button>
                                 </a>
                             </td>
                             <td>
+                                <!-- Modify -->
                                 <button type="button" class="btn btn-md btn-teiren" data-toggle="modal" data-target="#data_mod"
                                 data-name="{{data.data.name}}" data-comment="{{data.data.comment}}" data-author="{{data.data.author}}"><i class="fa-solid fa-pen-to-square mr-2"></i>Modify</button>
                             </td>
                             <td>
+                                <!-- Delete -->
                                 <button type="button" class="btn btn-md btn-danger" data-toggle="modal" data-target="#data_delete"
                                 data-name="{{data.data.name}}" data-comment="{{data.data.comment}}" data-author="{{data.data.author}}"><i class="fa-solid fa-trash mr-2"></i>Delete</button>
                             </td>
@@ -304,5 +307,6 @@
     })
 </script>
 <script src="{% static '/M_compliance/js/evidence_management/searchcard.js' %}"></script>
+<script>$('#compliance_side').addClass('active');</script>
 {% endblock %}
 

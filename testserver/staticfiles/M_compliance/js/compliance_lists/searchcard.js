@@ -110,3 +110,4 @@ $('.searchbox-input').on('input', function() {
         }
     });
 });
+$('#compliance_side').addClass('active');

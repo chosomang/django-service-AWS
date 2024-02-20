@@ -1,9 +1,13 @@
 from django.urls import include, path
 from configurations import views
+from .views import account_view, dashboard_view
+from .test_views import AccountIndexView, DashboardView, TestView, AccountConfigView
 
 # path:
 #   ./configurations/
 urlpatterns = [
-    path('<config_type>/', views.configuration_view),
-    path('account/<config_type>/', views.account_config)
+    path('account/', AccountIndexView.as_view(), name='account'),
+    path('account/<config_type>', AccountConfigView.as_view(), name='account_config'),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('test/<args>/', TestView.as_view(), name='test'),
 ]

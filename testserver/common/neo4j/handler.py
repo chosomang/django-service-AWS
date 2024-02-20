@@ -1,5 +1,6 @@
 # local
 from datetime import datetime
+import traceback
 # 3rd party
 from neo4j import GraphDatabase
 # django
@@ -42,9 +43,12 @@ class Neo4jHandler:
         Returns:
             list: [<dict|Record>, <dict|Record>, ...]
         """
-        with self.driver.session(database=database) as session:
-            res = session.execute_write(self._run, query)
-            return res
+        try:
+            with self.driver.session(database=database) as session:
+                res = session.execute_write(self._run, query)
+                return res
+        except:
+            print(traceback.format_exc())
     
     def run_records(self, database, query) -> list:
         """Execute run cypher and returns a list of multiple record objects.

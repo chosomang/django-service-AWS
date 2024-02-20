@@ -13,6 +13,7 @@ function getCookie(name = 'csrftoken') {
     return cookieValue;
 }
 
+$('#compliance_side').addClass('active');
 
 $("#dataTable").DataTable({
     ordering: false,

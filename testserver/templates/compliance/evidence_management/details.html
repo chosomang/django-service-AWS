@@ -147,13 +147,13 @@
                     {%for compliance in related_compliance_list%}
                     <tr>
                         <td>{{forloop.counter}}</td>
-                        <td>{{compliance.version.name.upper|replace:"_,-"}}</td>
+                        <td>{{compliance.version.name}}</td>
                         <td>{{compliance.version.date}}</td>
                         <td>{{compliance.chapter.no}} {{compliance.chapter.name}}</td>
                         <td>{{compliance.section.no}} {{compliance.section.name}}</td>
                         <td>{{compliance.article.no}} {{compliance.article.name}}</td>
                         <td>
-                            <form method="POST" action="/compliance/lists/{{compliance.version.name.upper|replace:"_,-"}}/details/">
+                            <form method="POST" action="/compliance/lists/{{compliance.version.name}}/details/">
                                 {% csrf_token %}
                                 <input type="hidden" name="no" value="{{compliance.article.no}}"/>
                                 <input type="hidden" name="name" value="{{compliance.article.name}}"/>
@@ -162,7 +162,7 @@
                         </td>
                         <td>
                             <button class="btn btn-md btn-danger" data-toggle="modal" data-target="#compliance_delete" 
-                                data-compliance="{{compliance.version.name.upper|replace:"_,-"}}" data-version="{{compliance.version.date}}" data-article="{{compliance.article.no}} {{compliance.article.name}}">
+                                data-compliance="{{compliance.version.name}}" data-version="{{compliance.version.date}}" data-article="{{compliance.article.no}} {{compliance.article.name}}">
                                 <i class="fa-solid fa-trash mr-2"></i>Delete
                             </button>
                         </td>

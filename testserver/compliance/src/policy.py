@@ -1,6 +1,7 @@
 # local
 from datetime import datetime
 from common.neo4j.handler import Neo4jHandler
+import traceback
 from ..models import Policy
 
 # django
@@ -211,8 +212,9 @@ class CompliancePolicyHandler(CompliancePolicyBase):
                     author:'{author}'
                 }})
             OPTIONAL MATCH (d)-[:FILES]->(f)
-            RETURN COUNT(f) AS count_f, COUNT(d) AS count_d"
+            RETURN COUNT(f) AS count_f, COUNT(d) AS count_d
             """
+            
             results = self.run(database=self.user_db, query=cypher)
             if 0 < results['count_f']:
                 cypher = f"""
@@ -237,8 +239,8 @@ class CompliancePolicyHandler(CompliancePolicyBase):
                         author:'{author}'
                     }})
                 OPTIONAL MATCH (d)-[:FILES]->(f)
-                RETURN {{name: f.name, comment: f.commnet}} AS file
                 DETACH DELETE d
+                RETURN {{name: f.name, comment: f.commnet}} AS file
                 """
                 self.run(database=self.user_db, query=cypher)
                 return "Successfully Deleted Policy Data"
@@ -246,7 +248,7 @@ class CompliancePolicyHandler(CompliancePolicyBase):
                 raise Exception
 
         except Exception as e:
-            print(e)
+            print(traceback.format_exc())
             return "Failed To Delete Policy Data. Please Try Again."
 
     def get_policy_data_details(self, policy_type, data_type):

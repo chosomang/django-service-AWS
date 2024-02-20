@@ -1,13 +1,19 @@
+from common.neo4j.handler import Neo4jHandler
+
 from django.contrib.auth.models import User
 from django.conf import settings
-from py2neo import Graph
 
 # AWS
 host = settings.NEO4J['HOST']
 port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
 password = settings.NEO4J['PASSWORD']
-graph = Graph(f"bolt://{host}:{port}", auth=(username, password))
+
+
+class UserConfiguration(Neo4jHandler):
+    def __init__(self) -> None:
+        super().__init__()
+        
 
 def data_masking(text):
     response = ''
@@ -25,7 +31,6 @@ def data_masking(text):
             continue
         response += '*'
     return start+response+end
-
 
 def get_account_list():
     cypher = f"""

@@ -32,11 +32,9 @@
     </div>
 
     <section id="charts" class="charts">
-        <!-- EC2 인스턴스별 차트가 여기에 동적으로 추가됨 -->
+        <!-- EC2 인스턴스별 차트를 추가 -->
         <!-- <div id="charts" style="max-width: 800px; margin: 0 auto;"></div> -->
     </section>
-
-    <!-- 기타 필요한 자바스크립트 파일 -->
 </body>
 
 
@@ -55,7 +53,7 @@
     }
     
     async function fetchMetrics(uuid) {
-        const response = await fetch(`http://127.0.0.1:8000/api/v1/get_metrics_by_uuid/${uuid}`);
+        const response = await fetch(`/api/v1/metrics/agent/${uuid}`);
         return await response.json();
     }
 
@@ -198,7 +196,7 @@
     // 페이지 로드 시 실행
     document.addEventListener('DOMContentLoaded', updateInstanceCount);
 </script>
+<script>$('#ec2_dashboard_side').addClass('active');</script>
 {% endblock %}
-    
 </body>
 </html>

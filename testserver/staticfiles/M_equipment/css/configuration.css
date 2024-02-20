@@ -1,0 +1,40 @@
+.card-header {
+    display: flex; /* Flexbox 레이아웃 사용 */
+    justify-content: space-between; /* 요소들 사이에 공간을 균등하게 분배 */
+    align-items: center; /* 세로 중앙 정렬 */
+    padding: 0.75rem 1.25rem; /* py-3 (상하 패딩), Bootstrap 클래스를 CSS로 변환 */
+}
+
+.card-header .m-0 {
+    margin: 0; /* m-0, Bootstrap 클래스를 CSS로 변환 */
+}
+
+.card-header .font-weight-bold {
+    font-weight: bold; /* font-weight-bold, Bootstrap 클래스를 CSS로 변환 */
+}
+
+.card-header > div {
+    padding-right: 20px; /* 오른쪽 컨테이너에 20px의 패딩 추가 */
+}
+
+#refresh-button {
+    border: 1px solid #d90c0c; /* 테두리 */
+    background-color: #ffffff; /* 기본 배경색 */
+    padding: 10px 15px; /* 내부 여백 */
+    cursor: pointer; /* 마우스 오버 시 커서 변경 */
+    transition: background-color 0.3s; /* 색상 변화 애니메이션 */
+    border-radius: 5px; /* 모서리 둥글게 */
+}
+
+#refresh-button:hover {
+    background-color: #e8e8e8; /* 마우스 오버 시 배경색 변경 */
+}
+
+#refresh-button:active {
+    background-color: #d8d8d8; /* 버튼 클릭 시 배경색 변경 */
+}
+
+#refresh-button img {
+    width: 20px; /* 이미지 크기 */
+    height: 20px;
+}

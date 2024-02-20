@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.urls import reverse
 from django.shortcuts import render, redirect
-from api.models import Metrics
+from api.metrics.models import Metrics
 
 
 # Monitoring dashbaord without uuid

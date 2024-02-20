@@ -55,3 +55,4 @@ $('.btn-info').hover(
         $('.btn-info .material-symbols-outlined').toggleClass('fa-bounce')
     }
 )
+$('#compliance_side').addClass('active');

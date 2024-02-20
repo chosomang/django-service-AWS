@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static '/M_equipment/css/configuration.css' %}">
+{% endblock %}
 {% block content %}
 <!-- Begin Page Content -->
 <div class="locationbar ml-2">
@@ -13,8 +16,10 @@
     <div class="card shadow mb-4 ">
         <div class="card-header py-3 ">
             <h6 class="m-0 font-weight-bold text-teiren ">Registered Resources</h6>
+            <button id="refresh-button" aria-label="새로고침">
+                <!-- <img src="{% static 'M_equipment/img/refresh.png' %}" alt="새로고침"> -->
+            </button>
         </div>
-        <button id="refresh-button">새로고침</button>
         <div class="card-body" id="section-to-refresh" style="font-size:12px">
             <div class="table-responsive" style="overflow:hidden;">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0" style="table-layout:fixed;text-align:center;">

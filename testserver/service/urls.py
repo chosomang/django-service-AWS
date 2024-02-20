@@ -36,7 +36,7 @@ urlpatterns = [
     path('logs/', include('M_logs.urls')),
     path('threat/', include('M_threatD.urls')),
     path('configurations/', include('configurations.urls')),
-    path(f'api/{API_VERSION}/', include('api.urls')),
+    path(f'api/{API_VERSION}/metrics/', include('api.metrics.urls')),
     path('compliance/', include('compliance.urls')),
     path('test/', include('testing.urls')),
     path('monitoring/', include('monitoring.urls'))

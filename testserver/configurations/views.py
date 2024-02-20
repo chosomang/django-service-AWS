@@ -8,11 +8,18 @@ from configurations.src import account
 HTML_FILE_PATH = 'configurations'
 
 @login_required
-def configuration_view(request, config_type):
-    if config_type == 'account':
+def account_view(request):
+    if request.method == 'POST':
         context = account.get_account_list()
-        return render(request, f"{HTML_FILE_PATH}/{config_type}.html", context)
-    return render(request, f"{HTML_FILE_PATH}/{config_type}.html")
+        return render(request, f"{HTML_FILE_PATH}/account.html", context)
+    return render(request, f"{HTML_FILE_PATH}/account.html")
+
+@login_required
+def dashboard_view(request):
+    if request.method == 'POST':
+        context = account.get_account_list()
+        return render(request, f"{HTML_FILE_PATH}/dashboard.html", context)
+    return render(request, f"{HTML_FILE_PATH}/dashboard.html")
 
 @login_required
 def account_config(request, config_type):
