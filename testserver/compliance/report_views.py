@@ -27,13 +27,14 @@ class RenderCompliance(Neo4jHandler):
         WHERE p.name = 'AWS'
         OPTIONAL MATCH (a)<-[:POLICY]-(d:Data:Evidence:Compliance)<-[:DATA]-(:Policy:Evidence:Compliance)
         OPTIONAL MATCH (a)<-[:EVIDENCE]-(data:Data:Evidence:Compliance)<-[:DATA]-(p)
+        OPTIONAL MATCH (evi:File:Evidence:Compliance)<-[:FILE]-(data)
         OPTIONAL MATCH (a)<-[:MAPPED]->(law_a:Article)<-[*]-(law_v:Version)<-[:VERSION]-(law:Law)
         OPTIONAL MATCH (law_v)-[:CHAPTER]->(law_c:Chapter)-[:SECTION]->(law_s:Section)-[:ARTICLE]->(law_a)
         OPTIONAL MATCH (law_v)-[:CHAPTER]->(law_c1:Chapter)-[:ARTICLE]->(law_a)
-        WITH split(a.no, '.') as articleNo, c, s, a, coalesce(r, {score: 0}) as r, p, i, COLLECT(d)[0] as d,
+        WITH split(a.no, '.') as articleNo, c, s, a, coalesce(r, {score: 0}) as r, p, i, COLLECT(d)[0] as d, evi,
             law, law_a, law_v, law_s, law_c, law_c1
         WITH toInteger(articleNo[0]) AS part1, toInteger(articleNo[1]) AS part2, toInteger(articleNo[2]) AS part3,
-            c, s, a, r, p, i, d, law, law_a, law_v, law_s, law_c, law_c1
+            c, s, a, r, p, i, d, evi,law, law_a, law_v, law_s, law_c, law_c1
         WITH part1, part2, part3, c, s, a, r, p, i, d,
             {
                 lawname: COALESCE(law.name, ''),
@@ -43,8 +44,14 @@ class RenderCompliance(Neo4jHandler):
                 lawSectionName: COALESCE(law_s.name, ''),
                 lawArticleNo: COALESCE(law_a.no + '조', ''),
                 lawArticleName: COALESCE(law_a.name, '')
-            } AS law
-        WITH part1, part2, part3, c, s, a, r, p, i, d, COLLECT(law) as law
+            } AS law,
+            {
+                evidenceFileName: COALESCE(evi.name,''),
+                evidenceFileComment: COALESCE(evi.comment,''),
+                evidenceFileVersion: COALESCE(evi.version, ''),
+                evidenceFileAuthor: COALESCE(evi.author,'')
+            } AS evi
+        WITH part1, part2, part3, c, s, a, r, p, i, d, COLLECT(evi) as evi, COLLECT(law) as law
         RETURN
             c.no AS chapterNo,
             c.name AS chapterName,
@@ -56,11 +63,11 @@ class RenderCompliance(Neo4jHandler):
             a.checklist AS articleChecklist,
             r.score AS complyScore,
             i.date AS version,
-            law
+            law,
+            evi
         ORDER BY part1, part2, part3
         """
         results = self.run_data(database=self.db_name, query=cypher)
-        
         # for result in results:
         #     # send to make_html_to_data()
         #     yield result
