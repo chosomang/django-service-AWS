@@ -19,8 +19,8 @@ def log_view(request, resourceType, logType):
         else:
             logType = (' ').join(logType.split('_'))
             context['logType']= logType.title()
-            
-        return render(request,f"M_logs/log.html",context)
+        
+        return render(request, "M_logs/log.html",context)
 
 ## Detail Modal
 def log_modal(request, resourceType, logType):
