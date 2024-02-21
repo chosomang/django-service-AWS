@@ -1,6 +1,7 @@
 # local
 from ..models import Evidence
 from common.neo4j.handler import Neo4jHandler
+import traceback
 
 # django
 from django.conf import settings
@@ -465,7 +466,7 @@ class ComplianceListHandler(ComplianceListBase):
     def delete_related_policy(self):
         try:
             policy = self.request.get('policy', '')
-            data = self.requestOST.get('name', '')
+            data = self.request.get('name', '')
             compliance = self.request.get('compliance', '').replace('-','_').capitalize()
             com_version = self.request.get('com_version', '')
             article = self.request.get('art_no', '')
@@ -479,8 +480,10 @@ class ComplianceListHandler(ComplianceListBase):
             SET d.last_update = '{timestamp}'
             DELETE rel
             """
-            
-            self.run(database=self.user_db, query=cypher)
+            print(cypher)
+            result = self.run(database=self.user_db, query=cypher)
+            print(result)
             return 'Successfully Deleted Related Policy'
         except Exception as e:
+            print(traceback.format_exc())
             return "Failed To Delete Related Policy. Please Try Again."
