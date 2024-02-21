@@ -1,4 +1,5 @@
 {% load static %}
+    <div id="loading-animation" style="display:none;">Loading...</div>
     <div class="table-responsive" style="overflow:hidden;">
         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0" style="table-layout:fixed;text-align:center;">
             <thead>
@@ -74,7 +75,7 @@
                     {% endfor %}
                 {% else %}
                 <tr>
-                    <td colspan="7" style="font-size:20px">No Data</td>
+                    <td colspan="7" style="font-size:12.8px">No Data</td>
                 </tr>
                 {% endif %}
             </tbody>
