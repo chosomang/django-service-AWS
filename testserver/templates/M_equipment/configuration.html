@@ -16,11 +16,17 @@
     <div class="card shadow mb-4 ">
         <div class="card-header py-3 ">
             <h6 class="m-0 font-weight-bold text-teiren ">Registered Resources</h6>
-            <button id="refresh-button" aria-label="새로고침">
-                <!-- <img src="{% static 'M_equipment/img/refresh.png' %}" alt="새로고침"> -->
+            <button class="btn-reset" type="button" id="refresh-button">
+                <span class="material-symbols-outlined">
+                    restart_alt
+                </span>
             </button>
+            {% comment %} <button class="btn-reset"  aria-label="새로고침"> {% endcomment %}
+                {% comment %} <img src="{% static 'M_equipment/img/refresh.png' %}" alt="새로고침"> {% endcomment %}
+            {% comment %} </button> {% endcomment %}
         </div>
         <div class="card-body" id="section-to-refresh" style="font-size:12px">
+            <div id="loading-animation" style="display:none;">Loading...</div>
             <div class="table-responsive" style="overflow:hidden;">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0" style="table-layout:fixed;text-align:center;">
                     <thead>
@@ -91,7 +97,7 @@
                                             </button>
                                     </form>
                                 </td>
-                                </tr>
+                                </tr>   
                             {% endfor %}
                         {% else %}
                         <tr>
@@ -163,6 +169,22 @@ document.getElementById('refresh-button').addEventListener('click', function() {
     fetch('/integration/refresh/')
     .then(response => response.text())
     .then(data => {
+        document.getElementById('section-to-refresh').innerHTML = data;
+        $('#dataTable').DataTable();
+    });
+});
+</script>
+<script>
+document.getElementById('refresh-button').addEventListener('click', function() {
+    // 로딩 애니메이션 표시
+    document.getElementById('loading-animation').style.display = 'block';
+
+    // 데이터 새로고침 요청
+    fetch('/integration/refresh/')
+    .then(response => response.text())
+    .then(data => {
+        // 새로고침 완료 시 애니메이션 숨김
+        document.getElementById('loading-animation').style.display = 'none';
         document.getElementById('section-to-refresh').innerHTML = data;
         $('#dataTable').DataTable();
     });
