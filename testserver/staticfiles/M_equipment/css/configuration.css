@@ -18,12 +18,13 @@
 }
 
 #refresh-button {
-    border: 1px solid #d90c0c; /* 테두리 */
-    background-color: #ffffff; /* 기본 배경색 */
-    padding: 10px 15px; /* 내부 여백 */
+    color: gray;
+    border: 1px solid #03030367; /* 테두리 */
+    background-color: #ffffffb0; /* 기본 배경색 */
+    padding: 3px 15px; /* 내부 여백 */
     cursor: pointer; /* 마우스 오버 시 커서 변경 */
     transition: background-color 0.3s; /* 색상 변화 애니메이션 */
-    border-radius: 5px; /* 모서리 둥글게 */
+    border-radius: 2px; /* 모서리 둥글게 */
 }
 
 #refresh-button:hover {
@@ -35,6 +36,16 @@
 }
 
 #refresh-button img {
-    width: 20px; /* 이미지 크기 */
-    height: 20px;
+    width: 17px; /* 이미지 크기 */
+    height: 17px;
+}
+
+#loading-animation {
+    /* 중앙에 위치하도록 스타일 설정 */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* 기타 스타일 */
+    font-size: 30px;
 }
