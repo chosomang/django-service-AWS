@@ -1,9 +1,10 @@
 # local
+import re
 import os
 import pytz
 from datetime import datetime
 from common.neo4j.handler import Neo4jHandler
-from .src.report.module import convert_html_to_pdf
+from .src.report.module import convert_html_to_pdf, capture_first_page_pdf
 
 # django
 from django.http import FileResponse
@@ -51,7 +52,7 @@ class RenderCompliance(Neo4jHandler):
                 evidenceFileVersion: COALESCE(evi.version, ''),
                 evidenceFileAuthor: COALESCE(evi.author,'')
             } AS evi
-        WITH part1, part2, part3, c, s, a, r, p, i, d, COLLECT(evi) as evi, COLLECT(law) as law
+        WITH part1, part2, part3, c, s, a, r, p, i, d, COLLECT(evi) as evidence_list, COLLECT(law) as law
         RETURN
             c.no AS chapterNo,
             c.name AS chapterName,
@@ -64,7 +65,7 @@ class RenderCompliance(Neo4jHandler):
             r.score AS complyScore,
             i.date AS version,
             law,
-            evi
+            evidence_list
         ORDER BY part1, part2, part3
         """
         results = self.run_data(database=self.db_name, query=cypher)
@@ -85,18 +86,30 @@ def make_compliance_file_name(compliance_type):
     KTZ = pytz.timezone('Asia/Seoul')
     kr_time = datetime.now(KTZ)
 
-    return f"[Teirend] {compliance_type} Compliance Report-{kr_time.strftime('%y%m%d_%H%M')}.pdf"
+    return f"[Teiren] {compliance_type} Compliance Report-{kr_time.strftime('%y%m%d_%H%M')}.pdf"
+
+def get_file_type(file_name) -> str:
+    file_type = 'None'
+    if file_name.endswith('.pdf'):
+        file_type = 'pdf'
+    elif file_name.endswith('.png'):
+        file_type = 'png'
+    elif file_name.endswith('.jpg'):
+        file_type = 'jpg'
+    elif file_name.endswith('.jpeg'):
+        file_type = 'jpeg'
+    return file_type
         
 @login_required
 def report(request, compliance_type):
     user_uuid = request.session.get('uuid')
     file_name = make_compliance_file_name(compliance_type)
-    compliance_folder_path = f"{settings.MEDIA_ROOT}{user_uuid}/compliance-report"
+    compliance_folder_path = f"{settings.MEDIA_ROOT}{user_uuid}/compliance_report"
+    compliance_all_folder_path = f"{settings.MEDIA_ROOT}{user_uuid}/compliance_report/file-image"
     compliance_file_path = f"{compliance_folder_path}/{file_name}"
     
-    print(compliance_folder_path)
     try:
-        os.makedirs(compliance_folder_path, exist_ok=True)
+        os.makedirs(compliance_all_folder_path, exist_ok=True)
     except FileExistsError:
         return HttpResponse("Error: User Database Not Found")
     except Exception as e:
@@ -108,9 +121,43 @@ def report(request, compliance_type):
         results:list = comphandler.get_report_data()
     context = {
         'page': [1,2],
-        'results': results
+        'results': results,
+        'uuid': request.session.get('uuid')
     }
     # settings.MEDIA_URL: /home/yoonan/webAPP/DATABASE/
+    """
+    evidence_list = [
+            {
+                'evidenceFileAuthor': 'testuser1', 
+                'evidenceFileComment': 'test2', 
+                'evidenceFileName': '서폿이_말대꾸.png', 
+                'evidenceFileVersion': 'v_1.0'
+            }, 
+            {
+                'evidenceFileAuthor': 'testuser1', 
+                'evidenceFileComment': 'test file comment', 
+                'evidenceFileName': '컨설팅이_말대꾸.png', 
+                'evidenceFileVersion': ''
+            }
+        ]
+    """
+    print('='*50)
+    for result in results:
+        for evidence_data in result['evidence_list']:
+            if evidence_data['evidenceFileName']:
+                print(f"evidence_data filename: {evidence_data['evidenceFileName']}")
+                print(result)
+                file_type = get_file_type(evidence_data['evidenceFileName'])
+                if file_type == 'pdf':
+                    # make first page of pdf file to image
+                    # file_name = re.sub(r'[^\w\-_\. ]', '', evidence_data['evidenceFileName'])
+                    capture_first_page_pdf(pdf_path=f"{settings.MEDIA_ROOT}{user_uuid}/Evidence/aws/{evidence_data['evidenceFileName']}",
+                                           output_image_path=compliance_all_folder_path,
+                                           file_name=evidence_data['evidenceFileName'])
+                evidence_data.update({
+                    'fileType': file_type
+                })
+                
     html_content =  render_to_string('report/index.html', context=context)
     result = convert_html_to_pdf(html_content=html_content, pdf_path=compliance_file_path)
     if not result:
