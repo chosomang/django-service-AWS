@@ -155,10 +155,13 @@ class EvidenceDataHandler(EvidenceBase):
             RETURN count(c) AS count
             """
             result = self.run(database=self.user_db, query=cypher)
+            print(f"article: {self.request['article']}")
+            print(f"compliance: {self.request['compliance']}")
             if 0 < result['count']:
                 return "Data Already Exsists. Please Enter Different Name."
             else:
                 if self.request['article'] != '':
+                    print('Add article')
                     cypher = f"""
                     MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{self.request['product']}'}})
                     MATCH (v:Version{{name:'{self.request['compliance'].replace('-','_').capitalize()}', date:date('{self.request['version']}')}})-[*]->(a:Article{{compliance_name:'{self.request['compliance'].replace('-','_').capitalize()}', no:'{self.request['article'].split(' ')[0]}'}})
@@ -172,6 +175,7 @@ class EvidenceDataHandler(EvidenceBase):
                     RETURN COUNT(d) AS count
                     """
                 elif self.request['compliance'] != '':
+                    print('Add compliance')
                     cypher = f"""
                     MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{self.request['product']}'}})
                     MATCH (c:Version:Compliance{{name:'{self.request['compliance'].replace('-','_').capitalize()}', date:date('{self.request['version']}')}})
@@ -216,7 +220,7 @@ class EvidenceDataHandler(EvidenceBase):
                 return "Data Name Already Exsists. Please Enter New Data Name."
             else:
                 comment = self.request.get('comment', '')
-                author = self.reuqest.get('author', '')
+                author = self.request.get('author', '')
                 
                 last_update = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 cypher = f"""
@@ -305,6 +309,8 @@ class EvidenceDataHandler(EvidenceBase):
             for result in results:
                 response.append({'no':result['no'], 'name': result['name']})
             response = sorted(response, key=lambda x: [int(i) for i in x['no'].split('.')])
+            print('='*30)
+            print(f"article list: {response}")
         except Exception as e:
             print(traceback.format_exc())
             response = []
@@ -325,7 +331,8 @@ class EvidenceFileHandler(Neo4jHandler):
                 return f"Please Enter/Select {key.capitalize()}"
         try:
             data_name = self.request_data.get('data_name', '')
-            uploaded_file = self.request.FILE.get("file", '')
+            uploaded_file = self.request.FILES.get("file", '')
+            print(uploaded_file.name)
             product = self.request_data.get('product', '')
             
             cypher = f"""
@@ -342,10 +349,20 @@ class EvidenceFileHandler(Neo4jHandler):
                 poc = self.request_data.get('poc', '')
                 upload_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 
+                # Saving the information in the database
+                print(product)
+                document = Evidence(
+                    user_uuid=self.user_uuid,
+                    title=comment,
+                    product=product,
+                    uploadedFile=uploaded_file
+                )
+                document.save()
+                
                 cypher = f"""
                 MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})
                 MERGE (f:File:Compliance:Evidence {{
-                    name:'{uploaded_file.name.replace(' ', '_')}',
+                    name:'{uploaded_file.name}',
                     comment:'{comment}',
                     author:'{author}',
                     poc:'{poc}',
@@ -357,16 +374,9 @@ class EvidenceFileHandler(Neo4jHandler):
                 """
                 self.run(database=self.user_db, query=cypher)
 
-                # Saving the information in the database
-                document = Evidence(
-                    user_uuid=self.user_uuid,
-                    title=comment,
-                    product=product,
-                    uploadedFile=uploaded_file
-                )
-                document.save()
                 return "Successfully Added Evidence File"
         except Exception as e:
+            print(traceback.format_exc())
             return 'Failed To Add Evidence File. Please Try Again.'
 
     def modify_evidence_file(self):
