@@ -41,8 +41,6 @@ def compliance_lists_modify(request, compliance_type):
         data.update({'compliance_type': compliance_type})
         return render(request, f"compliance/compliance_lists/dataTable.html", data)
 
-
-
 def download_compliance_report(reqeust, compliance_type):
     file_name = "[Teiren]ISMS-P Compliance Report.docx"
     file_path = f"/home/yoonan/teiren/media/docx/{file_name}"
@@ -68,7 +66,7 @@ def compliance_lists_file_action(request, action_type):
         if action_type == 'download':
             documents = Evidence.objects.filter(title=request.POST.get('comment', '')) # commnet = title
             for document in documents:
-                if document.uploadedFile.name.endswith(request.POST.get('name', '').replace('[','').replace(']','')):
+                if document.uploadedFile.name:
                     file_path = document.uploadedFile.path
                     return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=document.uploadedFile.name)
         else:
@@ -177,9 +175,11 @@ def evidence_data_detail_view(request, product_name, data_name):
                 'related_compliance_list': datalist_handler.get_data_related_compliance(search_cate='evidence', search_content=data_name),
                 'compliance_list': datalist_handler.get_compliance_list()
             }
-            
-        context['related_compliance_list'][0]['version'] = dict(context['related_compliance_list'][0]['version']) 
-        context['related_compliance_list'][0]['version']['name'] = context['related_compliance_list'][0]['version']['name'].upper().replace("_", "-")
+        try:    
+            context['related_compliance_list'][0]['version'] = dict(context['related_compliance_list'][0]['version']) 
+            context['related_compliance_list'][0]['version']['name'] = context['related_compliance_list'][0]['version']['name'].upper().replace("_", "-")
+        except IndexError:
+            return render(request, f"compliance/evidence_management/details.html", context)
         return render(request, f"compliance/evidence_management/details.html", context)
 
 def evidence_file_action(request, action_type):
@@ -225,7 +225,6 @@ def policy_action(request, action_type):
                 return HttpResponse(compliance_policy.delete_policy())
 
 def policy_data_action(request, action_type):
-    print(action_type)
     if request.method == 'POST':
         with CompliancePolicyHandler(request=request) as compliance_policy:
             if action_type == 'add':
