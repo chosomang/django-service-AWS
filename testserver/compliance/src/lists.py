@@ -59,7 +59,7 @@ class ComplianceFileHandler(Neo4jHandler):
                     (i:Compliance:Version{{name:'{compliance.replace('-','_').capitalize()}', date:date('{com_version}')}})
                 MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[:DATA]->(n:Compliance:Evidence:Data{{name:'{data_name}'}})
                 MERGE (e:Compliance:Evidence:File{{
-                        name:'{file.name.replace(' ', '_')}',
+                        name:'{file.name}',
                         comment:'{comment}',
                         upload_date:'{timestamp}',
                         last_update:'{timestamp}',
@@ -142,7 +142,7 @@ class ComplianceFileHandler(Neo4jHandler):
             if og_comment != comment:
                 documents = Evidence.objects.filter(user_uuid=self.user_uuid, title=f"{og_comment}")
                 for document in documents:
-                    if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
+                    if document.uploadedFile.name:
                         document.title = comment
                         document.save()
             return "Successfully Modified Evidence File"
@@ -175,10 +175,10 @@ class ComplianceFileHandler(Neo4jHandler):
             DETACH DELETE f
             """
             self.run(database=self.user_db, query=cypher)
-            
+            print('file delete')
             documents = Evidence.objects.filter(user_uuid=self.user_uuid, title=comment)
             for document in documents:
-                if document.uploadedFile.name.endswith(name.replace('[','').replace(']','')):
+                if document.uploadedFile.name:
                     print(document.uploadedFile.path)
                     document.uploadedFile.delete(save=False)
                     document.delete()
@@ -229,6 +229,7 @@ class ComplianceListHandler(ComplianceListBase):
             product = 'AWS'
             
         if compliance_type == 'Isms_p':
+            print('comply 연결해주기')
             cypher = f"""
             MATCH (i:Compliance:Version{{name:'{compliance_type}'}})-[:CHAPTER]->(c:Chapter:Compliance:Certification)-[:SECTION]->
                 (s:Certification:Compliance:Section)-[:ARTICLE]->(a:Certification:Compliance:Article)
@@ -315,6 +316,7 @@ class ComplianceListHandler(ComplianceListBase):
 
         if score  == '0':
             try:
+                print('comply 연결해주기2')
                 cypher = f"""
                 MATCH (i:Compliance:Version{{name:'{compliance_type}', date:date('{version}')}})-[:CHAPTER]->(c:Chapter:Compliance:Certification)-[:SECTION]->(n:Certification:Compliance:Section)-[:ARTICLE]->(m:Certification:Compliance:Article{{no:'{article}'}})<-[r:COMPLY]-(p:Product:Evidence:Compliance{{name:'{product}'}})
                 detach delete r
@@ -327,6 +329,7 @@ class ComplianceListHandler(ComplianceListBase):
                 return "Fail"
         elif 1 <= int(score) <= 2:
             try:
+                print('comply 연결해주기3')
                 cypher = f"""
                 MATCH (i:Compliance:Version{{name:'{compliance_type}', date:date('{version}')}})-[:CHAPTER]->(c:Chapter:Compliance:Certification)-[:SECTION]->(n:Certification:Compliance:Section)-[:ARTICLE]->(m:Certification:Compliance:Article{{no:'{article}'}})
                 OPTIONAL MATCH (m)<-[r:COMPLY]-(p:Product:Evidence:Compliance{{name:'{product}'}})
@@ -429,7 +432,7 @@ class ComplianceListHandler(ComplianceListBase):
         """
         policy_data_list = self.run(database=self.user_db, query=cypher)
 
-        print(data_list['data_list'])
+        print(f"data_list: {data_list['data_list']}")
         return {'law_list': law_list,
                 'article_list': article_list,
                 'evidence_list' : evidence_list,
