@@ -39,7 +39,8 @@ urlpatterns = [
     path(f'api/{API_VERSION}/metrics/', include('api.metrics.urls')),
     path('compliance/', include('compliance.urls')),
     path('test/', include('testing.urls')),
-    path('monitoring/', include('monitoring.urls'))
+    path('monitoring/', include('monitoring.urls')),
+    path("__debug__/", include("debug_toolbar.urls")),
     # path(f'compliance/{COMPLIANCE_VERSION}/', include(f'compliance.{COMPLIANCE_VERSION}.urls')),
     # path('', include(f'ajax_handler.{AJAX_VERSION}.urls')),
     # path('', include('TeirenSIEM.urls')),
