@@ -31,3 +31,5 @@ django-allauth
 Aspose.Slides
 docx2pdf
 pdfkit
+pdf2image
+debug_toolbar
