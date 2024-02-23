@@ -260,6 +260,9 @@ def policy_data_file_action(request, policy_type, data_type, action_type):
 def data_file_preview(request, evidence_type):
     if request.method == 'POST':
         file_url, mime_type = get_file_preivew_details(request, evidence_type)
+        print("---------")
+        print(file_url)
+        print(mime_type)
         return render(request, "compliance/file_preview.html", {'file': file_url, 'file_type':mime_type})
 
 #-------------------------------------------------------------------------------------------

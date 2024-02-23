@@ -71,7 +71,7 @@
                         <th>PoC</th>
                         <th>Author</th>
                         <th>Upload Date</th>
-                        <th>Preview</th>
+                        {% comment %} <th>Preview</th> {% endcomment %}
                         <th>Download</th>
                         <th>Modify</th>
                         <th>Delete</th>
@@ -87,14 +87,14 @@
                             <td>{{file.poc}}</td>
                             <td>{{file.author}}</td>
                             <td>{{file.upload_date}}</td>
-                            <td>
+                            {% comment %} <td>
                                 <form>
                                     {% csrf_token %}
                                     <input type="hidden" name="name" value="{{file.name}}">
                                     <input type="hidden" name="comment" value="{{file.comment}}">
                                     <button type="button" class="btn btn-md btn-outline-teiren" onClick="preview(this)"><i class="fa-solid fa-magnifying-glass mr-2"></i>Preview</button>
                                 </form>
-                            </td>
+                            </td> {% endcomment %}
                             <td>
                                 <form method="POST" action="/compliance/evidence/file/download/" target="_blank">
                                     {% csrf_token %}
@@ -190,14 +190,15 @@
             <div class="modal-body card-body" style="font-size:12px;">
                 <form id="file_add_form">
                     <p>Data Name: <input class="form-control" name="data_name" type="text" readonly></p>
-                    <p>File: <div class="form-control"><input name="file" type="file" accept="image/*, .pdf, .xlsx, .xls, .hwp, .hwpx, .ppt, .pptx, .csv, .docx, .doc"></div></p>
+                    {% comment %} <p>File: <div class="form-control"><input name="file" type="file" accept="image/*, .pdf, .xlsx, .xls, .hwp, .hwpx, .ppt, .pptx, .csv, .docx, .doc"></div></p> {% endcomment %}
+                    <p>File: <div class="form-control"><input name="file" type="file" accept=".png, .jpg, .jpeg, .pdf"></div></p>
                     <p>File Comment: <input class="form-control" name="comment" type="text"></p>
                     <p>Author: <input class="form-control" name="author" type="text" readonly></p>
                     <p>Version: <input class="form-control" name="version" type="text"></p>
                     <p>PoC: <input class="form-control" name="poc" type="text"></p>
                     <input type="hidden" name="product" value="{{product_name}}">
-                    <h6>image 파일 전체, pdf, 엑셀(xlsx, xls, csv), 한글파일(hwp, hwpx), 파워포인트(ppt, pptx), 워드(docx, doc)</h6>
-                    <h6 class="mb-2">형식만 업로드 가능합니다.</h6>
+                    {% comment %} <h6>image 파일 전체, pdf, 엑셀(xlsx, xls, csv), 한글파일(hwp, hwpx), 파워포인트(ppt, pptx), 워드(docx, doc)</h6> {% endcomment %}
+                    <h6> .png, .jpg, .jpeg, .pdf 파일 형식만 업로드 가능합니다. </h6>
                 </form>
             </div>
             <div class="modal-footer" id="modal_footer">

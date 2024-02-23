@@ -170,7 +170,7 @@
                         <th>PoC</th>
                         <th>Author</th>
                         <th>Upload Date</th>
-                        <th>Preview</th>
+                        {% comment %} <th>Preview</th> {% endcomment %}
                         <th>Download</th>
                         <th>Modify</th>
                         <th>Delete</th>
@@ -188,14 +188,14 @@
                                 <td>{{evidence.filePoc}}</td>
                                 <td>{{evidence.fileAuthor}}</td>
                                 <td>{{evidence.fileUploadDate}}</td>
-                                <td>
+                                {% comment %} <td>
                                     <form>
                                         {% csrf_token %}
                                         <input type="hidden" name="comment" value="{{evidence.fileComment}}">
                                         <input type="hidden" name="name" value="{{evidence.fileName}}">
                                         <button type="button" class="btn btn-md btn-outline-teiren" onClick="preview(this)"><i class="fa-solid fa-magnifying-glass"></i></button>
                                     </form>
-                                </td>
+                                </td> {% endcomment %}
                                 <td>
                                     <form method="POST" action="/compliance/lists/evidence/file/download/" target="_blank">
                                         {% csrf_token %}
@@ -262,7 +262,7 @@
                     <p>Version: <input type="text" class="form-control" name="version" value='' placeholder="ex. v_1.0"></p>
                     <p>Author: <input type="text" class="form-control" name="author" value="{{user}}" readonly></p>
                     <p>Poc: <input type="text" class="form-control" name="poc" value=''></p>
-                    <input type="file" name="file">
+                    <p>File: <div class="form-control"><input name="file" type="file" accept=".png, .jpg, .jpeg, .pdf"></div></p>
                     <input type="hidden" name="art_no" value="{{no}}"/>
                     <input type="hidden" name="compliance" value="{{compliance_type}}"/>
                     <input type="hidden" name="com_version" value="{{version}}"/>

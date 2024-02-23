@@ -88,7 +88,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework_simplejwt', # rest framework jwt token
-    "debug_toolbar",
+    # "debug_toolbar",
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -99,13 +99,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
-INTERNAL_IPS = [
-    # ...
-    '127.0.0.1',
-    # ...
-]
+# INTERNAL_IPS = [
+#     # ...
+#     '127.0.0.1',
+#     # ...
+# ]
 AUTHENTICATION_BACKENDS = {
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
