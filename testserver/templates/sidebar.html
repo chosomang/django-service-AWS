@@ -131,17 +131,13 @@
                         <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto" onclick="sidebarSearch($(this).parent())"></button>
                     </div>
                     <div class="divider"></div>
-                    <div class="item-toggle">
-                        <button class="item-header">
-                            Threat Alerts
-                            <span class="material-symbols-outlined">
-                                expand_more
-                            </span>
-                        </button>
-                        <a class="collapse-item" href="/threat/notifications/logs/" style="display:none;">
-                            Threat Alerts
-                        </a>
+                    <div class="item-header">
+                        Threat Alerts
                     </div>
+                    <a class="collapse-item" href="/threat/notifications/logs">
+                        Threat Alerts
+                        <div id="sidebar_alert" class="fa-bounce" hidden></div>
+                    </a>
                     <div class="divider"></div>
                     <div class="item-toggle">
                         <button class="item-header">
