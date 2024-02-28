@@ -1,5 +1,6 @@
 # local
-import json, operator
+import json
+import operator
 import traceback
 from common.neo4j.handler import Neo4jHandler
 # django
@@ -7,7 +8,7 @@ from django.conf import settings
 from django.shortcuts import render, HttpResponse
 # 3rd party
 
-## AWS
+# AWS
 host = settings.NEO4J['HOST']
 port = settings.NEO4J["PORT"]
 username = settings.NEO4J['USERNAME']
@@ -17,14 +18,15 @@ password = settings.NEO4J['PASSWORD']
 class Detection(Neo4jHandler):
     def __init__(self, request) -> None:
         super().__init__()
-        self.request = dict(request.POST.items()) if request.method == 'POST' else dict(request.GET.items())
+        self.request = dict(request.POST.items()) if request.method == 'POST' else dict(
+            request.GET.items())
         self.user_db = request.session.get('db_name')
-    
+
     def neo4j_graph(self):
         try:
             data = self.get_data()
             details = self.get_log_details()
-            context = {'graph': json.dumps(data), 'details': details }
+            context = {'graph': json.dumps(data), 'details': details}
             return context
         except Exception as e:
             print(traceback.print_exc())
@@ -37,7 +39,7 @@ class Detection(Neo4jHandler):
         else:
             data = self.get_dynamic()
         return data
-    
+
     def get_log_details(self):
         rule_class = self.request['rule_class']
         if rule_class == 'static':
@@ -47,32 +49,32 @@ class Detection(Neo4jHandler):
         return details
 
     # Node cytoscape.js 형태로 만들기
-    def get_node_json(self, node:dict, cloud):
+    def get_node_json(self, node: dict, cloud):
         data = {
-            "id" : node.id,
-            "name" : "",
-            "score" : 400,
-            "query" : True,
-            "gene" : True
+            "id": node.id,
+            "name": "",
+            "score": 400,
+            "query": True,
+            "gene": True
         }
         property_ = dict(node.items())
-        property_ = {key:property_[key] for key in sorted(property_.keys())}
+        property_ = {key: property_[key] for key in sorted(property_.keys())}
         if 'Log' in node.labels:
             data['label'] = 'Log'
             for key, value in property_.items():
                 if key == 'eventName':
                     data['name'] = value
                 else:
-                    if any(x in key for x in ['responseElements','requestParameters','tls']):
+                    if any(x in key for x in ['responseElements', 'requestParameters', 'tls']):
                         continue
                     if 'userAgent' in key:
                         continue
                     if 'errorMessage' in key:
-                        value = value.replace('\'', '[',1)
-                        value = value.replace('\'', ']',1)
+                        value = value.replace('\'', '[', 1)
+                        value = value.replace('\'', ']', 1)
                     if '\'' in str(value):
-                        value = value.replace('\'', '[',1)
-                        value = value.replace('\'', ']',1)
+                        value = value.replace('\'', '[', 1)
+                        value = value.replace('\'', ']', 1)
                     data[key] = value
         else:
             if 'Flow' in node.labels:
@@ -85,7 +87,8 @@ class Detection(Neo4jHandler):
                 data['score'] = 700
             if 'Between' in node.labels:
                 data['label'] = 'Between'
-                property_ = dict(sorted(property_.items(), key=operator.itemgetter(1), reverse=True))
+                property_ = dict(
+                    sorted(property_.items(), key=operator.itemgetter(1), reverse=True))
             if 'Role' in node.labels:
                 data['label'] = 'Role'
             if 'Rule' in node.labels:
@@ -95,18 +98,18 @@ class Detection(Neo4jHandler):
                 if key == 'name':
                     value = str(value)
                     value = value.split('_')[0]
-                if any(x in key for x in ['responseElements','requestParameters','tls','query','ruleOperators', 'ruleValues','ruleKeys']):
+                if any(x in key for x in ['responseElements', 'requestParameters', 'tls', 'query', 'ruleOperators', 'ruleValues', 'ruleKeys']):
                     continue
                 if 'errorMessage' in key:
-                    value = value.replace('\'', '[',1)
-                    value = value.replace('\'', ']',1)
+                    value = value.replace('\'', '[', 1)
+                    value = value.replace('\'', ']', 1)
                 if key == 'date' or key == 'userName':
                     value = str(value)
                     data['name'] = value
                 data[key] = value
         response = {
             "data": data,
-            "group" : "nodes"
+            "group": "nodes"
         }
         return response
 
@@ -116,7 +119,7 @@ class Detection(Neo4jHandler):
         eventTime = self.request['eventTime']
         logType = self.request['resource']
         id_ = self.request['id']
-        
+
         cypher = f"""
         MATCH (rule:Rule:{logType}{{ruleName: '{detected_rule}'}})<-[detect:DETECTED]-(log:Log:{logType}{{eventTime:'{eventTime}'}})
         WHERE ID(detect) = {id_}
@@ -163,8 +166,8 @@ class Detection(Neo4jHandler):
         WITH nodes,
             COLLECT({{
                 relation_id: ID(relation),
-                start_node_id: ID(STARTNODE(relation)),
-                end_node_id: ID(ENDNODE(relation)),
+                start_node_id: ID(apoc.rel.startNode(relation)),
+                end_node_id: ID(apoc.rel.endNode(relation)),
                 relation_type: TYPE(relation)
             }}) AS relations
         RETURN nodes AS nodes, relations As relations
@@ -173,10 +176,10 @@ class Detection(Neo4jHandler):
             results = self.run_data(database=self.user_db, query=cypher)
         except Exception:
             print(traceback.print_exc())
-            
+
         # type(results) = list
         # results[0] = dict
-        
+
         # response = list
         # response.append(<dict>)
         # response = list
@@ -457,8 +460,8 @@ class Detection(Neo4jHandler):
         WITH nodes,
             COLLECT({{
                 relation_id: ID(relation),
-                start_node_id: ID(STARTNODE(relation)),
-                end_node_id: ID(ENDNODE(relation)),
+                start_node_id: ID(apoc.rel.startNode(relation)),
+                end_node_id: ID(apoc.rel.endNode(relation)),
                 relation_type: TYPE(relation)
             }}) AS relations
         RETURN nodes, relations
@@ -524,7 +527,7 @@ class Detection(Neo4jHandler):
                 node['resourceType'] = 'system'
             response.append(node)
         return response
-    
+
         # Flow Rule 로그 디테일
     def get_dynamic_details(self):
         detected_rule = self.request['detected_rule']
@@ -674,22 +677,19 @@ class Detection(Neo4jHandler):
                 node['resourceType'] = 'system'
             response.append(node)
         return response
-    
+
     # Relationship cytoscape.js 형태로 만들기
     def get_relation_json(self, relation):
         data = {
-            "source" : relation['start_node_id'],
-            "target" : relation['end_node_id'],
-            "weight" : 1,
-            "group" : "coexp",
-            "id" : "e"+str(relation['relation_id']),
+            "source": relation['start_node_id'],
+            "target": relation['end_node_id'],
+            "weight": 1,
+            "group": "coexp",
+            "id": "e"+str(relation['relation_id']),
             "name": relation['relation_type']
         }
         response = {
-            "data" : data,
-            "group" : "edges"
+            "data": data,
+            "group": "edges"
         }
         return response
-
-
-
