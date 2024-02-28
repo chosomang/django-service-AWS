@@ -18,16 +18,16 @@ urlpatterns = [
     path('rules/<resourceType>/<logType>/<ruleType>/details/', ajax_views.rule_details),
 
     # Edit Modal
-    path('rules/<resourceType>/<logType>/edit/', ajax_views.rule_edit_modal),
     path('custom/edit/', ajax_views.edit_rule),
+    path('rules/<resourceType>/<logType>/edit/', ajax_views.rule_edit_modal),
 
     # Delete Modal
     path('custom/delete/', ajax_views.delete_rule),
 
     # Add Modal
-    path('rules/<resourceType>/<logType>/add/', ajax_views.rule_add_modal),
-    path('custom/add/<section>/', ajax_views.add_rule_section),
     path('custom/add/', ajax_views.add_rule),
+    path('custom/add/<section>/', ajax_views.add_rule_section),
+    path('rules/<resourceType>/<logType>/add/', ajax_views.rule_add_modal),
 
     # On/Off Action
     path('rules/<resourceType>/<logType>/on_off/', ajax_views.on_off)

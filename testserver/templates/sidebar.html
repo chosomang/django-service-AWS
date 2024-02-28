@@ -131,13 +131,17 @@
                         <button class="btn fa-solid fa-magnifying-glass" style="margin-left:auto" onclick="sidebarSearch($(this).parent())"></button>
                     </div>
                     <div class="divider"></div>
-                    <div class="item-header">
-                        Threat Alerts
+                    <div class="item-toggle">
+                        <button class="item-header">
+                            Threat Alerts
+                            <span class="material-symbols-outlined">
+                                expand_more
+                            </span>
+                        </button>
+                        <a class="collapse-item" href="/threat/notifications/logs/" style="display:none;">
+                            Threat Alerts
+                        </a>
                     </div>
-                    <a class="collapse-item" href="/threat/notifications/logs/">
-                        Threat Alerts
-                        <div id="sidebar_alert" class="fa-bounce" hidden></div>
-                    </a>
                     <div class="divider"></div>
                     <div class="item-toggle">
                         <button class="item-header">
@@ -227,7 +231,7 @@
                     </div>
                 </div>
             </li>
-            <li>
+            {% comment %} <li>
                 <a id="ec2_dashboard_side" class="nav-link">
                     <span class="material-symbols-outlined">
                         library_add
@@ -259,7 +263,7 @@
                         </a>
                     </div>
                 </div>
-            </li>
+            </li> {% endcomment %}
         </ul>
     </div>
     {% comment %} <div id="sidebar-bottom">

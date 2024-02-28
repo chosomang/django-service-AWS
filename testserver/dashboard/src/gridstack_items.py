@@ -137,7 +137,7 @@ class DashboardHandler(Neo4jHandler):
         WITH COLLECT(DISTINCT(name)) as names, COLLECT(count) as counts
         RETURN names AS names, counts AS counts
         """
-        results = self.run(self.user_db, cypher)
+        results = self.run(database=self.user_db, query=cypher)
         user_threat = {'name': results['names'], 'count': results['counts'], 'color': ['#24B6D4','#1cc88a','#f6c23e','#fd7e14','#e74a3b']}
         context = {'user_threat': json.dumps(user_threat)}
         if isinstance(self.request, dict):
@@ -500,8 +500,10 @@ return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as 
 
     # Graph Visual
     def graphitem(self):
+        print('graphitem')
         if isinstance(self.request, dict):
             return render_to_string('dashboard/items/graphitem.html',{}, self.request['request'])
+        print('222')
         response = {'w':4, 'h':56, 'x':0,'content':render_to_string('dashboard/items/graphitem.html', {}, self.request)}
         return JsonResponse(response)
 

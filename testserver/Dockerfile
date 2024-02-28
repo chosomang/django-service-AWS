@@ -14,6 +14,7 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get install poppler-utils
+RUN apt-get update \
+    && apt-get install -y poppler-utils
 
 CMD ["entrypoint.sh"]

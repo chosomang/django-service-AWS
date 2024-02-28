@@ -16,6 +16,7 @@ from django.http import JsonResponse, HttpResponseRedirect
 # Notifications
 @login_required
 def notification_view(request, threat):
+    print(f'notifications, {threat}')
     if request.method == 'POST':
         context = dict(request.POST.items())
         with Notification(request=request) as __notification:

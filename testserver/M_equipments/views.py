@@ -14,8 +14,6 @@ def integration_view(request):
 def refresh_integration_section(request):
     context_ = list_integration(request.session.get('db_name'))
     context = refresh_container_status(integration_list=context_, user_db=request.session.get('db_name'))
-    
-    print(context)
     return render(request, f"M_equipment/integration_section.html", context)
 
 def integration_config_ajax(request, actionType):

@@ -27,7 +27,7 @@
             <tbody>
                 {% if integrations %}
                     {% for integration in integrations %}
-                        {% if not integration.error %}
+                        {% if not integration.status == 'running' %}
                         <tr class="text-danger">
                             <td><i class="fa-solid fa-triangle-exclamation fa-bounce"></i></td>
                         {% else %}

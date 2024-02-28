@@ -55,17 +55,17 @@
                         {% if integrations %}
                             {% for integration in integrations %}
                                 {% if not integration.status == 'running' %}
-                                <tr class="text-danger">
-                                    <td><i class="fa-solid fa-triangle-exclamation fa-bounce"></i></td>
+                                    <tr class="text-danger">
+                                        <td><i class="fa-solid fa-triangle-exclamation fa-bounce"></i></td>
                                 {% else %}
-                                <tr><td><i class="text-teiren fa-solid fa-circle-check"></i></td>
+                                    <tr><td><i class="text-teiren fa-solid fa-circle-check"></i></td>
                                 {% endif %}
-                                <td>{{ integration.integrationType|title }}</td>
-                                <td>{{ integration.logType|title }}</td>
+                                    <td>{{ integration.integrationType|title }}</td>
+                                    <td>{{ integration.logType|title }}</td>
                                 {% if integration.logType == integration.groupName %}
-                                <td>-</td>
+                                    <td>-</td>
                                 {% else %}
-                                <td>{{ integration.groupName }}</td>
+                                    <td>{{ integration.groupName }}</td>
                                 {% endif %}
                                 <td>{{ integration.accessKey }}</td>
                                 <td>

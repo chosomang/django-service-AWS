@@ -3,6 +3,7 @@ import json, types
 from . import gridstack_items as gitems
 from .gridstack_items import DashboardHandler
 from dashboard.src.models import GridLayout
+import traceback
 # django
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse, HttpResponseRedirect
@@ -55,6 +56,7 @@ def load_layout(request):
     # 3.레이아웃 불라오는건 default_layout 불러오기
     
     try:
+        print("==> load layout")
         layouts = GridLayout.objects.filter(name=request.POST['name'])
         for layout in layouts:
             items = json.loads(layout.data)
@@ -105,7 +107,7 @@ def load_layout(request):
                 continue
         response = json.dumps(items)
     except Exception as e:
-        print(f"error: {e}")
+        print(traceback.format_exc())
         return JsonResponse({}, status=400)
     return HttpResponse(response)
 
@@ -144,6 +146,7 @@ def default_layout(request):
         request_test = {'request': request}
         items = json.loads(dict(request.POST.items())['layout'])
         try:
+            print('===> default layout')
             with DashboardHandler(request_test) as dhandler:
                 for item in items:
                     if item['id'] == 'logTotal':

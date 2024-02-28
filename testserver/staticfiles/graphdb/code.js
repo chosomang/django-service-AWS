@@ -11,7 +11,6 @@ Promise.all([
   .then(function(dataArray) {
     var h = function(tag, attrs, children){
       var el = document.createElement(tag);
-
       Object.keys(attrs).forEach(function(key){
         var val = attrs[key];
 

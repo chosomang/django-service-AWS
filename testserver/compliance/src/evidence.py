@@ -155,13 +155,10 @@ class EvidenceDataHandler(EvidenceBase):
             RETURN count(c) AS count
             """
             result = self.run(database=self.user_db, query=cypher)
-            print(f"article: {self.request['article']}")
-            print(f"compliance: {self.request['compliance']}")
             if 0 < result['count']:
                 return "Data Already Exsists. Please Enter Different Name."
             else:
                 if self.request['article'] != '':
-                    print('Add article')
                     cypher = f"""
                     MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{self.request['product']}'}})
                     MATCH (v:Version{{name:'{self.request['compliance'].replace('-','_').capitalize()}', date:date('{self.request['version']}')}})-[*]->(a:Article{{compliance_name:'{self.request['compliance'].replace('-','_').capitalize()}', no:'{self.request['article'].split(' ')[0]}'}})
@@ -175,7 +172,6 @@ class EvidenceDataHandler(EvidenceBase):
                     RETURN COUNT(d) AS count
                     """
                 elif self.request['compliance'] != '':
-                    print('Add compliance')
                     cypher = f"""
                     MATCH (e:Compliance:Evidence{{name:'Evidence'}})-[:PRODUCT]->(p:Product:Evidence{{name:'{self.request['product']}'}})
                     MATCH (c:Version:Compliance{{name:'{self.request['compliance'].replace('-','_').capitalize()}', date:date('{self.request['version']}')}})
@@ -309,8 +305,6 @@ class EvidenceDataHandler(EvidenceBase):
             for result in results:
                 response.append({'no':result['no'], 'name': result['name']})
             response = sorted(response, key=lambda x: [int(i) for i in x['no'].split('.')])
-            print('='*30)
-            print(f"article list: {response}")
         except Exception as e:
             print(traceback.format_exc())
             response = []
@@ -332,7 +326,6 @@ class EvidenceFileHandler(Neo4jHandler):
         try:
             data_name = self.request_data.get('data_name', '')
             uploaded_file = self.request.FILES.get("file", '')
-            print(uploaded_file.name)
             product = self.request_data.get('product', '')
             
             cypher = f"""
@@ -350,7 +343,6 @@ class EvidenceFileHandler(Neo4jHandler):
                 upload_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 
                 # Saving the information in the database
-                print(product)
                 document = Evidence(
                     user_uuid=self.user_uuid,
                     title=comment,
