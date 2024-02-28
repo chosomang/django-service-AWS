@@ -15,7 +15,7 @@ $('.sidebar .collapse-hide-btn').on('click', function(){
     $('.sidebar .collapse').removeClass('open')
 })
 
-$('.sidebar .item-header').on('click',function(){
+$('.sidebar .item-toggle .item-header').on('click',function(){
     var chevron = $($(this).find('.material-symbols-outlined')[0])
     var buttons = $(this).parent().find('a')
     if ($.trim(chevron.text()) == 'expand_more'){
