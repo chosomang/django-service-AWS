@@ -1,3 +1,4 @@
+import re
 from django.conf import settings
 from datetime import datetime
 from ..models import Evidence
@@ -327,9 +328,10 @@ class EvidenceFileHandler(Neo4jHandler):
             data_name = self.request_data.get('data_name', '')
             uploaded_file = self.request.FILES.get("file", '')
             product = self.request_data.get('product', '')
+            file_name = re.sub(r'\s+', '_', uploaded_file.name)
             
             cypher = f"""
-            MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[*]->(f:File:Evidence:Compliance{{name:'{uploaded_file.name}'}})
+            MATCH (p:Product:Evidence:Compliance{{name:'{product}'}})-[*]->(f:File:Evidence:Compliance{{name:'{file_name}'}})
             RETURN count(f) AS count
             """
             result = self.run(database=self.user_db, query=cypher)
@@ -354,7 +356,7 @@ class EvidenceFileHandler(Neo4jHandler):
                 cypher = f"""
                 MATCH (d:Data:Compliance:Evidence{{name:'{data_name}'}})
                 MERGE (f:File:Compliance:Evidence {{
-                    name:'{uploaded_file.name}',
+                    name:'{file_name}',
                     comment:'{comment}',
                     author:'{author}',
                     poc:'{poc}',

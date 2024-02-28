@@ -65,5 +65,9 @@ def capture_first_page_pdf(pdf_path, output_image_path, file_name):
     # PDF 파일에서 이미지로 변환
     images = convert_from_path(pdf_path, first_page=1, last_page=1)
     # 첫 번째 페이지 이미지 저장
-    images[0].save(f"{output_image_path}/convert-image-{file_name}.png", 'PNG')
+    print('이미지 저장')
+    try:
+        images[0].save(f"{output_image_path}/convert-image-{file_name}.png", 'PNG')
+    except Exception as e:
+        print(e)
 

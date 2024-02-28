@@ -2,6 +2,7 @@
 import re
 import os
 import pytz
+import traceback
 from datetime import datetime
 from common.neo4j.handler import Neo4jHandler
 from .src.report.module import convert_html_to_pdf, capture_first_page_pdf
@@ -141,28 +142,31 @@ def report(request, compliance_type):
             }
         ]
     """
-    print('='*50)
-    for result in results:
-        for evidence_data in result['evidence_list']:
-            if evidence_data['evidenceFileName']:
-                print(f"evidence_data filename: {evidence_data['evidenceFileName']}")
-                print(result)
-                file_type = get_file_type(evidence_data['evidenceFileName'])
-                if file_type == 'pdf':
-                    # make first page of pdf file to image
-                    # file_name = re.sub(r'[^\w\-_\. ]', '', evidence_data['evidenceFileName'])
-                    capture_first_page_pdf(pdf_path=f"{settings.MEDIA_ROOT}{user_uuid}/Evidence/aws/{evidence_data['evidenceFileName']}",
-                                           output_image_path=compliance_all_folder_path,
-                                           file_name=evidence_data['evidenceFileName'])
-                evidence_data.update({
-                    'fileType': file_type
-                })
-                
-    html_content =  render_to_string('report/index.html', context=context)
-    result = convert_html_to_pdf(html_content=html_content, pdf_path=compliance_file_path)
-    if not result:
-        return HttpResponse("Error: Fail to Export Compliance PDF File")
-    if os.path.exists(compliance_folder_path+'/'):
-        return FileResponse(open(compliance_file_path, 'rb'), as_attachment=True, filename=file_name)
-    else:
-        return HttpResponse("Error: User Database Not Found")
+    try:
+        print('='*50)
+        for result in results:
+            for evidence_data in result['evidence_list']:
+                if evidence_data['evidenceFileName']:
+                    print(f"evidence_data filename: {evidence_data['evidenceFileName']}")
+                    print(result)
+                    file_type = get_file_type(evidence_data['evidenceFileName'])
+                    if file_type == 'pdf':
+                        # make first page of pdf file to image
+                        # file_name = re.sub(r'[^\w\-_\. ]', '', evidence_data['evidenceFileName'])
+                        capture_first_page_pdf(pdf_path=f"{settings.MEDIA_ROOT}{user_uuid}/Evidence/aws/{evidence_data['evidenceFileName']}",
+                                            output_image_path=compliance_all_folder_path,
+                                            file_name=evidence_data['evidenceFileName'])
+                    evidence_data.update({
+                        'fileType': file_type
+                    })
+                    
+        html_content =  render_to_string('report/index.html', context=context)
+        result = convert_html_to_pdf(html_content=html_content, pdf_path=compliance_file_path)
+        if not result:
+            return HttpResponse("Error: Fail to Export Compliance PDF File")
+        if os.path.exists(compliance_folder_path+'/'):
+            return FileResponse(open(compliance_file_path, 'rb'), as_attachment=True, filename=file_name)
+        else:
+            return HttpResponse("Error: User Database Not Found")
+    except:
+        print(traceback.format_exc())

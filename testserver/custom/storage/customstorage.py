@@ -12,7 +12,9 @@ def get_valid_filename(s):
     'tawandas portrait in 2019.jpg'
     """
     s = force_str(s).strip()
-    return re.sub(r'(?u)^\w. ', '', s)
+    s = re.sub(r'(?u)^\w. ', '', s)
+    s = re.sub(r'\s+', '_', s)
+    return s
 
 
 class CleanFileNameStorage(FileSystemStorage):
