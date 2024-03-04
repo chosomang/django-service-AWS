@@ -33,6 +33,7 @@ class Detection(Neo4jHandler):
             return HttpResponse({'message': '다시 시도'})
 
     def get_data(self):
+        print(self.request)
         rule_class = self.request['rule_class']
         if rule_class == 'static':
             data = self.get_static()
@@ -124,7 +125,7 @@ class Detection(Neo4jHandler):
         MATCH (rule:Rule:{logType}{{ruleName: '{detected_rule}'}})<-[detect:DETECTED]-(log:Log:{logType}{{eventTime:'{eventTime}'}})
         WHERE ID(detect) = {id_}
         WITH rule, detect, log
-        OPTIONAL MATCH p=(log)<-[:ACTED*6]-(:Log)
+        OPTIONAL MATCH p=(log)<-[:ACTED|NEXT*6]-(:Log)
         CALL apoc.do.when(
             p IS NULL,
             "
@@ -134,7 +135,7 @@ class Detection(Neo4jHandler):
                 RETURN nodes, relations
                 ",
             "
-                MATCH p=(log)<-[:ACTED*..5]-(view:Log)
+                MATCH p=(log)<-[:ACTED|NEXT*..5]-(view:Log)
                 WITH COLLECT(p)[-1] as p
                 WITH NODES(p) as nodes, RELATIONSHIPS(p) as relations
                 WITH nodes, relations, nodes[-1] as last
@@ -173,6 +174,7 @@ class Detection(Neo4jHandler):
         RETURN nodes AS nodes, relations As relations
         """
         try:
+            print(cypher)
             results = self.run_data(database=self.user_db, query=cypher)
         except Exception:
             print(traceback.print_exc())
@@ -485,7 +487,7 @@ class Detection(Neo4jHandler):
         MATCH p=(rule:Rule:{logType}{{ruleName:'{detected_rule}'}})<-[detected:DETECTED|FLOW_DETECTED]-(log:Log:{logType} {{eventTime:'{eventTime}'}})
         WHERE ID(detected) = {id_}
         WITH log
-        MATCH p=(log)<-[:ACTED*..15]-(:Log)
+        MATCH p=(log)<-[:ACTED|NEXT*..15]-(:Log)
         WITH NODES(COLLECT(p)[-1]) AS nodes, log
         UNWIND nodes as node
         WITH DISTINCT(node), log
