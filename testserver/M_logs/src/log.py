@@ -52,27 +52,31 @@ class DashboardLogHandler(Neo4jHandler):
         return response
     
     def create_where_dict(self, filter_dict) -> dict:
-        field_mappings = {
-            'eventTime': ['eventTime', 'timestamp', 'request_creation_time', 'eventTime'],
-            'eventType': ['eventName', 'queryType', 'type', 'eventName'],
-            'source': ['userIdentity_arn', 'client_port', 'sourceIp'],
-            'destination': ['eventSource', 'queryname', 'elb', 'serverIp'],
-            'eventResult': ['errorCode', 'eventType', 'responseCode', 'actions_executed', 'eventResult'],
-            'srcIp': ['sourceIPAddress', 'client_port', 'sourceIp'],
-            'dstIp': ['resolverIp', 'request', 'serverIp'],
-        }
-
         where_dict = {}
         for key, value in filter_dict.items():
+            ## If main search -> change to regex
             if key == 'main':
                 key = value[0]
                 value[0] = 'regex'
 
-            where_dict[key] = {
-                'key': field_mappings.get(key, []),
-                'value': value
-            }
-            
+            where_dict[key] = {}
+            if key == 'logTypes':
+                pass
+            elif key == 'eventTime':
+                where_dict[key]['key'] = ['eventTime', 'timestamp', 'request_creation_time', 'eventTime']
+            elif key == 'eventType':
+                where_dict[key]['key'] = ['eventName', 'queryType', 'type', 'eventName']
+            elif key == 'source':
+                where_dict[key]['key'] = ['userIdentity_arn', 'client_port', 'sourceIp', 'requestParameters_roleArn']
+            elif key == 'destination':
+                where_dict[key]['key'] = ['eventSource', 'queryname', 'elb', 'serverIp']
+            elif key == 'eventResult':
+                where_dict[key]['key'] = ['errorCode', 'eventType', 'responseCode', 'actions_executed', 'eventResult']
+            elif key == 'srcIp':
+                where_dict[key]['key'] = ['sourceIPAddress', 'client_port', 'sourceIp']
+            elif key == 'dstIp':
+                where_dict[key]['key'] = ['resolverIp', 'request', 'serverIp']
+            where_dict[key]['value'] = value
         return where_dict
 
     def get_log_page(self, logType):
@@ -90,20 +94,20 @@ class DashboardLogHandler(Neo4jHandler):
         #Filtering
         filter_dict = {}
         for key, value in self.request_.items():
-            if key == 'page' or key.endswith('regex') or value[0] == 'all': 
-                continue
+            if key == 'page' or key.endswith('regex') or value[0] == 'all': continue
             if 'main' in filter_dict and key in filter_dict['main']:
                 continue
             if len(value) == 1 and value[0] == '':
                 continue
-            if key.startswith('main') and self.request_['main_search_value'][0] != '':
-                filter_dict['main'] = [self.request_['main_search_key'][0], self.request_['main_search_value'][0]]
-                continue
-            if key.startswith('eventTime'):
-                filter_dict['eventTime'] = [self.request_['eventTime_date_start'][0], self.request_['eventTime_date_end'][0]]
+            if key.startswith('main'):
+                if self.request_['main_search_value'][0] != '':
+                    filter_dict['main'] = [self.request_['main_search_key'][0],self.request_['main_search_value'][0]]
                 continue
             if value[0] == 'regex':
-                value = [value[0], self.request_[f'{key}_regex'][0]]
+                value.append(self.request_[f'{key}_regex'][0])
+            if key.startswith('eventTime'):
+                filter_dict['eventTime'] = [self.request_['eventTime_date_start'][0],self.request_['eventTime_date_end'][0]]
+                continue
             filter_dict[key] = value
         where_dict = self.create_where_dict(filter_dict)
 
@@ -130,6 +134,7 @@ class DashboardLogHandler(Neo4jHandler):
             where_cypher = where_cypher[:-4] + ') AND '
             if cnt == len(where_dict)-1:
                 where_cypher = where_cypher[:-5]
+        print(where_cypher)
 
         #페이지당 보여줄 로그 개수
         LIMIT_COUNT = 10
@@ -159,7 +164,7 @@ class DashboardLogHandler(Neo4jHandler):
             END AS eventType,
             CASE
                 WHEN n.userIdentity_arn IS NOT NULL THEN n.userIdentity_arn
-                WHEN n.resources_1_ARN IS NOT NULL THEN n.resources_1_ARN
+                WHEN n.requestParameters_roleArn IS NOT NULL THEN n.requestParameters_roleArn
                 WHEN n.client_port IS NOT NULL THEN n.client_port
                 WHEN n.userName IS NOT NULL THEN n.userName
                 ELSE '-'
@@ -235,6 +240,7 @@ class DashboardLogHandler(Neo4jHandler):
         response.update(self.execute_all_queries(logType))
         # print(response)
         
+        
         return response
     
     
@@ -253,13 +259,13 @@ class DashboardLogHandler(Neo4jHandler):
             results = [future.result() for future in futures]
         
         return {
-            'logType_list':results[0],
-            'eventType_list':results[1],
-            'source_list': results[2],
-            'destination_list': results[3],
-            'eventResult_list': results[4],
-            'srcIp_list': results[5],
-            'dstIp_list': results[6]
+            'logType_list':results[0][0],
+            'eventType_list':results[1][0],
+            'source_list': results[2][0],
+            'destination_list': results[3][0],
+            'eventResult_list': results[4][0],
+            'srcIp_list': results[5][0],
+            'dstIp_list': results[6][0]
             }
         
     def get_log_list(self, log_type):
