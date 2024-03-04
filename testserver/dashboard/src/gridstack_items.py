@@ -156,10 +156,11 @@ class DashboardHandler(Neo4jHandler):
         results = self.run(self.user_db, cypher)
         # equip_color = [color.get(result['equip']) for result in results]
         if results['equip'] and results['count']:
+            print(results)
             equip_threat = {
                 'name': results['equip'],
                 'count': results['count'],
-                'color': color.get(results['equip'][0])
+                'color': [color.get(resource) for resource in results['equip']]
             }
         else:
             equip_threat = {
@@ -214,32 +215,32 @@ class DashboardHandler(Neo4jHandler):
     # 시나리오 분석 위협도
     def threatSenario(self):
         cypher = f"""
-MATCH (r:Rule)<-[n:DETECTED|FLOW_DETECTED]-(:Log)
-WITH n, r
-WITH count(n) AS rule_count, r.ruleName as name, r.level as level
-WITH level, rule_count,
-    CASE
-        WHEN rule_count > 50 THEN 4
-        WHEN 30 < rule_count <= 50  THEN 3
-        WHEN 10 <= rule_count <= 30 THEN 2
-        ELSE 1
-    END as freq
-WITH freq+level as degree, rule_count
-WITH rule_count,
-    CASE
-        WHEN 7<= degree <= 8 THEN 4
-        WHEN 5<= degree <= 6 THEN 3
-        WHEN 3<= degree <= 4 THEN 2
-        ELSE 1
-    END AS threat_level
-WITH COLLECT({{threat_level: threat_level, rule_count: rule_count}}) as data, sum(rule_count) as num_threat_levels
-UNWIND data as item
-WITH sum((item.threat_level*item.rule_count)) as total_threat_levels, num_threat_levels, data
-UNWIND data as item
-WITH toInteger(round(toFloat(total_threat_levels)/num_threat_levels)) as average, item
-WITH sum(item.rule_count) as count, item.threat_level as level, average
-return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as count
-"""
+        MATCH (r:Rule)<-[n:DETECTED|FLOW_DETECTED]-(:Log)
+        WITH n, r
+        WITH count(n) AS rule_count, r.ruleName as name, r.level as level
+        WITH level, rule_count,
+            CASE
+                WHEN rule_count > 50 THEN 4
+                WHEN 30 < rule_count <= 50  THEN 3
+                WHEN 10 <= rule_count <= 30 THEN 2
+                ELSE 1
+            END as freq
+        WITH freq+level as degree, rule_count
+        WITH rule_count,
+            CASE
+                WHEN 7<= degree <= 8 THEN 4
+                WHEN 5<= degree <= 6 THEN 3
+                WHEN 3<= degree <= 4 THEN 2
+                ELSE 1
+            END AS threat_level
+        WITH COLLECT({{threat_level: threat_level, rule_count: rule_count}}) as data, sum(rule_count) as num_threat_levels
+        UNWIND data as item
+        WITH sum((item.threat_level*item.rule_count)) as total_threat_levels, num_threat_levels, data
+        UNWIND data as item
+        WITH toInteger(round(toFloat(total_threat_levels)/num_threat_levels)) as average, item
+        WITH sum(item.rule_count) as count, item.threat_level as level, average
+        return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as count
+        """
         results = self.run(self.user_db, cypher)
         degree = {
             1: 3.20,
@@ -269,32 +270,32 @@ return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as 
     # 중요도 별 위협 개수
     def threatLevel(self):
         cypher = f"""
-MATCH (r:Rule)<-[n:DETECTED|FLOW_DETECTED]-(:Log)
-WITH n, r
-WITH count(n) AS rule_count, r.ruleName as name, r.level as level
-WITH level, rule_count,
-    CASE
-        WHEN rule_count > 50 THEN 4
-        WHEN 30 < rule_count <= 50  THEN 3
-        WHEN 10 <= rule_count <= 30 THEN 2
-        ELSE 1
-    END as freq
-WITH freq+level as degree, rule_count
-WITH rule_count,
-    CASE
-        WHEN 7<= degree <= 8 THEN 4
-        WHEN 5<= degree <= 6 THEN 3
-        WHEN 3<= degree <= 4 THEN 2
-        ELSE 1
-    END AS threat_level
-WITH COLLECT({{threat_level: threat_level, rule_count: rule_count}}) as data, sum(rule_count) as num_threat_levels
-UNWIND data as item
-WITH sum((item.threat_level*item.rule_count)) as total_threat_levels, num_threat_levels, data
-UNWIND data as item
-WITH toInteger(round(toFloat(total_threat_levels)/num_threat_levels)) as average, item
-WITH sum(item.rule_count) as count, item.threat_level as level, average
-return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as count
-"""
+        MATCH (r:Rule)<-[n:DETECTED|FLOW_DETECTED]-(:Log)
+        WITH n, r
+        WITH count(n) AS rule_count, r.ruleName as name, r.level as level
+        WITH level, rule_count,
+            CASE
+                WHEN rule_count > 50 THEN 4
+                WHEN 30 < rule_count <= 50  THEN 3
+                WHEN 10 <= rule_count <= 30 THEN 2
+                ELSE 1
+            END as freq
+        WITH freq+level as degree, rule_count
+        WITH rule_count,
+            CASE
+                WHEN 7<= degree <= 8 THEN 4
+                WHEN 5<= degree <= 6 THEN 3
+                WHEN 3<= degree <= 4 THEN 2
+                ELSE 1
+            END AS threat_level
+        WITH COLLECT({{threat_level: threat_level, rule_count: rule_count}}) as data, sum(rule_count) as num_threat_levels
+        UNWIND data as item
+        WITH sum((item.threat_level*item.rule_count)) as total_threat_levels, num_threat_levels, data
+        UNWIND data as item
+        WITH toInteger(round(toFloat(total_threat_levels)/num_threat_levels)) as average, item
+        WITH sum(item.rule_count) as count, item.threat_level as level, average
+        return  COLLECT(average) as average, COLLECT(level) as level, COLLECT(count) as count
+        """
         results = self.run(self.user_db, cypher)
         degree = {
             1: 3.20,
