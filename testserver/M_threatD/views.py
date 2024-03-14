@@ -17,19 +17,25 @@ from django.http import JsonResponse, HttpResponseRedirect
 @login_required
 def notification_view(request, threat):
     print(f'notifications, {threat}')
+    print(request.method == 'POST')
     if request.method == 'POST':
         context = dict(request.POST.items())
-        with Notification(request=request) as __notification:
-            __notification.alert_off()
-        with Detection(request=request) as __detection:
-            res = __detection.neo4j_graph()
-            context.update(__detection.neo4j_graph())
-        return render(request, f"M_threatD/notifications/{threat}.html", context)
+        if threat == 'details':
+            with Notification(request=request) as __notification:
+                __notification.alert_off()
+            with Detection(request=request) as __detection:
+                context.update(__detection.neo4j_graph())
+            return render(request, f"M_threatD/notifications/{threat}.html", context)
+        elif threat == 'filter':
+            with Notification(request=request) as __notification:
+                context.update(__notification.get_alert_logs())
+            return render(request, f"M_threatD/notifications/dataTable.html", context)
     else:
         if threat == 'details':
             return HttpResponseRedirect('/threat/notifications/logs/')
     with Notification(request=request) as __notification:
         context = (__notification.get_alert_logs())
+        context.update(__notification.get_filter_list())
     return render(request, f"M_threatD/notifications/{threat}.html", context)
 
 # Rules
