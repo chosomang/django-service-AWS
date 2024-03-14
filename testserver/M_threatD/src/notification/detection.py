@@ -514,8 +514,13 @@ class Detection(Neo4jHandler):
         MATCH p=(rule:Rule:{logType}{{ruleName:'{detected_rule}'}})<-[detected:DETECTED|FLOW_DETECTED]-(log:Log:{logType} {{eventTime:'{eventTime}'}})
         WHERE ID(detected) = {id_}
         WITH log
-        MATCH p=(log)<-[:ACTED|NEXT*..15]-(:Log)
+        OPTIONAL MATCH p=(log)<-[:ACTED|NEXT*..15]-(:Log)
         WITH NODES(COLLECT(p)[-1]) AS nodes, log
+        WITH log,
+        CASE
+            WHEN nodes IS NULL THEN [log]
+            ELSE nodes + [log]
+        END AS nodes
         UNWIND nodes as node
         WITH DISTINCT(node), log
         RETURN
@@ -542,6 +547,7 @@ class Detection(Neo4jHandler):
             END AS type
         ORDER BY eventTime DESC
         """
+        print(cypher)
         results = self.run_data(database=self.user_db, query=cypher)
         response = []
         for result in results:
