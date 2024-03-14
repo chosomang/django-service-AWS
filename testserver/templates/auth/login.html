@@ -7,7 +7,7 @@
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
-        <div {% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>{{ message }}</div>
+        <div {% if message.tags %} class="auth-alert auth-alert-{{ message.tags }}"{% endif %}>{{ message }}</div>
         {% endfor %}
     </div>
     {% endif %}
@@ -40,7 +40,7 @@
                             <div class="auth-btn">
                                 <input type="submit" value="Login" class="btn btn-teiren btn-user btn-block font-weight-bold">
                                 <a href="/auth/register/" class="btn btn-outline-teiren btn-user btn-block font-weight-bold" >
-                                    <span>Sign Up</span>
+                                    <span>Register</span>
                                 </a>
                             </div>
                             <div></div>

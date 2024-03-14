@@ -291,4 +291,4 @@ def login_(request):
     return render(request, 'testing/login.html')
 
 def register_(request):
-    return render(request, 'testing/register.html')
+    return render(request, 'registration/activation_failure.html')

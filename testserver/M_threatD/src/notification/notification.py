@@ -135,7 +135,7 @@ class Notification(Neo4jHandler):
                 continue
             elif key == 'main_search_key':
                 if filter_dict['main_search_value'][0] != '':
-                    print(filter_dict['main_search_value'])
+                    # print(filter_dict['main_search_value'])
                     where_dict[value[0]] = ['regex', f".*{filter_dict['main_search_value'][0]}.*"]
             elif key.startswith('eventTime'):
                 if any(time != '' for time in [filter_dict['eventTime_date_start'][0], filter_dict['eventTime_date_end'][0]]):
@@ -163,7 +163,7 @@ class Notification(Neo4jHandler):
                 for val in value:
                     where_cypher += f"{key} = '{val}' OR "
                 where_cypher = where_cypher[:-4]+')'
-        print(where_cypher)
+        # print(where_cypher)
         cypher = f"""
         MATCH (l:Log)-[d:DETECTED|FLOW_DETECTED]->(r:Rule)
         WITH
@@ -246,7 +246,7 @@ class Notification(Neo4jHandler):
             'page_obj': page_obj
         }
 
-        print([((page-1)*10)+1, (page*10 if total_count > page*10 else total_count)])
+        # print([((page-1)*10)+1, (page*10 if total_count > page*10 else total_count)])
         return response
 
     def check_alert_logs(self):

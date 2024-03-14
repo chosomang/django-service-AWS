@@ -33,12 +33,12 @@ def login_(request):
             user = get_user_model().objects.get(username=username)
         except ObjectDoesNotExist:
             # 사용자가 없는경우
-            messages.warning(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
+            messages.warning(request, 'Username or Password is incorrect. Please try again')
             return render(request, 'auth/login.html')
             
         user_is_active = user.is_active
         if not user_is_active:
-            messages.warning(request, '이메일 인증 후 로그인 해주세요.')
+            messages.warning(request, 'Please log in after verifying your email.')
             return render(request, 'auth/login.html')
         
         user = authenticate(request, username=username, password=password)
@@ -58,7 +58,7 @@ def login_(request):
             
         else:
             # 로그인 실패한 경우
-            messages.warning(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
+            messages.warning(request, 'Username or Password is incorrect. Please try again')
             return render(request, 'auth/login.html')
         
     return render(request, 'auth/login.html')
@@ -87,7 +87,7 @@ def register_(request):
             user.save()
                 
             if send_mail(request.POST, user):
-                messages.success(request, '회원가입이 완료되었습니다. 메일 인증 후 로그인 해주세요!')
+                messages.success(request, 'Registration is complete. Please log in after email verification!')
                 return render(request, 'auth/register.html', context)
             else:
                 messages.warning(request, {'mail': 'fail to send mail'})
@@ -96,7 +96,11 @@ def register_(request):
             # 폼이 유효하지 않은 경우 에러 메시지를 표시
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.warning(request, f'{field}: {error}')
+                    if field == 'password1':
+                        field = 'password'
+                    elif field == 'password2':
+                        field = 'password verification'
+                    messages.warning(request, f'{field.title()}: {error}')
                 
     return render(request, 'auth/register.html', context)
 
