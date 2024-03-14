@@ -7,7 +7,7 @@
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
-        <div {% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>{{ message }}</div>
+        <div {% if message.tags %} class="auth-alert auth-alert-{{ message.tags }}"{% endif %}>{{ message }}</div>
         {% endfor %}
     </div>
     {% endif %}
@@ -48,7 +48,7 @@
                                     key
                                 </span>
                                 <input type="password" class="form-control form-control-user"
-                                    name="password1" value="{{password1}}" placeholder="User Password">
+                                    name="password1" value="{{password1}}" placeholder="Password">
                             </div>
                             <div class="form-group">
                                 <span class="material-symbols-outlined ml-auto">
@@ -57,9 +57,8 @@
                                 <input type="password" class="form-control form-control-user"
                                     name="password2" placeholder="Password Verification">
                             </div>
-
                             <div class="divider"></div>
-                            <input type="submit" value="Sign Up" class="btn btn-teiren btn-user btn-block font-weight-bold">
+                            <input type="submit" value="Register" class="btn btn-teiren btn-user btn-block font-weight-bold">
                             <a class="a" href="/auth/login/">
                                 <button type="button" class="btn btn-outline-teiren btn-user btn-block font-weight-bold">Back to Login Page</button>
                             </a>

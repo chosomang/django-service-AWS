@@ -389,6 +389,7 @@ class DashboardHandler(Neo4jHandler):
                 'No': None,
                 'level': None,
                 'system': None,
+                'rule_name': None,
                 'action': None,
                 'etime': None,
                 'form': {
@@ -409,6 +410,7 @@ class DashboardHandler(Neo4jHandler):
                 'No': results['No'][index],
                 'level': results['level'][index],
                 'system': results['system'][index],
+                'rule_name': results['rule_name'][index],
                 'action': results['action'][index],
                 'etime': results['etime'][index],
                 'form': {
@@ -420,6 +422,8 @@ class DashboardHandler(Neo4jHandler):
                     'rule_class': results['rule_class'][index],
                 }
             }
+            print(context)
+            print('*'*100)
             form_data.append(context)
         context = {'recent_threat': form_data}
         if isinstance(self.request, dict):

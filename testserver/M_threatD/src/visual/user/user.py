@@ -37,9 +37,9 @@ class UserThreat(Neo4jHandler):
     
     def get_user_static_data(self):
         account = self.request['account']
-        logType = self.request['logType']
+        resource = self.request['resource']
         cypher = f"""
-        MATCH (account:Account)-[:DATE|ACTED*]->(log:Log)-[detected:DETECTED]->(rule:Rule:{logType})
+        MATCH (account:Account)-[:DATE|ACTED*]->(log:Log)-[detected:DETECTED]->(rule:Rule:{resource})
         WHERE account.name = '{account}' or account.userName = '{account}'
         WITH rule, account, detected, log
         MATCH (log)<-[:ACTED*]-(date:Date)<-[date_rel:DATE]-(account)
@@ -93,16 +93,16 @@ class UserThreat(Neo4jHandler):
         response = []
         for result in results:
             for node in result['nodes']:
-                response.append(self.get_node_json(node, logType))
+                response.append(self.get_node_json(node, resource))
             for relation in result['relations']:
                 response.append(self.get_relation_json(relation))
         return response
     
     def get_user_dynamic_data(self):
         account = self.request['account']
-        logType = self.request['logType']
+        resource = self.request['resource']
         cypher = f"""
-        MATCH (account:Account)-[:DATE|ACTED*]->(log:Log)-[detected:FLOW_DETECTED]->(rule:Rule:{logType})
+        MATCH (account:Account)-[:DATE|ACTED*]->(log:Log)-[detected:FLOW_DETECTED]->(rule:Rule:{resource})
         WHERE account.name = '{account}' OR account.userName = '{account}'
         WITH [rule, account] AS nodes, detected, log, account
         OPTIONAL MATCH (log)-[assumed:ASSUMED]->(role:Role)
@@ -179,7 +179,7 @@ class UserThreat(Neo4jHandler):
         response = []
         for result in results:
             for node in result['nodes']:
-                response.append(self.get_node_json(node, logType))
+                response.append(self.get_node_json(node, resource))
             for relation in result['relations']:
                 response.append(self.get_relation_json(relation))
         return response
@@ -195,7 +195,7 @@ class UserThreat(Neo4jHandler):
             l.eventTime AS eventTime,
             apoc.date.format(apoc.date.parse(l.eventTime, "ms", "yyyy-MM-dd'T'HH:mm:ssX"), "ms", "yyyy-MM-dd HH:mm:ss") AS detected_time,
             r.ruleClass AS rule_class,
-            [label IN LABELS(r) WHERE label <> 'Rule'][0] AS logType,
+            [label IN LABELS(r) WHERE label <> 'Rule'][0] AS resource,
             CASE
                 WHEN r.level = 1 THEN ['LOW', 'success']
                 WHEN r.level = 2 THEN ['MID', 'warning']
@@ -221,7 +221,7 @@ class UserThreat(Neo4jHandler):
         MATCH p = (r:Rule)<-[d:DETECTED|FLOW_DETECTED]-(l:Log)<-[:ACTED|DATE*]-(a:Account)
         WITH DISTINCT(a), count(d) as count, COLLECT(r)[-1] as rule, COLLECT(l)[-1] as log
         RETURN
-            HEAD([label IN LABELS(rule) WHERE label <> 'Rule']) AS logType,
+            HEAD([label IN LABELS(rule) WHERE label <> 'Rule']) AS resource,
             CASE
                 WHEN a.userName IS NOT NULL THEN a.userName
                 WHEN a.name CONTAINS 'cgid' THEN SPLIT(a.name, '_')[0]

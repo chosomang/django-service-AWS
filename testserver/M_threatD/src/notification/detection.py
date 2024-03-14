@@ -33,7 +33,7 @@ class Detection(Neo4jHandler):
             return HttpResponse({'message': '다시 시도'})
 
     def get_data(self):
-        print(self.request)
+        # print(self.request)
         rule_class = self.request['rule_class']
         if rule_class == 'static':
             data = self.get_static()
@@ -174,7 +174,7 @@ class Detection(Neo4jHandler):
         RETURN nodes AS nodes, relations As relations
         """
         try:
-            print(cypher)
+            # print(cypher)
             results = self.run_data(database=self.user_db, query=cypher)
         except Exception:
             print(traceback.print_exc())
@@ -242,7 +242,7 @@ class Detection(Neo4jHandler):
                         WHEN flow.userIdentity_type <> flow2.userIdentity_type THEN 'diff'
                         ELSE 'diff'
                     END AS flow_check
-                CALL apoc.do.when(
+                 CALL apoc.do.when(
                     flow_check = 'same',
                     \\\"
                         MATCH (flow)<-[:ACTED*]-(date:Date)<-[date_rel:DATE]-(account:Account)
@@ -279,12 +279,24 @@ class Detection(Neo4jHandler):
                                 ELSE relations + [assumed]
                             END AS relations
                         OPTIONAL MATCH p=(flow)-[:ACTED|NEXT*]->(flow2)
-                        WITH flow, flow2, nodes, relations, NODES(p) as mid
+                        WITH flow, flow2, nodes, relations,
+                            CASE
+                                WHEN NODES(p) IS NULL THEN []
+                                ELSE NODES(p)
+                            END AS mid
                         CALL apoc.do.when(
                             SIZE(mid) <= 5,
                             \\\\\\"
-                                MATCH p=(flow)-[acted:ACTED|NEXT*]->(flow2)
-                                RETURN NODES(p) as nodes, acted as relations
+                                OPTIONAL MATCH p=(flow)-[acted:ACTED|NEXT*]->(flow2)
+                                RETURN 
+                                    CASE
+                                        WHEN NODES(p) IS NULL THEN [flow]
+                                        ELSE NODES(p)
+                                    END AS nodes,
+                                    CASE
+                                        WHEN acted IS NULL THEN []
+                                        ELSE acted
+                                    END AS relations
                             \\\\\\",
                             \\\\\\"
                                 MATCH p=(flow)-[:ACTED|NEXT*]->(flow2)
@@ -407,23 +419,37 @@ class Detection(Neo4jHandler):
             ",
             {{flow:flow, path:path}}
         ) YIELD value
-        UNWIND value.value.relations as relation
-        UNWIND value.value.nodes as node
-        WITH relations, nodes, log, path,
-            COLLECT(DISTINCT(node)) as nodes2,
-            COLLECT(DISTINCT(relation)) as relations2
-        WITH nodes + nodes2 as nodes, relations + relations2 as relations, log, path
+        WITH nodes, relations, log, path,value.value.nodes AS val_nodes, value.value.relations AS val_relations
+        CALL apoc.do.case([
+            val_nodes IS NULL,
+            "
+                RETURN [] AS val_nodes, [] as val_relations
+            ",
+            val_nodes IS NOT NULL,
+            "
+                UNWIND val_nodes as val_node
+                UNWIND val_relations as val_relation
+                RETURN COLLECT(DISTINCT(val_node)) AS val_nodes, COLLECT(DISTINCT(val_relation)) AS val_relations
+            "
+        ],
+            "
+                UNWIND val_nodes as val_node
+                UNWIND val_relations as val_relation
+                RETURN COLLECT(DISTINCT(val_node)) AS val_nodes, COLLECT(DISTINCT(val_relation)) AS val_relations
+            ",
+        {{val_nodes:val_nodes, val_relations:val_relations}}) YIELD value
+        WITH nodes + value.val_nodes AS nodes, relations + value.val_relations AS relations, log, path
         MATCH (log)<-[:FLOW {{path:path}}]-(flow)
-        WITH log, nodes, relations,
-            CASE
-                WHEN log.userName = flow.userName THEN 'same'
-                WHEN log.userName <> flow.userName THEN 'diff'
-                WHEN log.userIdentity_arn <> flow.userIdentity_arn THEN 'diff'
-                WHEN log.userIdentity_arn = flow.userIdentity_arn THEN 'same'
-                WHEN log.userIdentity_type = flow.userIdentity_type THEN 'same'
-                WHEN log.userIdentity_type <> flow.userIdentity_type THEN 'diff'
-                ELSE 'diff'
-            END AS flow_check
+            WITH log, nodes, relations,
+                CASE
+                    WHEN log.userName = flow.userName THEN 'same'
+                    WHEN log.userName <> flow.userName THEN 'diff'
+                    WHEN log.userIdentity_arn <> flow.userIdentity_arn THEN 'diff'
+                    WHEN log.userIdentity_arn = flow.userIdentity_arn THEN 'same'
+                    WHEN log.userIdentity_type = flow.userIdentity_type THEN 'same'
+                    WHEN log.userIdentity_type <> flow.userIdentity_type THEN 'diff'
+                    ELSE 'diff'
+                END AS flow_check
         CALL apoc.do.when(
             flow_check = 'diff',
             "
@@ -451,7 +477,7 @@ class Detection(Neo4jHandler):
                 ) YIELD value
                 RETURN value
             ",
-            "   
+            "
                 WITH {{nodes: [log], relations:[]}} as value
                 RETURN value
             ",
@@ -468,6 +494,7 @@ class Detection(Neo4jHandler):
             }}) AS relations
         RETURN nodes, relations
         """
+        # print(cypher)
         results = self.run_records(database=self.user_db, query=cypher)
         response = []
         for result in results:
@@ -666,6 +693,7 @@ class Detection(Neo4jHandler):
             END AS type
         ORDER BY node.eventTime DESC
         """
+        print(cypher)
         results = self.run_data(database=self.user_db, query=cypher)
         response = []
         for result in results:

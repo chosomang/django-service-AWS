@@ -63,9 +63,9 @@
                             {% endfor %}
                             <td>
                                 {% if account.account_real != '-' %}
-                                    <button type=button class='btn btn-outline-teiren btn-md' data-logtype="{{account.logType}}" data-total="{{account.total}}" onclick='details(this); return false;' value="{{account.account_real}}" data-toggle='modal' data-target='#account_modal'>Graph Details</button>
+                                    <button type=button class='btn btn-outline-teiren btn-md' data-resource="{{account.resource}}" data-total="{{account.total}}" onclick='details(this); return false;' value="{{account.account_real}}" data-toggle='modal' data-target='#account_modal'>Graph Details</button>
                                 {% else %}
-                                    <button type=button class='btn btn-outline-teiren btn-md' data-logtype="{{account.logType}}" data-total="{{account.total}}" onclick='details(this); return false;' value={{account.account}} data-toggle='modal' data-target='#account_modal'>Graph Details</button>
+                                    <button type=button class='btn btn-outline-teiren btn-md' data-resource="{{account.resource}}" data-total="{{account.total}}" onclick='details(this); return false;' value={{account.account}} data-toggle='modal' data-target='#account_modal'>Graph Details</button>
                                 {% endif %}
                             </td>
                         </tr>
@@ -125,7 +125,7 @@
             },
             data: {
                 account: e.value,
-                logType: $(e).data('logtype'),
+                resource: $(e).data('resource'),
                 total: $(e).data('total')
             },
             type: 'post',
