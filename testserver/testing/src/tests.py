@@ -13,6 +13,7 @@ from django.dispatch import receiver
 
 # 3rd party
 from py2neo import Graph
+
 # LOCAL
 # graph = Graph("bolt://127.0.0.1:7687", auth=('neo4j', 'teiren001'))
 
@@ -292,3 +293,6 @@ def login_(request):
 
 def register_(request):
     return render(request, 'registration/activation_failure.html')
+
+
+    
